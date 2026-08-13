@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -9,115 +11,103 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f1f5f9;
-      color: #0f172a;
-      min-height: 100vh;
-      padding: 16px;
+      background: #f1f5f9; color: #0f172a; min-height: 100vh; padding: 16px;
     }
     .card {
-      max-width: 420px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 16px;
-      padding: 24px;
+      max-width: 420px; margin: 24px auto; background: #fff;
+      border-radius: 16px; padding: 20px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
     }
-    h1 { font-size: 1.25rem; text-align: center; margin-bottom: 8px; }
-    .sub { text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+    h1 { font-size: 1.15rem; text-align: center; margin-bottom: 6px; }
+    h2 { font-size: 0.95rem; margin: 14px 0 8px; }
+    .sub { text-align: center; color: #64748b; font-size: 0.85rem; margin-bottom: 14px; }
     input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 10px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 1rem;
+      width: 100%; padding: 12px; margin-bottom: 10px;
+      border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      background: #2563eb;
-      color: #fff;
-      margin-top: 4px;
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      background: #2563eb; color: #fff; margin-top: 4px;
     }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
     button.secondary { background: #e2e8f0; color: #0f172a; }
-    button.danger { background: #dc2626; }
+    button.success { background: #16a34a; }
+    button.danger { background: #dc2626; width: auto; padding: 6px 10px; font-size: 0.8rem; }
+    button.sm { width: auto; padding: 8px 12px; font-size: 0.85rem; }
     .msg {
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 0.9rem;
-      display: none;
+      margin-top: 12px; padding: 10px; border-radius: 10px;
+      text-align: center; font-size: 0.9rem; display: none;
     }
     .msg.show { display: block; }
     .msg.ok { background: #dcfce7; color: #166534; }
     .msg.err { background: #fee2e2; color: #991b1b; }
     .hidden { display: none !important; }
     .user-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      font-size: 0.9rem;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; font-size: 0.9rem; gap: 8px;
     }
+    .actions { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .list-item {
-      padding: 10px 0;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem;
     }
+    .list-item .name { flex: 1; }
+    .num { font-weight: 700; color: #2563eb; min-width: 22px; }
+    .empty { text-align: center; color: #64748b; padding: 16px; }
     .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      background: #dbeafe;
-      color: #1d4ed8;
-      margin-right: 6px;
+      display: inline-block; padding: 2px 8px; border-radius: 20px;
+      font-size: 0.72rem; background: #dbeafe; color: #1d4ed8;
     }
-    .empty { text-align: center; color: #64748b; padding: 20px; }
   </style>
 </head>
 <body>
 
-  <!-- התחברות -->
   <div id="loginScreen" class="card">
     <h1>כדורסל v2</h1>
-    <p class="sub">מערכת חדשה (Supabase) – נפרדת מהאתר הישן</p>
+    <p class="sub">מערכת חדשה (Supabase)</p>
     <input type="email" id="email" placeholder="מייל" autocomplete="username">
     <input type="password" id="password" placeholder="סיסמה" autocomplete="current-password">
     <button id="btnLogin" onclick="login()">התחברות</button>
     <div id="loginMsg" class="msg"></div>
   </div>
 
-  <!-- אפליקציה -->
   <div id="appScreen" class="card hidden">
     <div class="user-bar">
       <span id="userLabel"></span>
-      <button class="secondary" style="width:auto;padding:6px 12px;" onclick="logout()">יציאה</button>
+      <button class="secondary sm" onclick="logout()">יציאה</button>
     </div>
-    <h1 style="margin-bottom:4px;">רשימת המשחק</h1>
-    <p class="sub" id="gameInfo" style="margin-bottom:12px;">טוען...</p>
+
+    <h1>רשימת המשחק</h1>
+    <p class="sub" id="gameInfo">טוען...</p>
+
+    <div class="actions">
+      <button class="sm" id="btnReg" onclick="registerSelf()">+ הרשמה</button>
+      <button class="secondary sm" onclick="loadList()">↻ רענון</button>
+    </div>
+    <div id="appMsg" class="msg"></div>
+
     <div id="mainList"><div class="empty">טוען...</div></div>
-    <button class="secondary" style="margin-top:16px;" onclick="loadList()">רענון</button>
+
+    <h2>רשימת המתנה</h2>
+    <div id="waitList"><div class="empty">ריקה</div></div>
   </div>
 
   <script>
     const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
-
+    
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let currentUser = null;
     let currentProfile = null;
+    let currentGame = null;
 
-    function showMsg(elId, text, ok) {
-      const el = document.getElementById(elId);
+    function showMsg(id, text, ok) {
+      const el = document.getElementById(id);
       el.textContent = text;
       el.className = "msg show " + (ok ? "ok" : "err");
+      if (id === "appMsg") setTimeout(() => el.classList.remove("show"), 4000);
     }
 
     async function login() {
@@ -130,12 +120,10 @@
       btn.textContent = "מתחבר...";
 
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
       btn.disabled = false;
       btn.textContent = "התחברות";
 
       if (error) return showMsg("loginMsg", error.message, false);
-
       currentUser = data.user;
       await afterLogin();
     }
@@ -147,12 +135,8 @@
         .eq("id", currentUser.id)
         .maybeSingle();
 
-      if (error) {
-        showMsg("loginMsg", "שגיאה בטעינת פרופיל: " + error.message, false);
-        return;
-      }
-      if (!profile) {
-        showMsg("loginMsg", "אין פרופיל למשתמש הזה. הוסף שורה ב-profiles.", false);
+      if (error || !profile) {
+        showMsg("loginMsg", "אין פרופיל למשתמש. בדוק את טבלת profiles.", false);
         await sb.auth.signOut();
         return;
       }
@@ -169,14 +153,16 @@
       await sb.auth.signOut();
       currentUser = null;
       currentProfile = null;
+      currentGame = null;
       document.getElementById("appScreen").classList.add("hidden");
       document.getElementById("loginScreen").classList.remove("hidden");
     }
 
     async function loadList() {
       const info = document.getElementById("gameInfo");
-      const list = document.getElementById("mainList");
-      list.innerHTML = `<div class="empty">טוען...</div>`;
+      const mainList = document.getElementById("mainList");
+      const waitList = document.getElementById("waitList");
+      mainList.innerHTML = `<div class="empty">טוען...</div>`;
 
       const { data: games, error: gErr } = await sb
         .from("games")
@@ -187,44 +173,197 @@
 
       if (gErr) {
         info.textContent = "שגיאה";
-        list.innerHTML = `<div class="empty">${gErr.message}</div>`;
+        mainList.innerHTML = `<div class="empty">${gErr.message}</div>`;
         return;
       }
       if (!games || !games.length) {
+        currentGame = null;
         info.textContent = "אין משחק פתוח";
-        list.innerHTML = `<div class="empty">אין משחק – צור משחק לדוגמה ב-SQL</div>`;
+        mainList.innerHTML = `<div class="empty">אין משחק</div>`;
+        waitList.innerHTML = `<div class="empty">—</div>`;
+        updateRegButton();
         return;
       }
 
-      const game = games[0];
+      currentGame = games[0];
+      const locked = currentGame.status === "locked";
       info.textContent =
-        `תאריך: ${game.game_date} · ${game.status === "open" ? "פתוח" : "סגור"} · מקס ${game.max_players}`;
+        `תאריך: ${currentGame.game_date} · ${locked ? "סגור" : "פתוח"} · מקס ${currentGame.max_players}`;
 
       const { data: regs, error: rErr } = await sb
         .from("registrations")
         .select("*")
-        .eq("game_id", game.id)
+        .eq("game_id", currentGame.id)
         .in("status", ["main", "waitlist"])
         .order("position", { ascending: true });
 
       if (rErr) {
-        list.innerHTML = `<div class="empty">${rErr.message}</div>`;
-        return;
-      }
-      if (!regs || !regs.length) {
-        list.innerHTML = `<div class="empty">הרשימה ריקה – עדיין אין נרשמים</div>`;
+        mainList.innerHTML = `<div class="empty">${rErr.message}</div>`;
         return;
       }
 
-      list.innerHTML = regs.map(r => `
-        <div class="list-item">
-          <span class="badge">${r.status === "main" ? "משחק" : "המתנה"} ${r.position || ""}</span>
-          ${r.player_name}
-        </div>
-      `).join("");
+      const main = (regs || []).filter(r => r.status === "main");
+      const wait = (regs || []).filter(r => r.status === "waitlist");
+
+      mainList.innerHTML = main.length
+        ? main.map(r => rowHtml(r)).join("")
+        : `<div class="empty">ריקה</div>`;
+
+      waitList.innerHTML = wait.length
+        ? wait.map(r => rowHtml(r)).join("")
+        : `<div class="empty">ריקה</div>`;
+
+      updateRegButton(main, wait);
     }
 
-    // שחזור סשן קיים
+    function rowHtml(r) {
+      const mine = r.registered_by === currentUser.id;
+      const locked = currentGame && currentGame.status === "locked";
+      const cancelBtn = (mine && !locked)
+        ? `<button class="danger" data-cancel="${r.id}">ביטול</button>`
+        : "";
+      return `
+        <div class="list-item">
+          <span class="num">${r.position || ""}.</span>
+          <span class="name">${escapeHtml(r.player_name)}</span>
+          ${cancelBtn}
+        </div>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function updateRegButton(main, wait) {
+      const btn = document.getElementById("btnReg");
+      if (!currentGame || currentGame.status === "locked") {
+        btn.disabled = true;
+        btn.textContent = "סגור";
+        return;
+      }
+      const all = [...(main || []), ...(wait || [])];
+      const already = all.some(r =>
+        r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
+      );
+      if (already) {
+        btn.disabled = true;
+        btn.textContent = "✓ רשום";
+      } else {
+        btn.disabled = false;
+        btn.textContent = "+ הרשמה";
+      }
+    }
+
+    async function registerSelf() {
+      if (!currentGame || currentGame.status !== "open") {
+        return showMsg("appMsg", "אין משחק פתוח להרשמה", false);
+      }
+
+      const btn = document.getElementById("btnReg");
+      btn.disabled = true;
+      btn.textContent = "נרשם...";
+
+      // כמה כבר ב-main
+      const { count, error: cErr } = await sb
+        .from("registrations")
+        .select("*", { count: "exact", head: true })
+        .eq("game_id", currentGame.id)
+        .eq("status", "main");
+
+      if (cErr) {
+        showMsg("appMsg", cErr.message, false);
+        btn.disabled = false;
+        btn.textContent = "+ הרשמה";
+        return;
+      }
+
+      const status = (count || 0) < currentGame.max_players ? "main" : "waitlist";
+      const position = (count || 0) + 1; // זמני; נסדר אחרי
+
+      const { error } = await sb.from("registrations").insert({
+        game_id: currentGame.id,
+        player_name: currentProfile.name,
+        player_email: currentProfile.email,
+        registered_by: currentUser.id,
+        status,
+        position
+      });
+
+      if (error) {
+        showMsg("appMsg", error.message, false);
+        btn.disabled = false;
+        btn.textContent = "+ הרשמה";
+        return;
+      }
+
+      await recalculatePositions(currentGame.id);
+      showMsg("appMsg", status === "main" ? "נרשמת בהצלחה!" : "נרשמת להמתנה", true);
+      await loadList();
+    }
+
+    async function cancelReg(id) {
+      if (!confirm("לבטל הרשמה?")) return;
+
+      const { error } = await sb
+        .from("registrations")
+        .update({
+          status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+          position: 0
+        })
+        .eq("id", id);
+
+      if (error) return showMsg("appMsg", error.message, false);
+
+      if (currentGame) await recalculatePositions(currentGame.id);
+      showMsg("appMsg", "בוטל", true);
+      await loadList();
+    }
+
+    // סידור מחדש של position + העלאה מההמתנה
+    async function recalculatePositions(gameId) {
+      const { data: game } = await sb.from("games").select("*").eq("id", gameId).single();
+      if (!game) return;
+
+      const { data: regs } = await sb
+        .from("registrations")
+        .select("*")
+        .eq("game_id", gameId)
+        .in("status", ["main", "waitlist"])
+        .order("created_at", { ascending: true });
+
+      if (!regs) return;
+
+      let main = regs.filter(r => r.status === "main");
+      let wait = regs.filter(r => r.status === "waitlist");
+
+      while (main.length < game.max_players && wait.length) {
+        const next = wait.shift();
+        next.status = "main";
+        main.push(next);
+      }
+
+      for (let i = 0; i < main.length; i++) {
+        await sb.from("registrations")
+          .update({ status: "main", position: i + 1 })
+          .eq("id", main[i].id);
+      }
+      for (let i = 0; i < wait.length; i++) {
+        await sb.from("registrations")
+          .update({ status: "waitlist", position: i + 1 })
+          .eq("id", wait[i].id);
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-cancel]");
+      if (btn) cancelReg(btn.getAttribute("data-cancel"));
+    });
+
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
