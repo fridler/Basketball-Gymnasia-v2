@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>כדורסל v2 – Supabase</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .card {
+      max-width: 420px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    h1 { font-size: 1.25rem; text-align: center; margin-bottom: 8px; }
+    .sub { text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      margin-top: 4px;
+    }
+    button.secondary { background: #e2e8f0; color: #0f172a; }
+    button.danger { background: #dc2626; }
+    .msg {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .msg.show { display: block; }
+    .msg.ok { background: #dcfce7; color: #166534; }
+    .msg.err { background: #fee2e2; color: #991b1b; }
+    .hidden { display: none !important; }
+    .user-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    .list-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.95rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      background: #dbeafe;
+      color: #1d4ed8;
+      margin-right: 6px;
+    }
+    .empty { text-align: center; color: #64748b; padding: 20px; }
+  </style>
+</head>
+<body>
+
+  <!-- התחברות -->
+  <div id="loginScreen" class="card">
+    <h1>כדורסל v2</h1>
+    <p class="sub">מערכת חדשה (Supabase) – נפרדת מהאתר הישן</p>
+    <input type="email" id="email" placeholder="מייל" autocomplete="username">
+    <input type="password" id="password" placeholder="סיסמה" autocomplete="current-password">
+    <button id="btnLogin" onclick="login()">התחברות</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <!-- אפליקציה -->
+  <div id="appScreen" class="card hidden">
+    <div class="user-bar">
+      <span id="userLabel"></span>
+      <button class="secondary" style="width:auto;padding:6px 12px;" onclick="logout()">יציאה</button>
+    </div>
+    <h1 style="margin-bottom:4px;">רשימת המשחק</h1>
+    <p class="sub" id="gameInfo" style="margin-bottom:12px;">טוען...</p>
+    <div id="mainList"><div class="empty">טוען...</div></div>
+    <button class="secondary" style="margin-top:16px;" onclick="loadList()">רענון</button>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+    let currentProfile = null;
+
+    function showMsg(elId, text, ok) {
+      const el = document.getElementById(elId);
+      el.textContent = text;
+      el.className = "msg show " + (ok ? "ok" : "err");
+    }
+
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      if (!email || !password) return showMsg("loginMsg", "נא למלא מייל וסיסמה", false);
+
+      const btn = document.getElementById("btnLogin");
+      btn.disabled = true;
+      btn.textContent = "מתחבר...";
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+      btn.disabled = false;
+      btn.textContent = "התחברות";
+
+      if (error) return showMsg("loginMsg", error.message, false);
+
+      currentUser = data.user;
+      await afterLogin();
+    }
+
+    async function afterLogin() {
+      const { data: profile, error } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (error) {
+        showMsg("loginMsg", "שגיאה בטעינת פרופיל: " + error.message, false);
+        return;
+      }
+      if (!profile) {
+        showMsg("loginMsg", "אין פרופיל למשתמש הזה. הוסף שורה ב-profiles.", false);
+        await sb.auth.signOut();
+        return;
+      }
+
+      currentProfile = profile;
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      document.getElementById("userLabel").textContent =
+        profile.name + (profile.is_admin ? " · מנהל" : "");
+      await loadList();
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      currentUser = null;
+      currentProfile = null;
+      document.getElementById("appScreen").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+    }
+
+    async function loadList() {
+      const info = document.getElementById("gameInfo");
+      const list = document.getElementById("mainList");
+      list.innerHTML = `<div class="empty">טוען...</div>`;
+
+      const { data: games, error: gErr } = await sb
+        .from("games")
+        .select("*")
+        .in("status", ["open", "locked"])
+        .order("game_date", { ascending: false })
+        .limit(1);
+
+      if (gErr) {
+        info.textContent = "שגיאה";
+        list.innerHTML = `<div class="empty">${gErr.message}</div>`;
+        return;
+      }
+      if (!games || !games.length) {
+        info.textContent = "אין משחק פתוח";
+        list.innerHTML = `<div class="empty">אין משחק – צור משחק לדוגמה ב-SQL</div>`;
+        return;
+      }
+
+      const game = games[0];
+      info.textContent =
+        `תאריך: ${game.game_date} · ${game.status === "open" ? "פתוח" : "סגור"} · מקס ${game.max_players}`;
+
+      const { data: regs, error: rErr } = await sb
+        .from("registrations")
+        .select("*")
+        .eq("game_id", game.id)
+        .in("status", ["main", "waitlist"])
+        .order("position", { ascending: true });
+
+      if (rErr) {
+        list.innerHTML = `<div class="empty">${rErr.message}</div>`;
+        return;
+      }
+      if (!regs || !regs.length) {
+        list.innerHTML = `<div class="empty">הרשימה ריקה – עדיין אין נרשמים</div>`;
+        return;
+      }
+
+      list.innerHTML = regs.map(r => `
+        <div class="list-item">
+          <span class="badge">${r.status === "main" ? "משחק" : "המתנה"} ${r.position || ""}</span>
+          ${r.player_name}
+        </div>
+      `).join("");
+    }
+
+    // שחזור סשן קיים
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        await afterLogin();
+      }
+    })();
+  </script>
+</body>
+</html>
