@@ -1097,7 +1097,7 @@
       await loadPending();
     }
 
-    async function loadBalanceList() {
+        async function loadBalanceList() {
       await loadProfiles();
       const list = Object.values(profileMap).sort((a, b) => (a.name || "").localeCompare(b.name || "", "he"));
       const box = $("balanceList");
@@ -1106,27 +1106,50 @@
         return;
       }
       box.innerHTML = list.map(p => `
-        <div class="admin-list-item">
-          <span>${escapeHtml(p.name)} <small style="color:#64748b">${Number(p.balance || 0)}₪</small></span>
-          <span>
+        <div class="admin-list-item" style="flex-wrap:wrap;gap:8px;">
+          <span style="min-width:120px;">${escapeHtml(p.name)}
+            <small style="color:#64748b"> ${Number(p.balance || 0)}₪</small>
+          </span>
+          <span style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
             <button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:0.75rem;" data-bal="${p.id}" data-delta="-35">-35</button>
             <button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:0.75rem;" data-bal="${p.id}" data-delta="35">+35</button>
+            <input type="number" id="amt_${p.id}" placeholder="סכום" style="width:72px;padding:6px;font-size:0.8rem;margin:0;">
+            <button class="btn-danger" style="width:auto;padding:4px 8px;font-size:0.75rem;" data-bal-custom="${p.id}" data-sign="-1">חייב</button>
+            <button class="btn-success" style="width:auto;padding:4px 8px;font-size:0.75rem;" data-bal-custom="${p.id}" data-sign="1">זיכוי</button>
           </span>
         </div>
       `).join("");
     }
 
-    async function adjustBalance(uid, delta) {
+        async function logPayment(uid, amount, note) {
+      const email = profileMap[uid]?.email || "";
+      await sb.from("payment_log").insert({
+        game_id: currentGame?.id || null,
+        email,
+        collection_name: profileMap[uid]?.name || "",
+        amount: amount,
+        status: "written",
+        note: note || ""
+      });
+    }
+
+    async function adjustBalance(uid, delta, note) {
       const p = profileMap[uid];
       if (!p) return;
-      const next = Number(p.balance || 0) + Number(delta);
+      const amount = Number(delta);
+      if (!amount || isNaN(amount)) return showAdminMsg("סכום לא תקין", false);
+
+      const next = Number(p.balance || 0) + amount;
       const { error } = await sb.from("profiles").update({ balance: next }).eq("id", uid);
       if (error) return showAdminMsg(error.message, false);
+
+      await logPayment(uid, amount, note || ("התאמה ידנית " + (amount > 0 ? "+" : "") + amount));
+
       if (uid === currentUser.id) {
         currentProfile.balance = next;
         updateBalanceUI();
       }
-      showAdminMsg("יתרה עודכנה", true);
+      showAdminMsg("יתרה עודכנה: " + next + "₪", true);
       await loadBalanceList();
     }
 
@@ -1231,6 +1254,19 @@
 
       const bal = e.target.closest("[data-bal]");
       if (bal) adjustBalance(bal.getAttribute("data-bal"), bal.getAttribute("data-delta"));
+    
+    const balCustom = e.target.closest("[data-bal-custom]");
+      if (balCustom) {
+        const uid = balCustom.getAttribute("data-bal-custom");
+        const sign = Number(balCustom.getAttribute("data-sign") || "1");
+        const raw = Number(($("amt_" + uid) || {}).value);
+        if (!raw || isNaN(raw) || raw <= 0) {
+          showAdminMsg("הזן סכום חיובי", false);
+          return;
+        }
+        const amount = sign * raw; // חייב = שלילי, זיכוי = חיובי
+        adjustBalance(uid, amount, (sign < 0 ? "חיוב ידני " : "זיכוי ידני ") + raw);
+      }
     });
 
     (async () => {
