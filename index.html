@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -215,7 +216,6 @@
     </div>
   </div>
 
-  <!-- Friend -->
   <div id="friendModal" class="modal-overlay hidden" onclick="backdrop(event,'friendModal')">
     <div class="modal">
       <div class="modal-head">
@@ -229,7 +229,6 @@
     </div>
   </div>
 
-  <!-- Rules -->
   <div id="rulesModal" class="modal-overlay hidden" onclick="backdrop(event,'rulesModal')">
     <div class="modal">
       <div class="modal-head">
@@ -240,7 +239,6 @@
     </div>
   </div>
 
-  <!-- Announce -->
   <div id="announceModal" class="modal-overlay hidden" onclick="backdrop(event,'announceModal')">
     <div class="modal">
       <div class="modal-head">
@@ -251,7 +249,6 @@
     </div>
   </div>
 
-  <!-- Teams -->
   <div id="teamsModal" class="modal-overlay hidden" onclick="backdrop(event,'teamsModal')">
     <div class="modal">
       <div class="modal-head">
@@ -281,13 +278,14 @@
     </div>
   </div>
 
-  <!-- Admin -->
   <div id="adminModal" class="modal-overlay hidden" onclick="backdrop(event,'adminModal')">
     <div class="modal admin-section">
       <div class="modal-head">
         <h3>ניהול</h3>
         <button class="modal-close" onclick="closeModal('adminModal')">סגור</button>
       </div>
+
+      <div id="adminMsg" class="message hidden"></div>
 
       <button class="btn-warning" onclick="startNewWeek()" style="margin-bottom:8px;">התחל שבוע חדש</button>
       <button class="btn-secondary" onclick="lockGameNow()" style="margin-bottom:8px;">נעל הרשמה עכשיו</button>
@@ -334,6 +332,14 @@
 
     function showMsg(text, ok) {
       const el = $("appMsg");
+      el.textContent = text;
+      el.className = "message " + (ok ? "success" : "error");
+      el.classList.remove("hidden");
+      setTimeout(() => el.classList.add("hidden"), 4000);
+    }
+
+    function showAdminMsg(text, ok) {
+      const el = $("adminMsg");
       el.textContent = text;
       el.className = "message " + (ok ? "success" : "error");
       el.classList.remove("hidden");
@@ -420,9 +426,15 @@
       (data || []).forEach(p => { profileMap[p.id] = p; });
     }
 
+    // מבוסס על game_date + friend_open_hour מההגדרות (לא רק friend_open_at ישן)
     function friendOpenNow() {
-      if (!currentGame || !currentGame.friend_open_at) return true;
-      return new Date() >= new Date(currentGame.friend_open_at);
+      if (!currentGame) return false;
+      const hour = parseInt(getSetting("friend_open_hour", "12"), 10);
+      const d = new Date(currentGame.game_date + "T00:00:00");
+      // יום לפני המשחק (שישי אם המשחק בשבת)
+      d.setDate(d.getDate() - 1);
+      d.setHours(hour, 0, 0, 0);
+      return new Date() >= d;
     }
 
     function isPastLockTime(game) {
@@ -481,11 +493,9 @@
     async function ensureDbLock(game) {
       if (!game || game.status !== "open") return game;
       if (!isPastLockTime(game)) return game;
-      if (!currentProfile?.is_admin) {
-        return { ...game, status: "locked" };
+      if (currentProfile?.is_admin) {
+        await sb.from("games").update({ status: "locked" }).eq("id", game.id);
       }
-      const { error } = await sb.from("games").update({ status: "locked" }).eq("id", game.id);
-      if (!error) return { ...game, status: "locked" };
       return { ...game, status: "locked" };
     }
 
@@ -518,9 +528,12 @@
 
       currentGame = await ensureDbLock(games[0]);
       const locked = isGameLocked(currentGame);
+      const friendOpen = friendOpenNow();
 
       $("gameInfo").textContent =
-        `משחק ${currentGame.game_date}` + (locked ? " · סגור להרשמה" : " · פתוח");
+        `משחק ${currentGame.game_date}` +
+        (locked ? " · סגור" : " · פתוח") +
+        (!locked ? (friendOpen ? " · חברים: פתוח" : " · חברים: סגור") : "");
 
       const { data: regs, error: rErr } = await sb
         .from("registrations")
@@ -549,7 +562,6 @@
       if (!r.player_email) {
         label = r.player_name + (r.registered_by === currentUser.id ? " (חבר)" : "");
       }
-      const p = profileMap[r.registered_by];
       if (r.player_email && profileMap) {
         const self = Object.values(profileMap).find(x => x.email && x.email.toLowerCase() === String(r.player_email).toLowerCase());
         if (self && self.symbol) label += " " + self.symbol;
@@ -727,7 +739,6 @@
       window.open(link, "_blank");
     }
 
-    // Teams
     function openTeams() {
       const main = lastRegs.filter(r => r.status === "main");
       if (main.length < 10) return showMsg("צריך לפחות 10 ברשימת המשחק", false);
@@ -736,7 +747,7 @@
       $("btnSplitTeams").classList.remove("hidden");
       $("teamPickList").classList.remove("hidden");
       $("teamPickCount").classList.remove("hidden");
-      $("teamPickList").innerHTML = main.map((r, idx) => `
+      $("teamPickList").innerHTML = main.map(r => `
         <label class="team-pick-item">
           <input type="checkbox" data-name="${escapeHtml(displayName(r))}" onchange="onTeamPickChange()">
           <span>${r.position}. ${escapeHtml(displayName(r))}</span>
@@ -793,13 +804,14 @@
       $("teamPickCount").classList.remove("hidden");
     }
 
-    // Admin
     async function openAdmin() {
       if (!currentProfile?.is_admin) return;
+      await loadSettings();
       $("adminAnnounceText").value = getSetting("announcement_text", "");
       $("adminAnnounceFrom").value = getSetting("announcement_from", "");
       $("adminAnnounceTo").value = getSetting("announcement_to", "");
       $("adminRulesText").value = getSetting("rules_text", "");
+      $("adminMsg").classList.add("hidden");
       await loadAdminRemoveList();
       $("adminModal").classList.remove("hidden");
     }
@@ -816,26 +828,26 @@
       let err = await setSetting("announcement_text", text);
       if (!err) err = await setSetting("announcement_from", from);
       if (!err) err = await setSetting("announcement_to", to);
-      if (err) return showMsg(err.message, false);
+      if (err) return showAdminMsg(err.message, false);
       await loadSettings();
       sessionStorage.removeItem(ANNOUNCE_KEY);
-      showMsg("המודעה נשמרה", true);
+      showAdminMsg("המודעה נשמרה ✓", true);
     }
 
     async function saveRules() {
       const text = $("adminRulesText").value;
       const err = await setSetting("rules_text", text);
-      if (err) return showMsg(err.message, false);
+      if (err) return showAdminMsg(err.message, false);
       await loadSettings();
-      showMsg("החוקים נשמרו", true);
+      showAdminMsg("החוקים נשמרו ✓", true);
     }
 
     async function lockGameNow() {
-      if (!currentGame) return showMsg("אין משחק", false);
+      if (!currentGame) return showAdminMsg("אין משחק", false);
       if (!confirm("לנעול את ההרשמה עכשיו?")) return;
       const { error } = await sb.from("games").update({ status: "locked" }).eq("id", currentGame.id);
-      if (error) return showMsg(error.message, false);
-      showMsg("ההרשמה ננעלה", true);
+      if (error) return showAdminMsg(error.message, false);
+      showAdminMsg("ההרשמה ננעלה", true);
       await loadList();
     }
 
@@ -852,7 +864,7 @@
       if (!confirm("לסגור משחקים פתוחים ולפתוח שבוע חדש?")) return;
 
       const { error: e1 } = await sb.from("games").update({ status: "completed" }).in("status", ["open", "locked"]);
-      if (e1) return showMsg(e1.message, false);
+      if (e1) return showAdminMsg(e1.message, false);
 
       const gameDate = nextSaturday();
       const friendHour = parseInt(getSetting("friend_open_hour", "12"), 10);
@@ -867,9 +879,9 @@
         max_players: maxPlayers,
         friend_open_at: friend.toISOString()
       });
-      if (e2) return showMsg(e2.message, false);
+      if (e2) return showAdminMsg(e2.message, false);
 
-      showMsg("שבוע חדש: " + gameDate, true);
+      showAdminMsg("שבוע חדש: " + gameDate, true);
       closeModal("adminModal");
       await loadList();
     }
@@ -900,9 +912,9 @@
         cancelled_at: new Date().toISOString(),
         position: 0
       }).eq("id", id);
-      if (error) return showMsg(error.message, false);
+      if (error) return showAdminMsg(error.message, false);
       await recalculatePositions(currentGame.id);
-      showMsg("הוסר", true);
+      showAdminMsg("הוסר", true);
       await loadList();
       await loadAdminRemoveList();
     }
