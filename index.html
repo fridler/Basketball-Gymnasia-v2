@@ -248,9 +248,7 @@
         <button type="button" class="admin-tab" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
         <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
         <button type="button" class="admin-tab" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
-        <button type="button" class="admin-tab" data-tab="add" onclick="switchAdminTab('add')">הוספה</button>
-        <button type="button" class="admin-tab" data-tab="remove" onclick="switchAdminTab('remove')">הסרה</button>
-        <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
+       <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>        <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
         <button type="button" class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
       </div>
 
@@ -280,22 +278,29 @@
         <div id="balanceList"></div>
         <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן</button>
       </div>
-      <div id="pane-profiles" class="admin-pane">
-        <div id="profilesList"></div>
-        <button class="btn-secondary" onclick="loadProfilesEditor()" style="margin-top:8px">רענן</button>
-      </div>
-      <div id="pane-add" class="admin-pane">
-        <p class="empty" style="padding:0 0 8px">הוספת שחקן מהמאסטר לרשימה הנוכחית</p>
-        <div class="form-group">
-          <label>שחקן</label>
-          <select id="addPlayerSelect"></select>
-        </div>
-        <button class="btn-success" id="btnAdminAdd" onclick="adminAddPlayer()">הוסף לרשימה</button>
-      </div>
-      <div id="pane-remove" class="admin-pane">
-        <div id="adminRemoveList"></div>
-        <button class="btn-secondary" onclick="loadAdminRemoveList()" style="margin-top:8px">רענן</button>
-      </div>
+     <div id="pane-profiles" class="admin-pane">
+  <div class="form-group">
+    <label>בחר שחקן</label>
+    <select id="profileSelect" onchange="fillProfileEditor()"></select>
+  </div>
+  <div id="profileEditor"><div class="empty">בחר שחקן לעריכה</div></div>
+</div>
+      
+    <div id="pane-roster" class="admin-pane">
+  <h4 style="margin:0 0 8px;color:#b45309;font-size:.88rem">הוספת שחקן</h4>
+  <div class="form-group">
+    <label>שחקן מהמאסטר</label>
+    <select id="addPlayerSelect"></select>
+  </div>
+  <button class="btn-success" id="btnAdminAdd" onclick="adminAddPlayer()" style="margin-bottom:16px">הוסף לרשימה</button>
+
+  <h4 style="margin:0 0 8px;color:#b45309;font-size:.88rem">הסרת שחקן</h4>
+  <div class="form-group">
+    <label>מהרשימה הנוכחית</label>
+    <select id="removePlayerSelect"></select>
+  </div>
+  <button class="btn-danger" id="btnAdminRemove" onclick="adminRemoveSelected()">הסר מהרשימה</button>
+</div>
       <div id="pane-archive" class="admin-pane">
         <p class="empty" style="padding:0 0 8px">ביטולים מאוחרים – משחק נוכחי</p>
         <div id="archiveList"></div>
@@ -414,8 +419,7 @@ function switchAdminTab(name){
   if(name==="pending")loadPending();
   if(name==="balances")loadBalanceList();
   if(name==="profiles")loadProfilesEditor();
-  if(name==="add")loadAddPlayerSelect();
-  if(name==="remove")loadAdminRemoveList();
+if (name === "roster") { loadAddPlayerSelect(); loadRemovePlayerSelect(); }
   if(name==="archive")loadArchive();
   if(name==="settings")fillSettingsForm();
 }
@@ -939,24 +943,45 @@ async function loadBalanceList(){
     </span></div>`).join("");
 }
 
-async function loadProfilesEditor(){
+async function loadProfilesEditor() {
   await loadProfiles();
-  const list=Object.values(profileMap).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
-  const box=$("profilesList");
-  if(!list.length){box.innerHTML=`<div class="empty">אין פרופילים</div>`;return}
-  box.innerHTML=list.map(p=>`<div class="profile-card" data-profile-id="${p.id}">
-    <div class="mini-title">${escapeHtml(p.name||"")}</div>
-    <div class="email-ro">מייל: ${escapeHtml(p.email||"")}</div>
-    <div class="profile-grid">
-      <div class="full"><label style="font-size:.75rem;color:#64748b">שם</label><input data-f="name" value="${escapeHtml(p.name||"")}"></div>
-      <div><label style="font-size:.75rem;color:#64748b">סמל</label><input data-f="symbol" value="${escapeHtml(p.symbol||"")}"></div>
-      <div><label style="font-size:.75rem;color:#64748b">טלפון</label><input data-f="phone" value="${escapeHtml(p.phone||"")}" placeholder="05..."></div>
-      <div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label>
-        <select data-f="is_admin"><option value="false" ${!p.is_admin?"selected":""}>לא</option><option value="true" ${p.is_admin?"selected":""}>כן</option></select>
+  const list = Object.values(profileMap).sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", "he")
+  );
+  const sel = $("profileSelect");
+  sel.innerHTML =
+    `<option value="">— בחר —</option>` +
+    list.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  $("profileEditor").innerHTML = `<div class="empty">בחר שחקן לעריכה</div>`;
+}
+
+function fillProfileEditor() {
+  const uid = $("profileSelect").value;
+  const p = profileMap[uid];
+  const box = $("profileEditor");
+  if (!p) {
+    box.innerHTML = `<div class="empty">בחר שחקן לעריכה</div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="profile-card" data-profile-id="${p.id}">
+      <div class="email-ro">מייל: ${escapeHtml(p.email || "")}</div>
+      <div class="profile-grid">
+        <div class="full"><label style="font-size:.75rem;color:#64748b">שם</label>
+          <input data-f="name" value="${escapeHtml(p.name || "")}"></div>
+        <div><label style="font-size:.75rem;color:#64748b">סמל</label>
+          <input data-f="symbol" value="${escapeHtml(p.symbol || "")}"></div>
+        <div><label style="font-size:.75rem;color:#64748b">טלפון</label>
+          <input data-f="phone" value="${escapeHtml(p.phone || "")}" placeholder="05..."></div>
+        <div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label>
+          <select data-f="is_admin">
+            <option value="false" ${!p.is_admin ? "selected" : ""}>לא</option>
+            <option value="true" ${p.is_admin ? "selected" : ""}>כן</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <button class="btn-success" style="margin-top:8px" data-save-profile="${p.id}">שמור פרופיל</button>
-  </div>`).join("");
+      <button class="btn-success" style="margin-top:8px" data-save-profile="${p.id}">שמור פרופיל</button>
+    </div>`;
 }
 async function saveProfile(uid){
   const card=document.querySelector(`.profile-card[data-profile-id="${uid}"]`);if(!card)return;
@@ -969,6 +994,37 @@ async function saveProfile(uid){
   if(error)return showAdminMsg(error.message,false);
   if(uid===currentUser.id){currentProfile=Object.assign({},currentProfile,{name,symbol,phone,is_admin});$("userLabel").textContent=name+(is_admin?" · מנהל":"")}
   showAdminMsg("הפרופיל נשמר ✓",true);await loadProfiles();
+}
+
+async function loadRemovePlayerSelect() {
+  const sel = $("removePlayerSelect");
+  if (!lastRegs.length) {
+    sel.innerHTML = `<option value="">אין נרשמים</option>`;
+    return;
+  }
+  sel.innerHTML = lastRegs.map(r =>
+    `<option value="${r.id}">${escapeHtml(displayName(r))} (${r.status})</option>`
+  ).join("");
+}
+
+async function adminRemoveSelected() {
+  const id = $("removePlayerSelect").value;
+  if (!id) return showAdminMsg("בחר שחקן", false);
+  if (!confirm("להסיר שחקן מהרשימה?")) return;
+  const btn = $("btnAdminRemove");
+  setLoading(btn, true, "מסיר");
+  const { error } = await sb.from("registrations").update({
+    status: "cancelled",
+    cancelled_at: new Date().toISOString(),
+    position: 0
+  }).eq("id", id);
+  setLoading(btn, false, "הסר מהרשימה");
+  if (error) return showAdminMsg(error.message, false);
+  await recalculatePositions(currentGame.id);
+  showAdminMsg("הוסר", true);
+  await loadList();
+  loadRemovePlayerSelect();
+  loadAddPlayerSelect();
 }
 
 async function loadAddPlayerSelect(){
