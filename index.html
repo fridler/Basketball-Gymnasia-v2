@@ -95,7 +95,6 @@
     .admin-pane{display:none}
     .admin-pane.active{display:block}
     .profile-card{border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;background:#fff}
-    .profile-card .mini-title{font-weight:700;font-size:.9rem;margin-bottom:6px}
     .profile-card .email-ro{font-size:.78rem;color:var(--muted);margin-bottom:8px}
     .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .profile-grid .full{grid-column:1/-1}
@@ -103,12 +102,12 @@
     .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:6px}
     .btn-secondary .spinner{border-color:rgba(15,23,42,.2);border-top-color:var(--text)}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .wa-link{display:inline-block;margin-top:4px;font-size:.75rem;color:var(--primary);text-decoration:none}
+    .wa-link{display:inline-block;margin-top:4px;font-size:.8rem;color:var(--primary);text-decoration:none;font-weight:600}
     .archive-item{padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.84rem}
+    .section-title{margin:0 0 8px;color:#b45309;font-size:.88rem}
   </style>
 </head>
 <body>
-  <!-- LOGIN -->
   <div id="loginScreen">
     <div class="login-card">
       <h2>כדורסל v2</h2>
@@ -248,7 +247,8 @@
         <button type="button" class="admin-tab" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
         <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
         <button type="button" class="admin-tab" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
-       <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>        <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
+        <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>
+        <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
         <button type="button" class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
       </div>
 
@@ -258,8 +258,10 @@
         <button class="btn-primary hidden" id="btnOpenGame" onclick="openGameOnly()" style="margin-bottom:8px">פתח הרשמה</button>
         <button class="btn-danger" id="btnChargeGame" onclick="chargeCurrentGame()" style="margin-bottom:8px">חיוב שבוע זה</button>
         <button class="btn-secondary" id="btnWeeklyReport" onclick="sendWeeklyReport()" style="margin-bottom:8px">שלח דוח שבועי</button>
+        <button class="btn-secondary" id="btnTestNotify" onclick="testNotify()" style="margin-bottom:8px">בדיקת התראות</button>
         <p class="empty" id="chargeStatus" style="padding:4px 0 0;font-size:.8rem"></p>
       </div>
+
       <div id="pane-pending" class="admin-pane">
         <div id="pendingList"><div class="empty">טוען...</div></div>
         <button class="btn-secondary" onclick="loadPending()" style="margin-top:8px">רענן</button>
@@ -278,31 +280,29 @@
         <div id="balanceList"></div>
         <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן</button>
       </div>
-     <div id="pane-profiles" class="admin-pane">
-  <div class="form-group">
-    <label>בחר שחקן</label>
-    <select id="profileSelect" onchange="fillProfileEditor()"></select>
-  </div>
-  <div id="profileEditor"><div class="empty">בחר שחקן לעריכה</div></div>
-</div>
-      
-    <div id="pane-roster" class="admin-pane">
-  <h4 style="margin:0 0 8px;color:#b45309;font-size:.88rem">הוספת שחקן</h4>
-  <div class="form-group">
-    <label>שחקן מהמאסטר</label>
-    <select id="addPlayerSelect"></select>
-  </div>
-  <button class="btn-success" id="btnAdminAdd" onclick="adminAddPlayer()" style="margin-bottom:16px">הוסף לרשימה</button>
-
-  <h4 style="margin:0 0 8px;color:#b45309;font-size:.88rem">הסרת שחקן</h4>
-  <div class="form-group">
-    <label>מהרשימה הנוכחית</label>
-    <select id="removePlayerSelect"></select>
-  </div>
-  <button class="btn-danger" id="btnAdminRemove" onclick="adminRemoveSelected()">הסר מהרשימה</button>
-</div>
+      <div id="pane-profiles" class="admin-pane">
+        <div class="form-group">
+          <label>בחר שחקן</label>
+          <select id="profileSelect" onchange="fillProfileEditor()"></select>
+        </div>
+        <div id="profileEditor"><div class="empty">בחר שחקן לעריכה</div></div>
+      </div>
+      <div id="pane-roster" class="admin-pane">
+        <h4 class="section-title">הוספת שחקן</h4>
+        <div class="form-group">
+          <label>שחקן מהמאסטר</label>
+          <select id="addPlayerSelect"></select>
+        </div>
+        <button class="btn-success" id="btnAdminAdd" onclick="adminAddPlayer()" style="margin-bottom:16px">הוסף לרשימה</button>
+        <h4 class="section-title">הסרת שחקן</h4>
+        <div class="form-group">
+          <label>מהרשימה הנוכחית</label>
+          <select id="removePlayerSelect"></select>
+        </div>
+        <button class="btn-danger" id="btnAdminRemove" onclick="adminRemoveSelected()">הסר מהרשימה</button>
+      </div>
       <div id="pane-archive" class="admin-pane">
-        <p class="empty" style="padding:0 0 8px">ביטולים מאוחרים – משחק נוכחי</p>
+        <p class="empty" style="padding:0 0 8px">ביטולים – משחק נוכחי</p>
         <div id="archiveList"></div>
         <button class="btn-secondary" onclick="loadArchive()" style="margin-top:8px">רענן</button>
       </div>
@@ -340,7 +340,7 @@ let pendingCount=0, refreshTimer=null, lastPromote=null;
 const $ = id => document.getElementById(id);
 function showLoginMsg(t,ok){const el=$("loginMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden")}
 function showMsg(t,ok){const el=$("appMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),4000)}
-function showAdminMsg(t,ok){const el=$("adminMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),4000)}
+function showAdminMsg(t,ok){const el=$("adminMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),5000)}
 function escapeHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function closeModal(id){$(id).classList.add("hidden")}
 function backdrop(e,id){if(e.target.id===id)closeModal(id)}
@@ -352,16 +352,14 @@ function showSuccessAnimation(){$("successHost").innerHTML=`<div class="success-
 function skeleton(n){return Array.from({length:n},()=>`<div class="skeleton-item"></div>`).join("")}
 function setLoading(btn,on,label){if(!btn)return;if(on){btn.dataset.label=btn.dataset.label||btn.textContent;btn.disabled=true;btn.innerHTML=(label||btn.dataset.label)+' <span class="spinner"></span>'}else{btn.disabled=false;btn.textContent=btn.dataset.label||label||btn.textContent;delete btn.dataset.label}}
 
-/* 4. login rate limit */
 function getLoginGuard(){try{return JSON.parse(localStorage.getItem(LOGIN_GUARD_KEY)||"{}")}catch(e){return{}}}
 function saveLoginGuard(g){localStorage.setItem(LOGIN_GUARD_KEY,JSON.stringify(g))}
 function checkLoginAllowed(email){
   const g=getLoginGuard();const row=g[email]||{fails:0,lockedUntil:0};
-  if(row.lockedUntil && Date.now()<row.lockedUntil){
-    const m=Math.ceil((row.lockedUntil-Date.now())/60000);
-    return{ok:false,msg:"נחסם זמנית. נסה שוב בעוד "+m+" דקות."};
+  if(row.lockedUntil&&Date.now()<row.lockedUntil){
+    return{ok:false,msg:"נחסם זמנית. נסה שוב בעוד "+Math.ceil((row.lockedUntil-Date.now())/60000)+" דקות."};
   }
-  return{ok:true,row};
+  return{ok:true};
 }
 function recordLoginFail(email){
   const g=getLoginGuard();const row=g[email]||{fails:0,lockedUntil:0};
@@ -371,40 +369,59 @@ function recordLoginFail(email){
 }
 function recordLoginOk(email){const g=getLoginGuard();delete g[email];saveLoginGuard(g)}
 
-/* notifications */
 async function logEvent(event_type, payload){
   try{await sb.from("app_events").insert({event_type,payload:payload||{}})}catch(e){}
 }
+
+/** שליחה רק דרך Edge Function בשם notify (טלגרם/מייל מהשרת) */
 async function notifyExternal(text, emailBody){
   const token=getSetting("telegram_bot_token","");
   const chat=getSetting("telegram_chat_id","");
   const emailTo=getSetting("notify_email","");
-  try{
-    await sb.functions.invoke("notify",{body:{
-      telegram_bot_token:token, telegram_chat_id:chat, text,
-      email_to:emailTo, email_subject:"כדורסל – התראה", email_body:emailBody||text
-    }});
-  }catch(e){
-    // fallback: telegram ישירות (הטוקן חשוף ללקוח – עדיף Edge Function)
-    if(token&&chat&&text){
-      try{
-        await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
-          method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({chat_id:chat,text:String(text).slice(0,3500)})
-        });
-      }catch(err){}
+  if(!token&&!chat&&!emailTo) return {ok:false,error:"לא הוגדרו טלגרם/מייל בהגדרות"};
+
+  const {data, error} = await sb.functions.invoke("notify",{
+    body:{
+      telegram_bot_token: token,
+      telegram_chat_id: chat,
+      text: text,
+      email_to: emailTo,
+      email_subject: "כדורסל – התראה",
+      email_body: emailBody || text
     }
+  });
+
+  if(error){
+    console.error("notify function error", error);
+    return {ok:false, error: error.message || String(error)};
   }
+  if(data && data.telegram && data.telegram.ok===false){
+    return {ok:false, error: "טלגרם: "+(data.telegram.description||"שגיאה")};
+  }
+  if(data && data.email && data.email.statusCode && data.email.statusCode>=400){
+    return {ok:false, error: "מייל: "+JSON.stringify(data.email)};
+  }
+  return {ok:true, data};
 }
+
 async function notifyAdmin(event_type, text, payload){
-  await logEvent(event_type, Object.assign({text},payload||{}));
-  await notifyExternal(text, text);
+  await logEvent(event_type, Object.assign({text}, payload||{}));
+  return notifyExternal(text, text);
 }
+
+async function testNotify(){
+  const btn=$("btnTestNotify");
+  setLoading(btn,true,"בודק");
+  const r = await notifyAdmin("test", "בדיקת התראות מכדורסל v2 – "+new Date().toLocaleString("he-IL"), {});
+  setLoading(btn,false,"בדיקת התראות");
+  if(r && r.ok) showAdminMsg("נשלח ✓ בדוק טלגרם/מייל", true);
+  else showAdminMsg("נכשל: "+(r&&r.error?r.error:"אין Function בשם notify או שגיאת רשת"), false);
+}
+
 function phoneToWa(phone){
   if(!phone)return"";
   let p=String(phone).replace(/\D/g,"");
   if(p.startsWith("0"))p="972"+p.slice(1);
-  if(p.startsWith("972"))return p;
   return p;
 }
 function waLink(phone, text){
@@ -415,13 +432,13 @@ function waLink(phone, text){
 function switchAdminTab(name){
   document.querySelectorAll(".admin-tab").forEach(t=>t.classList.toggle("active",t.getAttribute("data-tab")===name));
   document.querySelectorAll(".admin-pane").forEach(p=>p.classList.toggle("active",p.id==="pane-"+name));
-  if(name==="general")updateGeneralButtons();
-  if(name==="pending")loadPending();
-  if(name==="balances")loadBalanceList();
-  if(name==="profiles")loadProfilesEditor();
-if (name === "roster") { loadAddPlayerSelect(); loadRemovePlayerSelect(); }
-  if(name==="archive")loadArchive();
-  if(name==="settings")fillSettingsForm();
+  if(name==="general") updateGeneralButtons();
+  if(name==="pending") loadPending();
+  if(name==="balances") loadBalanceList();
+  if(name==="profiles") loadProfilesEditor();
+  if(name==="roster"){ loadAddPlayerSelect(); loadRemovePlayerSelect(); }
+  if(name==="archive") loadArchive();
+  if(name==="settings") fillSettingsForm();
 }
 function updatePendingBadge(){
   const badge=$("pendingBadge");
@@ -650,13 +667,14 @@ async function sendWeeklyReport(){
   const main=(regs||[]).filter(r=>r.status==="main");
   const canc=(regs||[]).filter(r=>r.status==="cancelled"||r.status==="cancelled_late");
   let text="דוח משחק "+currentGame.game_date+" · "+currentGame.status+"\n\nרשימת משחק:\n";
-  main.forEach(r=>{text+=r.position+". "+r.player_name+" · רשם: "+(profileMap[r.registered_by]?.name||"?")+" · "+(r.created_at||"")+"\n"});
+  main.forEach(r=>{text+=r.position+". "+r.player_name+" · רשם: "+(profileMap[r.registered_by]?.name||"?")+"\n"});
   text+="\nביטולים:\n";
   if(!canc.length)text+="אין\n";
   canc.forEach(r=>{text+=r.player_name+" · "+r.status+" · "+(r.cancelled_at||"")+"\n"});
-  await notifyAdmin("weekly_report",text,{game_id:currentGame.id});
+  const r=await notifyAdmin("weekly_report",text,{game_id:currentGame.id});
   setLoading(btn,false,"שלח דוח שבועי");
-  showAdminMsg("הדוח נשלח (טלגרם/מייל אם הוגדר)",true);
+  if(r&&r.ok) showAdminMsg("הדוח נשלח ✓",true);
+  else showAdminMsg("שליחה נכשלה: "+(r&&r.error?r.error:"בדוק Function"),false);
 }
 
 async function loadList(silent){
@@ -765,10 +783,8 @@ async function cancelReg(id){
 
 async function handlePromoted(promoted, cancelled){
   lastPromote={promoted,cancelled};
-  // מייל/טלגרם למנהל + ניסיון לשחקן
   const msg="עלה מההמתנה לרשימה: "+promoted.player_name+(cancelled?" (במקום "+cancelled.player_name+")":"");
   await notifyAdmin("promote",msg,{promoted:promoted.player_name});
-  // וואטסאפ למקדם אם יש טלפון למי שרשם אותו / לשחקן עצמו
   renderPromoteBox();
 }
 
@@ -778,11 +794,14 @@ function renderPromoteBox(){
   const p=lastPromote.promoted;
   const regBy=profileMap[p.registered_by];
   const phone=regBy?.phone||"";
-  const text="היי, התפנה מקום ברשימת המשחק – אתה/החבר שעליו רשמת עברת/עבר לרשימה הראשית ("+p.player_name+").";
+  const isFriend=!p.player_email;
+  const text=isFriend
+    ?("היי, התפנה מקום במשחק הכדורסל.\nהחבר שרשמת ("+p.player_name+") עבר לרשימה הראשית. נתראה בשבת.")
+    :("היי, התפנה מקום במשחק הכדורסל.\nעברת לרשימה הראשית (לא בהמתנה). נתראה בשבת.");
   const link=waLink(phone,text);
   box.classList.remove("hidden");
   box.innerHTML=`<strong>מישהו עלה מההמתנה:</strong> ${escapeHtml(p.player_name)}
-    ${link?`<br><a class="wa-link" target="_blank" href="${link}">פתח וואטסאפ להודעה</a>`:`<br><span class="empty" style="padding:4px 0">אין טלפון בפרופיל לשליחה</span>`}
+    ${link?`<br><a class="wa-link" target="_blank" href="${link}">שלח בוואטסאפ</a>`:`<br><span class="empty" style="padding:4px 0">אין טלפון בפרופיל – עדכן בטאב פרופילים</span>`}
     <br><button class="btn-sm btn-secondary" style="margin-top:6px" onclick="lastPromote=null;renderPromoteBox()">סגור</button>`;
 }
 
@@ -943,45 +962,30 @@ async function loadBalanceList(){
     </span></div>`).join("");
 }
 
-async function loadProfilesEditor() {
+async function loadProfilesEditor(){
   await loadProfiles();
-  const list = Object.values(profileMap).sort((a, b) =>
-    (a.name || "").localeCompare(b.name || "", "he")
-  );
-  const sel = $("profileSelect");
-  sel.innerHTML =
-    `<option value="">— בחר —</option>` +
-    list.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
-  $("profileEditor").innerHTML = `<div class="empty">בחר שחקן לעריכה</div>`;
+  const list=Object.values(profileMap).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
+  const sel=$("profileSelect");
+  sel.innerHTML=`<option value="">— בחר —</option>`+list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  $("profileEditor").innerHTML=`<div class="empty">בחר שחקן לעריכה</div>`;
 }
-
-function fillProfileEditor() {
-  const uid = $("profileSelect").value;
-  const p = profileMap[uid];
-  const box = $("profileEditor");
-  if (!p) {
-    box.innerHTML = `<div class="empty">בחר שחקן לעריכה</div>`;
-    return;
-  }
-  box.innerHTML = `
-    <div class="profile-card" data-profile-id="${p.id}">
-      <div class="email-ro">מייל: ${escapeHtml(p.email || "")}</div>
-      <div class="profile-grid">
-        <div class="full"><label style="font-size:.75rem;color:#64748b">שם</label>
-          <input data-f="name" value="${escapeHtml(p.name || "")}"></div>
-        <div><label style="font-size:.75rem;color:#64748b">סמל</label>
-          <input data-f="symbol" value="${escapeHtml(p.symbol || "")}"></div>
-        <div><label style="font-size:.75rem;color:#64748b">טלפון</label>
-          <input data-f="phone" value="${escapeHtml(p.phone || "")}" placeholder="05..."></div>
-        <div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label>
-          <select data-f="is_admin">
-            <option value="false" ${!p.is_admin ? "selected" : ""}>לא</option>
-            <option value="true" ${p.is_admin ? "selected" : ""}>כן</option>
-          </select>
-        </div>
+function fillProfileEditor(){
+  const uid=$("profileSelect").value;
+  const p=profileMap[uid];
+  const box=$("profileEditor");
+  if(!p){box.innerHTML=`<div class="empty">בחר שחקן לעריכה</div>`;return}
+  box.innerHTML=`<div class="profile-card" data-profile-id="${p.id}">
+    <div class="email-ro">מייל: ${escapeHtml(p.email||"")}</div>
+    <div class="profile-grid">
+      <div class="full"><label style="font-size:.75rem;color:#64748b">שם</label><input data-f="name" value="${escapeHtml(p.name||"")}"></div>
+      <div><label style="font-size:.75rem;color:#64748b">סמל</label><input data-f="symbol" value="${escapeHtml(p.symbol||"")}"></div>
+      <div><label style="font-size:.75rem;color:#64748b">טלפון</label><input data-f="phone" value="${escapeHtml(p.phone||"")}" placeholder="05..."></div>
+      <div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label>
+        <select data-f="is_admin"><option value="false" ${!p.is_admin?"selected":""}>לא</option><option value="true" ${p.is_admin?"selected":""}>כן</option></select>
       </div>
-      <button class="btn-success" style="margin-top:8px" data-save-profile="${p.id}">שמור פרופיל</button>
-    </div>`;
+    </div>
+    <button class="btn-success" style="margin-top:8px" data-save-profile="${p.id}">שמור פרופיל</button>
+  </div>`;
 }
 async function saveProfile(uid){
   const card=document.querySelector(`.profile-card[data-profile-id="${uid}"]`);if(!card)return;
@@ -996,43 +1000,17 @@ async function saveProfile(uid){
   showAdminMsg("הפרופיל נשמר ✓",true);await loadProfiles();
 }
 
-async function loadRemovePlayerSelect() {
-  const sel = $("removePlayerSelect");
-  if (!lastRegs.length) {
-    sel.innerHTML = `<option value="">אין נרשמים</option>`;
-    return;
-  }
-  sel.innerHTML = lastRegs.map(r =>
-    `<option value="${r.id}">${escapeHtml(displayName(r))} (${r.status})</option>`
-  ).join("");
-}
-
-async function adminRemoveSelected() {
-  const id = $("removePlayerSelect").value;
-  if (!id) return showAdminMsg("בחר שחקן", false);
-  if (!confirm("להסיר שחקן מהרשימה?")) return;
-  const btn = $("btnAdminRemove");
-  setLoading(btn, true, "מסיר");
-  const { error } = await sb.from("registrations").update({
-    status: "cancelled",
-    cancelled_at: new Date().toISOString(),
-    position: 0
-  }).eq("id", id);
-  setLoading(btn, false, "הסר מהרשימה");
-  if (error) return showAdminMsg(error.message, false);
-  await recalculatePositions(currentGame.id);
-  showAdminMsg("הוסר", true);
-  await loadList();
-  loadRemovePlayerSelect();
-  loadAddPlayerSelect();
-}
-
 async function loadAddPlayerSelect(){
   await loadProfiles();
   const sel=$("addPlayerSelect");
   const taken=new Set(lastRegs.map(r=>(r.player_email||"").toLowerCase()).filter(Boolean));
   const list=Object.values(profileMap).filter(p=>!taken.has((p.email||"").toLowerCase())).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
   sel.innerHTML=list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.email)})</option>`).join("")||`<option value="">אין פנויים</option>`;
+}
+async function loadRemovePlayerSelect(){
+  const sel=$("removePlayerSelect");
+  if(!lastRegs.length){sel.innerHTML=`<option value="">אין נרשמים</option>`;return}
+  sel.innerHTML=lastRegs.map(r=>`<option value="${r.id}">${escapeHtml(displayName(r))} (${r.status})</option>`).join("");
 }
 async function adminAddPlayer(){
   if(!currentGame||isGameLocked(currentGame))return showAdminMsg("אין משחק פתוח",false);
@@ -1047,20 +1025,18 @@ async function adminAddPlayer(){
   if(error)return showAdminMsg(error.message,false);
   await recalculatePositions(currentGame.id);
   await notifyAdmin("admin_add","מנהל הוסיף את "+p.name,{name:p.name});
-  showAdminMsg("נוסף: "+p.name,true);await loadList();await loadAddPlayerSelect();
+  showAdminMsg("נוסף: "+p.name,true);await loadList();loadAddPlayerSelect();loadRemovePlayerSelect();
 }
-
-async function loadAdminRemoveList(){
-  const box=$("adminRemoveList");
-  if(!lastRegs.length){box.innerHTML=`<div class="empty">אין נרשמים</div>`;return}
-  box.innerHTML=lastRegs.map(r=>`<div class="admin-list-item"><span>${escapeHtml(displayName(r))}</span>
-    <button class="btn-danger" style="width:auto;padding:6px 10px;font-size:.8rem" data-admin-remove="${r.id}">הסר</button></div>`).join("");
-}
-async function adminRemove(id){
-  if(!confirm("להסיר שחקן?"))return;
+async function adminRemoveSelected(){
+  const id=$("removePlayerSelect").value;
+  if(!id)return showAdminMsg("בחר שחקן",false);
+  if(!confirm("להסיר שחקן מהרשימה?"))return;
+  const btn=$("btnAdminRemove");setLoading(btn,true,"מסיר");
   const {error}=await sb.from("registrations").update({status:"cancelled",cancelled_at:new Date().toISOString(),position:0}).eq("id",id);
+  setLoading(btn,false,"הסר מהרשימה");
   if(error)return showAdminMsg(error.message,false);
-  await recalculatePositions(currentGame.id);showAdminMsg("הוסר",true);await loadList();await loadAdminRemoveList();
+  await recalculatePositions(currentGame.id);
+  showAdminMsg("הוסר",true);await loadList();loadRemovePlayerSelect();loadAddPlayerSelect();
 }
 
 async function loadArchive(){
@@ -1099,7 +1075,6 @@ async function startNewWeek(){
 
 document.addEventListener("click",(e)=>{
   const c=e.target.closest("[data-cancel]");if(c)cancelReg(c.getAttribute("data-cancel"));
-  const a=e.target.closest("[data-admin-remove]");if(a)adminRemove(a.getAttribute("data-admin-remove"));
   const ap=e.target.closest("[data-approve]");if(ap)approvePending(ap.getAttribute("data-approve"),ap.getAttribute("data-uid"),ap.getAttribute("data-email"),ap.getAttribute("data-name"));
   const rj=e.target.closest("[data-reject]");if(rj)rejectPending(rj.getAttribute("data-reject"));
   const bal=e.target.closest("[data-bal]");if(bal)adjustBalance(bal.getAttribute("data-bal"),bal.getAttribute("data-delta"));
