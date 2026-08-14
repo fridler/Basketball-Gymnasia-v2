@@ -183,7 +183,6 @@
       font-size: 2.2rem; font-weight: 700;
       box-shadow: 0 8px 24px rgba(22,163,74,0.35);
     }
-    /* Admin tabs */
     .admin-tabs {
       display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px;
       margin-bottom: 10px; border-bottom: 1px solid #fde68a;
@@ -257,7 +256,6 @@
         <button onclick="logout()">יציאה</button>
       </div>
     </div>
-
     <div class="container">
       <div id="appMsg" class="message hidden"></div>
       <div class="card">
@@ -359,7 +357,6 @@
     </div>
   </div>
 
-  <!-- Admin with tabs -->
   <div id="adminModal" class="modal-overlay hidden" onclick="backdrop(event,'adminModal')">
     <div class="modal admin-section">
       <div class="modal-head">
@@ -382,7 +379,10 @@
 
       <div id="pane-general" class="admin-pane active">
         <button class="btn-warning" onclick="startNewWeek()" style="margin-bottom:8px;">התחל שבוע חדש</button>
-        <button class="btn-secondary" onclick="lockGameNow()">נעל הרשמה + חיוב</button>
+        <button class="btn-secondary hidden" id="btnLockGame" onclick="lockGameOnly()" style="margin-bottom:8px;">נעל הרשמה</button>
+        <button class="btn-primary hidden" id="btnOpenGame" onclick="openGameOnly()" style="margin-bottom:8px;">פתח הרשמה</button>
+        <button class="btn-danger" id="btnChargeGame" onclick="chargeCurrentGame()" style="margin-bottom:8px;">חיוב שבוע זה</button>
+        <p class="empty" id="chargeStatus" style="padding:4px 0 0;font-size:0.8rem;"></p>
       </div>
 
       <div id="pane-pending" class="admin-pane">
@@ -422,7 +422,8 @@
   <div id="successHost"></div>
 
   <script>
-    const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
+  
+  const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
     const ANNOUNCE_KEY = "v2_announce_seen";
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -487,6 +488,7 @@
       document.querySelectorAll(".admin-pane").forEach(p => {
         p.classList.toggle("active", p.id === "pane-" + name);
       });
+      if (name === "general") updateGeneralButtons();
       if (name === "pending") loadPending();
       if (name === "balances") loadBalanceList();
       if (name === "profiles") loadProfilesEditor();
@@ -514,19 +516,13 @@
       const email = $("signupEmail").value.trim().toLowerCase();
       const password = $("signupPassword").value;
       if (!name || !email || password.length < 6) return showLoginMsg("שם, מייל וסיסמה (6+) נדרשים", false);
-
       const btn = $("btnSignup");
-      btn.disabled = true;
-      btn.textContent = "שולח...";
-
+      btn.disabled = true; btn.textContent = "שולח...";
       const { data, error } = await sb.auth.signUp({
         email, password, options: { data: { name } }
       });
-
-      btn.disabled = false;
-      btn.textContent = "שליחת בקשה";
+      btn.disabled = false; btn.textContent = "שליחת בקשה";
       if (error) return showLoginMsg(error.message, false);
-
       const uid = data.user?.id;
       if (uid) {
         const { error: pErr } = await sb.from("pending_users").insert({
@@ -534,7 +530,6 @@
         });
         if (pErr && !String(pErr.message || "").includes("duplicate")) console.error(pErr);
       }
-
       currentUser = data.user;
       $("loginScreen").classList.add("hidden");
       $("pendingScreen").classList.remove("hidden");
@@ -545,11 +540,9 @@
       const password = $("password").value;
       if (!email || !password) return showLoginMsg("נא למלא מייל וסיסמה", false);
       const btn = $("btnLogin");
-      btn.disabled = true;
-      btn.textContent = "מתחבר...";
+      btn.disabled = true; btn.textContent = "מתחבר...";
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      btn.disabled = false;
-      btn.textContent = "התחברות";
+      btn.disabled = false; btn.textContent = "התחברות";
       if (error) return showLoginMsg(error.message, false);
       currentUser = data.user;
       await afterLogin();
@@ -558,7 +551,8 @@
     async function afterLogin() {
       const { data: profile } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
       if (!profile) {
-        const { data: existing } = await sb.from("pending_users").select("id").eq("user_id", currentUser.id).eq("status", "pending").maybeSingle();
+        const { data: existing } = await sb.from("pending_users").select("id")
+          .eq("user_id", currentUser.id).eq("status", "pending").maybeSingle();
         if (!existing) {
           await sb.from("pending_users").insert({
             user_id: currentUser.id, email: currentUser.email,
@@ -570,7 +564,6 @@
         $("pendingScreen").classList.remove("hidden");
         return;
       }
-
       currentProfile = profile;
       $("loginScreen").classList.add("hidden");
       $("pendingScreen").classList.add("hidden");
@@ -607,7 +600,6 @@
       el.classList.remove("hidden");
       el.classList.toggle("debt", n < 0);
     }
-
     function showDebtPopupIfNeeded() {
       if (!currentProfile) return;
       const n = Number(currentProfile.balance);
@@ -684,30 +676,113 @@
       if (!isPastLockTime(game)) return game;
       if (currentProfile?.is_admin) {
         await sb.from("games").update({ status: "locked" }).eq("id", game.id);
-        await applyDebtsForGame(game);
       }
       return { ...game, status: "locked" };
     }
 
-    async function applyDebtsForGame(game) {
+    function updateGeneralButtons() {
+      const btnLock = $("btnLockGame");
+      const btnOpen = $("btnOpenGame");
+      const btnCharge = $("btnChargeGame");
+      const st = $("chargeStatus");
+      if (!btnLock) return;
+      if (!currentGame) {
+        btnLock.classList.add("hidden");
+        btnOpen.classList.add("hidden");
+        btnCharge.disabled = true;
+        st.textContent = "אין משחק פעיל";
+        return;
+      }
+      const dbLocked = currentGame.status === "locked";
+      btnLock.classList.toggle("hidden", dbLocked);
+      btnOpen.classList.toggle("hidden", !dbLocked);
+      if (currentGame.charged_at) {
+        btnCharge.textContent = "חויב ✓";
+        st.textContent = "חויב ב: " + new Date(currentGame.charged_at).toLocaleString("he-IL");
+      } else {
+        btnCharge.textContent = "חיוב שבוע זה";
+        st.textContent = dbLocked ? "טרם בוצע חיוב לשבוע זה" : "מומלץ לנעול לפני חיוב";
+      }
+      btnCharge.disabled = false;
+    }
+
+    async function lockGameOnly() {
+      if (!currentGame) return showAdminMsg("אין משחק", false);
+      if (currentGame.status === "locked") return showAdminMsg("כבר נעול", false);
+      if (!confirm("לנעול את ההרשמה? (בלי חיוב)")) return;
+      const { error } = await sb.from("games").update({ status: "locked" }).eq("id", currentGame.id);
+      if (error) return showAdminMsg(error.message, false);
+      currentGame.status = "locked";
+      showAdminMsg("ההרשמה ננעלה", true);
+      updateGeneralButtons();
+      await loadList();
+    }
+
+    async function openGameOnly() {
+      if (!currentGame) return showAdminMsg("אין משחק", false);
+      if (currentGame.status !== "locked") return showAdminMsg("המשחק לא נעול", false);
+      if (!confirm("לפתוח מחדש את ההרשמה?")) return;
+      const { error } = await sb.from("games").update({ status: "open" }).eq("id", currentGame.id);
+      if (error) return showAdminMsg(error.message, false);
+      currentGame.status = "open";
+      showAdminMsg("ההרשמה נפתחה מחדש", true);
+      updateGeneralButtons();
+      await loadList();
+    }
+
+    async function chargeCurrentGame() {
+      if (!currentGame) return showAdminMsg("אין משחק", false);
+      if (currentGame.charged_at) {
+        const ok = confirm(
+          "השבוע כבר חויב ב:\n" +
+          new Date(currentGame.charged_at).toLocaleString("he-IL") +
+          "\n\nלחיוב חוזר לחץ אישור (לא מומלץ)."
+        );
+        if (!ok) return;
+        if (!confirm("אישור סופי: לחייב שוב את כל הרשימה הראשית?")) return;
+      } else {
+        if (!confirm("לחייב את כל מי שברשימת המשחק (main) לשבוע זה?")) return;
+      }
+      const result = await applyDebtsForGame(currentGame, { force: !!currentGame.charged_at });
+      if (result.error) return showAdminMsg(result.error, false);
+      const nowIso = new Date().toISOString();
+      const { error } = await sb.from("games").update({ charged_at: nowIso }).eq("id", currentGame.id);
+      if (error) return showAdminMsg(error.message, false);
+      currentGame.charged_at = nowIso;
+      showAdminMsg("בוצע חיוב (" + result.count + " הרשמות)", true);
+      updateGeneralButtons();
+      await loadProfiles();
+      const { data: me } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
+      if (me) { currentProfile = me; updateBalanceUI(); }
+    }
+
+    async function applyDebtsForGame(game, opts) {
+      opts = opts || {};
       const price = gamePrice();
-      const { data: regs } = await sb.from("registrations").select("registered_by").eq("game_id", game.id).eq("status", "main");
-      if (!regs || !regs.length) return;
+      const { data: regs } = await sb.from("registrations")
+        .select("registered_by").eq("game_id", game.id).eq("status", "main");
+      if (!regs || !regs.length) return { count: 0 };
       const counts = {};
       regs.forEach(r => {
         if (!r.registered_by) return;
         counts[r.registered_by] = (counts[r.registered_by] || 0) + 1;
       });
+      let n = 0;
       for (const uid of Object.keys(counts)) {
         const { data: prof } = await sb.from("profiles").select("balance,email,name").eq("id", uid).maybeSingle();
         if (!prof) continue;
-        const next = Number(prof.balance || 0) - price * counts[uid];
-        await sb.from("profiles").update({ balance: next }).eq("id", uid);
+        const debit = price * counts[uid];
+        const next = Number(prof.balance || 0) - debit;
+        const { error } = await sb.from("profiles").update({ balance: next }).eq("id", uid);
+        if (error) return { error: error.message };
         await sb.from("payment_log").insert({
           game_id: game.id, email: prof.email || "", collection_name: prof.name || "",
-          amount: -price * counts[uid], status: "written", note: counts[uid] + " הרשמות"
+          amount: -debit, status: "written",
+          note: (opts.force ? "חיוב חוזר · " : "") + counts[uid] + " הרשמות"
         });
+        n += counts[uid];
       }
+      return { count: n };
     }
 
     async function loadList() {
@@ -726,6 +801,7 @@
         $("waitList").innerHTML = `<div class="empty">—</div>`;
         $("freeSpots").textContent = "";
         updateButtons(true);
+        updateGeneralButtons();
         return;
       }
       currentGame = await ensureDbLock(games[0]);
@@ -747,6 +823,7 @@
       $("waitList").innerHTML = wait.length ? wait.map(r => rowHtml(r, locked)).join("") : `<div class="empty">ריקה</div>`;
       $("freeSpots").textContent = `פנויים: ${Math.max(0, currentGame.max_players - main.length)} / ${currentGame.max_players}`;
       updateButtons(locked);
+      updateGeneralButtons();
     }
 
     function displayName(r) {
@@ -991,7 +1068,6 @@
           </div>
         </div>`).join("");
     }
-
     async function approvePending(id, uid, email, name) {
       if (!uid) return showAdminMsg("חסר user_id לבקשה", false);
       if (!confirm("לאשר את " + email + "?")) return;
@@ -1084,7 +1160,6 @@
           <button class="btn-success" style="margin-top:8px;" data-save-profile="${p.id}">שמור פרופיל</button>
         </div>`).join("");
     }
-
     async function saveProfile(uid) {
       const card = document.querySelector(`.profile-card[data-profile-id="${uid}"]`);
       if (!card) return;
@@ -1103,17 +1178,6 @@
       await loadProfiles();
     }
 
-    async function lockGameNow() {
-      if (!currentGame) return showAdminMsg("אין משחק", false);
-      if (!confirm("לנעול ולחייב את הרשימה הראשית?")) return;
-      const { error } = await sb.from("games").update({ status: "locked" }).eq("id", currentGame.id);
-      if (error) return showAdminMsg(error.message, false);
-      await applyDebtsForGame(currentGame);
-      showAdminMsg("ננעל + חויב", true);
-      await loadList();
-      const { data: me } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
-      if (me) { currentProfile = me; updateBalanceUI(); }
-    }
     function nextSaturday() {
       const d = new Date();
       const day = d.getDay();
@@ -1134,7 +1198,8 @@
       const { error: e2 } = await sb.from("games").insert({
         game_date: gameDate, status: "open",
         max_players: parseInt(getSetting("max_players", "15"), 10),
-        friend_open_at: friend.toISOString()
+        friend_open_at: friend.toISOString(),
+        charged_at: null
       });
       if (e2) return showAdminMsg(e2.message, false);
       showAdminMsg("שבוע חדש: " + gameDate, true);
