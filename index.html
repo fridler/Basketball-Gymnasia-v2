@@ -1,6 +1,5 @@
-  
-    
-    <!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -23,19 +22,12 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.35;
-      min-height: 100vh;
-      padding-bottom: 24px;
+      background: var(--bg); color: var(--text); line-height: 1.35;
+      min-height: 100vh; padding-bottom: 24px;
     }
     .header {
-      background: var(--primary);
-      color: #fff;
-      padding: 10px 12px 8px;
-      position: sticky;
-      top: 0;
-      z-index: 40;
+      background: var(--primary); color: #fff; padding: 10px 12px 8px;
+      position: sticky; top: 0; z-index: 40;
     }
     .header h1 { font-size: 1rem; font-weight: 700; text-align: center; }
     .game-info { text-align: center; font-size: 0.75rem; opacity: 0.92; margin-top: 2px; }
@@ -47,33 +39,37 @@
       background: transparent; border: 1px solid rgba(255,255,255,0.5); color: #fff;
       padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; width: auto; cursor: pointer;
     }
-    .rules-btn { border: none; font-size: 1rem; padding: 0 4px; }
+    .icon-btn { border: none !important; font-size: 1rem; padding: 0 4px !important; }
     .container { padding: 10px; max-width: 480px; margin: 0 auto; }
     .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      background: var(--card); border-radius: 12px; padding: 10px 12px;
+      margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .card-head {
       display: flex; justify-content: space-between; align-items: center;
       gap: 8px; margin-bottom: 8px; flex-wrap: wrap;
     }
     .card-head h3 { font-size: 0.9rem; font-weight: 600; }
+    .title-side { display: flex; align-items: center; gap: 6px; }
     .actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .btn-sm {
       width: auto; padding: 7px 10px; font-size: 0.78rem; border-radius: 8px;
       border: none; font-weight: 600; cursor: pointer;
     }
     .btn-sm:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-icon {
+      width: 30px; height: 30px; border: none; border-radius: 8px;
+      background: #f1f5f9; color: var(--muted); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem;
+    }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-secondary { background: #e2e8f0; color: var(--text); }
     .btn-warning { background: var(--warning); color: #fff; }
-    .btn-danger {
+    .btn-danger-soft {
       background: #fee2e2; color: var(--danger); border: none;
-      width: auto; padding: 4px 8px; font-size: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer;
+      width: auto; padding: 4px 8px; font-size: 0.75rem; border-radius: 8px;
+      font-weight: 600; cursor: pointer;
     }
     button {
       width: 100%; padding: 12px; font-size: 0.95rem; font-weight: 600;
@@ -97,12 +93,13 @@
     .error { background: #fee2e2; color: #991b1b; }
     .hidden { display: none !important; }
     .form-group { margin-bottom: 10px; }
-    input, textarea {
+    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    input, textarea, select {
       width: 100%; padding: 12px; font-size: 0.95rem;
       border: 1.5px solid var(--border); border-radius: 10px; background: #fff;
       font-family: inherit;
     }
-    textarea { min-height: 110px; resize: vertical; }
+    textarea { min-height: 100px; resize: vertical; }
     #loginScreen { max-width: 400px; margin: 36px auto; padding: 0 14px; }
     .login-card {
       background: #fff; border-radius: 16px; padding: 22px 18px;
@@ -115,7 +112,7 @@
       z-index: 100; display: flex; align-items: flex-end; justify-content: center; padding: 12px;
     }
     .modal {
-      background: #fff; width: 100%; max-width: 480px; max-height: 88vh;
+      background: #fff; width: 100%; max-width: 480px; max-height: 90vh;
       border-radius: 16px 16px 12px 12px; overflow: auto; padding: 16px;
     }
     .modal-head {
@@ -126,19 +123,41 @@
       width: auto; padding: 4px 10px; background: #f1f5f9; color: var(--text);
       border-radius: 8px; font-size: 0.85rem;
     }
-    .rules-body, .announce-body {
-      white-space: pre-wrap; font-size: 0.9rem; line-height: 1.5;
+    .rules-body, .announce-body { white-space: pre-wrap; font-size: 0.9rem; line-height: 1.5; }
+    .admin-section { background: #fffbeb; border: 1.5px dashed #f59e0b; }
+    .admin-section h4 { font-size: 0.88rem; color: #b45309; margin: 12px 0 8px; }
+    .pay-row { display: flex; gap: 10px; }
+    .pay-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px; border: 1px solid var(--border); border-radius: 12px;
+      background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text);
     }
-    .status-text { text-align: center; font-size: 0.8rem; color: var(--muted); margin: 6px 0; }
+    .team-pick-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem;
+    }
+    .team-pick-item input { width: auto; accent-color: var(--primary); }
+    .team-count { text-align: center; font-size: 0.85rem; color: var(--muted); margin: 8px 0; }
+    .teams-result { display: flex; gap: 10px; margin-top: 12px; }
+    .team-box { flex: 1; border-radius: 12px; padding: 10px; min-height: 120px; }
+    .team-light { background: #f8fafc; border: 1.5px solid #cbd5e1; }
+    .team-dark { background: #1e293b; border: 1.5px solid #0f172a; color: #f8fafc; }
+    .team-box h4 { font-size: 0.9rem; margin-bottom: 8px; text-align: center; color: inherit; }
+    .team-box ol { padding-right: 18px; font-size: 0.85rem; line-height: 1.6; }
+    .teams-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .teams-actions button { flex: 1; }
+    .admin-list-item {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Login -->
   <div id="loginScreen">
     <div class="login-card">
       <h2>כדורסל v2</h2>
-      <p class="login-sub">מערכת חדשה (Supabase) – נפרדת מהאתר הישן</p>
+      <p class="login-sub">מערכת חדשה (Supabase)</p>
       <div class="form-group">
         <input type="email" id="email" placeholder="מייל" autocomplete="username">
       </div>
@@ -150,14 +169,14 @@
     </div>
   </div>
 
-  <!-- App -->
   <div id="appScreen" class="hidden">
     <div class="header">
       <h1>הרשמה למשחק כדורסל</h1>
       <div class="game-info" id="gameInfo">טוען...</div>
       <div class="user-bar">
         <span id="userLabel"></span>
-        <button class="rules-btn" onclick="openRules()" title="חוקים">❓</button>
+        <button class="icon-btn" onclick="openRules()" title="חוקים">❓</button>
+        <button class="icon-btn hidden" id="btnGear" onclick="openAdmin()" title="ניהול">⚙️</button>
         <button onclick="logout()">יציאה</button>
       </div>
     </div>
@@ -167,12 +186,15 @@
 
       <div class="card">
         <div class="card-head">
-          <h3>רשימת המשחק</h3>
+          <div class="title-side">
+            <h3>רשימת המשחק</h3>
+            <button class="btn-icon" onclick="copyList()" title="העתק">📋</button>
+            <button class="btn-icon" onclick="openTeams()" title="קבוצות">🎲</button>
+          </div>
           <div class="actions">
             <button class="btn-sm btn-secondary" onclick="loadList()">↻</button>
             <button class="btn-sm btn-primary" id="btnReg" onclick="registerSelf()">+ הרשמה</button>
             <button class="btn-sm btn-success hidden" id="btnFriend" onclick="openFriend()">+ חבר</button>
-            <button class="btn-sm btn-warning hidden" id="btnNewWeek" onclick="startNewWeek()">שבוע חדש</button>
           </div>
         </div>
         <div id="mainList"><div class="empty">טוען...</div></div>
@@ -183,15 +205,22 @@
         <div class="card-head"><h3>רשימת המתנה</h3></div>
         <div id="waitList"><div class="empty">ריקה</div></div>
       </div>
+
+      <div class="card">
+        <div class="pay-row">
+          <button class="pay-btn" onclick="openBit()">Bit</button>
+          <button class="pay-btn" onclick="openPayBox()">PayBox</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Friend modal -->
+  <!-- Friend -->
   <div id="friendModal" class="modal-overlay hidden" onclick="backdrop(event,'friendModal')">
     <div class="modal">
       <div class="modal-head">
         <h3>הרשמת חבר</h3>
-        <button class="modal-close" onclick="closeFriend()">סגור</button>
+        <button class="modal-close" onclick="closeModal('friendModal')">סגור</button>
       </div>
       <div class="form-group">
         <input type="text" id="friendName" placeholder="שם החבר">
@@ -200,30 +229,87 @@
     </div>
   </div>
 
-  <!-- Rules modal -->
+  <!-- Rules -->
   <div id="rulesModal" class="modal-overlay hidden" onclick="backdrop(event,'rulesModal')">
     <div class="modal">
       <div class="modal-head">
         <h3>חוקי הקבוצה</h3>
-        <button class="modal-close" onclick="closeRules()">סגור</button>
+        <button class="modal-close" onclick="closeModal('rulesModal')">סגור</button>
       </div>
       <div class="rules-body" id="rulesBody">אין חוקים מוגדרים.</div>
     </div>
   </div>
 
-  <!-- Announcement modal -->
+  <!-- Announce -->
   <div id="announceModal" class="modal-overlay hidden" onclick="backdrop(event,'announceModal')">
     <div class="modal">
       <div class="modal-head">
         <h3>מודעה</h3>
-        <button class="modal-close" onclick="closeAnnounce()">סגור</button>
+        <button class="modal-close" onclick="closeModal('announceModal')">סגור</button>
       </div>
       <div class="announce-body" id="announceBody"></div>
     </div>
   </div>
 
+  <!-- Teams -->
+  <div id="teamsModal" class="modal-overlay hidden" onclick="backdrop(event,'teamsModal')">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>חלוקה לקבוצות</h3>
+        <button class="modal-close" onclick="closeModal('teamsModal')">סגור</button>
+      </div>
+      <p class="empty" style="padding:0 0 8px;">בחר בדיוק 10 שחקנים</p>
+      <div class="team-count" id="teamPickCount">נבחרו: 0 / 10</div>
+      <div id="teamPickList"></div>
+      <button class="btn-primary" id="btnSplitTeams" onclick="splitTeams()" style="margin-top:12px;">חלק לקבוצות</button>
+      <div id="teamsResult" class="hidden">
+        <div class="teams-result">
+          <div class="team-box team-light">
+            <h4>⚪ בהיר</h4>
+            <ol id="teamLight"></ol>
+          </div>
+          <div class="team-box team-dark">
+            <h4>⚫ כהה</h4>
+            <ol id="teamDark"></ol>
+          </div>
+        </div>
+        <div class="teams-actions">
+          <button class="btn-success" onclick="reshuffleTeams()">ערבב שוב</button>
+          <button class="btn-secondary" onclick="backToTeamPick()">בחירה מחדש</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin -->
+  <div id="adminModal" class="modal-overlay hidden" onclick="backdrop(event,'adminModal')">
+    <div class="modal admin-section">
+      <div class="modal-head">
+        <h3>ניהול</h3>
+        <button class="modal-close" onclick="closeModal('adminModal')">סגור</button>
+      </div>
+
+      <button class="btn-warning" onclick="startNewWeek()" style="margin-bottom:8px;">התחל שבוע חדש</button>
+      <button class="btn-secondary" onclick="lockGameNow()" style="margin-bottom:8px;">נעל הרשמה עכשיו</button>
+
+      <h4>מודעה</h4>
+      <div class="form-group"><textarea id="adminAnnounceText" placeholder="טקסט מודעה"></textarea></div>
+      <div class="form-group"><label>מתאריך</label><input type="date" id="adminAnnounceFrom"></div>
+      <div class="form-group"><label>עד תאריך</label><input type="date" id="adminAnnounceTo"></div>
+      <button class="btn-success" onclick="saveAnnouncement()" style="margin-bottom:8px;">שמור מודעה</button>
+
+      <h4>חוקי הקבוצה</h4>
+      <div class="form-group"><textarea id="adminRulesText" placeholder="חוקים"></textarea></div>
+      <button class="btn-success" onclick="saveRules()" style="margin-bottom:8px;">שמור חוקים</button>
+
+      <h4>הסרת שחקן מהרשימה</h4>
+      <div id="adminRemoveList"><div class="empty">טוען...</div></div>
+      <button class="btn-secondary" onclick="loadAdminRemoveList()" style="margin-top:8px;">רענן</button>
+    </div>
+  </div>
+
   <script>
-  const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
+    const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
     const ANNOUNCE_KEY = "v2_announce_seen";
 
@@ -232,7 +318,10 @@
     let currentUser = null;
     let currentProfile = null;
     let currentGame = null;
+    let lastRegs = [];
     let settings = {};
+    let profileMap = {};
+    let selectedTeamPlayers = [];
 
     function $(id) { return document.getElementById(id); }
 
@@ -259,8 +348,12 @@
         .replace(/"/g, "&quot;");
     }
 
-    function backdrop(e, id) {
-      if (e.target.id === id) $(id).classList.add("hidden");
+    function closeModal(id) { $(id).classList.add("hidden"); }
+    function backdrop(e, id) { if (e.target.id === id) closeModal(id); }
+
+    function getSetting(key, fallback) {
+      const v = settings[key];
+      return (v === undefined || v === null || v === "") ? fallback : v;
     }
 
     async function login() {
@@ -275,8 +368,8 @@
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       btn.disabled = false;
       btn.textContent = "התחברות";
-
       if (error) return showLoginMsg(error.message, false);
+
       currentUser = data.user;
       await afterLogin();
     }
@@ -289,7 +382,7 @@
         .maybeSingle();
 
       if (error || !profile) {
-        showLoginMsg("אין פרופיל למשתמש. בדוק את טבלת profiles.", false);
+        showLoginMsg("אין פרופיל למשתמש הזה.", false);
         await sb.auth.signOut();
         return;
       }
@@ -298,9 +391,10 @@
       $("loginScreen").classList.add("hidden");
       $("appScreen").classList.remove("hidden");
       $("userLabel").textContent = profile.name + (profile.is_admin ? " · מנהל" : "");
-      $("btnNewWeek").classList.toggle("hidden", !profile.is_admin);
+      $("btnGear").classList.toggle("hidden", !profile.is_admin);
 
       await loadSettings();
+      await loadProfiles();
       await loadList();
       maybeShowAnnouncement();
     }
@@ -320,14 +414,28 @@
       (data || []).forEach(r => { settings[r.key] = r.value; });
     }
 
-    function getSetting(key, fallback) {
-      const v = settings[key];
-      return (v === undefined || v === null || v === "") ? fallback : v;
+    async function loadProfiles() {
+      const { data } = await sb.from("profiles").select("id,email,name,symbol");
+      profileMap = {};
+      (data || []).forEach(p => { profileMap[p.id] = p; });
     }
 
     function friendOpenNow() {
       if (!currentGame || !currentGame.friend_open_at) return true;
       return new Date() >= new Date(currentGame.friend_open_at);
+    }
+
+    function isPastLockTime(game) {
+      if (!game) return false;
+      const lockHour = parseInt(getSetting("lock_hour", "20"), 10);
+      const lockTime = new Date(game.game_date + "T00:00:00");
+      lockTime.setHours(lockHour, 0, 0, 0);
+      return new Date() >= lockTime;
+    }
+
+    function isGameLocked(game) {
+      if (!game) return true;
+      return game.status === "locked" || isPastLockTime(game);
     }
 
     function isLateCancel() {
@@ -346,13 +454,11 @@
       const now = new Date();
       now.setHours(12, 0, 0, 0);
       if (from) {
-        const f = new Date(from);
-        f.setHours(0, 0, 0, 0);
+        const f = new Date(from); f.setHours(0, 0, 0, 0);
         if (now < f) return null;
       }
       if (to) {
-        const t = new Date(to);
-        t.setHours(23, 59, 59, 999);
+        const t = new Date(to); t.setHours(23, 59, 59, 999);
         if (now > t) return null;
       }
       return text;
@@ -367,13 +473,21 @@
       sessionStorage.setItem(ANNOUNCE_KEY, text);
     }
 
-    function closeAnnounce() { $("announceModal").classList.add("hidden"); }
-
     function openRules() {
       $("rulesBody").textContent = getSetting("rules_text", "") || "אין חוקים מוגדרים.";
       $("rulesModal").classList.remove("hidden");
     }
-    function closeRules() { $("rulesModal").classList.add("hidden"); }
+
+    async function ensureDbLock(game) {
+      if (!game || game.status !== "open") return game;
+      if (!isPastLockTime(game)) return game;
+      if (!currentProfile?.is_admin) {
+        return { ...game, status: "locked" };
+      }
+      const { error } = await sb.from("games").update({ status: "locked" }).eq("id", game.id);
+      if (!error) return { ...game, status: "locked" };
+      return { ...game, status: "locked" };
+    }
 
     async function loadList() {
       $("mainList").innerHTML = `<div class="empty">טוען...</div>`;
@@ -393,22 +507,17 @@
 
       if (!games || !games.length) {
         currentGame = null;
+        lastRegs = [];
         $("gameInfo").textContent = "אין משחק פתוח";
         $("mainList").innerHTML = `<div class="empty">אין משחק</div>`;
         $("waitList").innerHTML = `<div class="empty">—</div>`;
         $("freeSpots").textContent = "";
-        updateButtons([], []);
+        updateButtons(true);
         return;
       }
 
-      currentGame = games[0];
-
-      // נעילה אוטומטית לפי שעה (רק תצוגה + חסימת פעולות; עדכון DB לאדמין / בהמשך)
-      const lockHour = parseInt(getSetting("lock_hour", "20"), 10);
-      const lockTime = new Date(currentGame.game_date + "T00:00:00");
-      lockTime.setHours(lockHour, 0, 0, 0);
-      const autoLocked = currentGame.status === "open" && new Date() >= lockTime;
-      const locked = currentGame.status === "locked" || autoLocked;
+      currentGame = await ensureDbLock(games[0]);
+      const locked = isGameLocked(currentGame);
 
       $("gameInfo").textContent =
         `משחק ${currentGame.game_date}` + (locked ? " · סגור להרשמה" : " · פתוח");
@@ -425,56 +534,54 @@
         return;
       }
 
-      const main = (regs || []).filter(r => r.status === "main");
-      const wait = (regs || []).filter(r => r.status === "waitlist");
+      lastRegs = regs || [];
+      const main = lastRegs.filter(r => r.status === "main");
+      const wait = lastRegs.filter(r => r.status === "waitlist");
 
-      $("mainList").innerHTML = main.length
-        ? main.map(r => rowHtml(r, locked)).join("")
-        : `<div class="empty">ריקה</div>`;
+      $("mainList").innerHTML = main.length ? main.map(r => rowHtml(r, locked)).join("") : `<div class="empty">ריקה</div>`;
+      $("waitList").innerHTML = wait.length ? wait.map(r => rowHtml(r, locked)).join("") : `<div class="empty">ריקה</div>`;
+      $("freeSpots").textContent = `פנויים: ${Math.max(0, currentGame.max_players - main.length)} / ${currentGame.max_players}`;
+      updateButtons(locked);
+    }
 
-      $("waitList").innerHTML = wait.length
-        ? wait.map(r => rowHtml(r, locked)).join("")
-        : `<div class="empty">ריקה</div>`;
-
-      $("freeSpots").textContent =
-        `פנויים: ${Math.max(0, currentGame.max_players - main.length)} / ${currentGame.max_players}`;
-
-      updateButtons(main, wait, locked);
+    function displayName(r) {
+      let label = r.player_name;
+      if (!r.player_email) {
+        label = r.player_name + (r.registered_by === currentUser.id ? " (חבר)" : "");
+      }
+      const p = profileMap[r.registered_by];
+      if (r.player_email && profileMap) {
+        const self = Object.values(profileMap).find(x => x.email && x.email.toLowerCase() === String(r.player_email).toLowerCase());
+        if (self && self.symbol) label += " " + self.symbol;
+      }
+      return label;
     }
 
     function rowHtml(r, locked) {
       const mine = r.registered_by === currentUser.id;
       const cancelBtn = (mine && !locked)
-        ? `<button class="btn-danger" data-cancel="${r.id}">ביטול</button>`
+        ? `<button class="btn-danger-soft" data-cancel="${r.id}">ביטול</button>`
         : "";
-      let label = r.player_name;
-      if (!r.player_email) {
-        label = r.player_name + (mine ? " (חבר)" : "");
-      }
       return `
         <div class="list-item">
           <span class="num">${r.position || ""}.</span>
-          <span class="name">${escapeHtml(label)}</span>
+          <span class="name">${escapeHtml(displayName(r))}</span>
           ${cancelBtn}
         </div>`;
     }
 
-    function updateButtons(main, wait, locked) {
+    function updateButtons(locked) {
       const btn = $("btnReg");
       const btnFriend = $("btnFriend");
-
       if (!currentGame || locked) {
         btn.disabled = true;
         btn.textContent = "סגור";
         btnFriend.classList.add("hidden");
         return;
       }
-
-      const already = [...main, ...wait].some(r =>
-        r.player_email &&
-        r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
+      const already = lastRegs.some(r =>
+        r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
       );
-
       if (already) {
         btn.disabled = true;
         btn.textContent = "✓ רשום";
@@ -482,39 +589,19 @@
         btn.disabled = false;
         btn.textContent = "+ הרשמה";
       }
-
       if (friendOpenNow()) btnFriend.classList.remove("hidden");
       else btnFriend.classList.add("hidden");
     }
 
     async function registerSelf() {
-      if (!currentGame || currentGame.status !== "open") {
-        return showMsg("אין משחק פתוח להרשמה", false);
-      }
-
-      const lockHour = parseInt(getSetting("lock_hour", "20"), 10);
-      const lockTime = new Date(currentGame.game_date + "T00:00:00");
-      lockTime.setHours(lockHour, 0, 0, 0);
-      if (new Date() >= lockTime) return showMsg("ההרשמה נסגרה", false);
+      if (!currentGame || isGameLocked(currentGame)) return showMsg("ההרשמה נסגרה", false);
 
       const btn = $("btnReg");
       btn.disabled = true;
       btn.textContent = "נרשם...";
 
-      const { count, error: cErr } = await sb
-        .from("registrations")
-        .select("*", { count: "exact", head: true })
-        .eq("game_id", currentGame.id)
-        .eq("status", "main");
-
-      if (cErr) {
-        showMsg(cErr.message, false);
-        btn.disabled = false;
-        btn.textContent = "+ הרשמה";
-        return;
-      }
-
-      const status = (count || 0) < currentGame.max_players ? "main" : "waitlist";
+      const mainCount = lastRegs.filter(r => r.status === "main").length;
+      const status = mainCount < currentGame.max_players ? "main" : "waitlist";
 
       const { error } = await sb.from("registrations").insert({
         game_id: currentGame.id,
@@ -522,13 +609,12 @@
         player_email: currentProfile.email,
         registered_by: currentUser.id,
         status,
-        position: (count || 0) + 1
+        position: mainCount + 1
       });
 
       if (error) {
         showMsg(error.message, false);
-        btn.disabled = false;
-        btn.textContent = "+ הרשמה";
+        updateButtons(false);
         return;
       }
 
@@ -538,28 +624,19 @@
     }
 
     function openFriend() {
-      if (!currentGame || currentGame.status !== "open") return showMsg("אין משחק פתוח", false);
+      if (!currentGame || isGameLocked(currentGame)) return showMsg("ההרשמה נסגרה", false);
       if (!friendOpenNow()) return showMsg("הרשמת חברים עדיין לא נפתחה", false);
       $("friendName").value = "";
       $("friendModal").classList.remove("hidden");
     }
-    function closeFriend() { $("friendModal").classList.add("hidden"); }
 
     async function registerFriend() {
       const name = $("friendName").value.trim();
       if (!name) return showMsg("נא להזין שם", false);
-      if (!currentGame || currentGame.status !== "open") return showMsg("אין משחק פתוח", false);
-      if (!friendOpenNow()) return showMsg("הרשמת חברים עדיין לא נפתחה", false);
+      if (!currentGame || isGameLocked(currentGame)) return showMsg("ההרשמה נסגרה", false);
 
-      const { count, error: cErr } = await sb
-        .from("registrations")
-        .select("*", { count: "exact", head: true })
-        .eq("game_id", currentGame.id)
-        .eq("status", "main");
-
-      if (cErr) return showMsg(cErr.message, false);
-
-      const status = (count || 0) < currentGame.max_players ? "main" : "waitlist";
+      const mainCount = lastRegs.filter(r => r.status === "main").length;
+      const status = mainCount < currentGame.max_players ? "main" : "waitlist";
 
       const { error } = await sb.from("registrations").insert({
         game_id: currentGame.id,
@@ -567,42 +644,32 @@
         player_email: "",
         registered_by: currentUser.id,
         status,
-        position: (count || 0) + 1
+        position: mainCount + 1
       });
 
       if (error) return showMsg(error.message, false);
 
       await recalculatePositions(currentGame.id);
-      closeFriend();
+      closeModal("friendModal");
       showMsg(status === "main" ? "החבר נרשם!" : "החבר בהמתנה", true);
       await loadList();
     }
 
     async function cancelReg(id) {
-      if (!currentGame) return;
-      if (currentGame.status === "locked") return showMsg("ההרשמה נסגרה", false);
-
+      if (!currentGame || isGameLocked(currentGame)) return showMsg("ההרשמה נסגרה", false);
       const late = isLateCancel();
-      const msg = late
-        ? "ביטול מאוחר – לפי החוקים ייתכן שתחויב. להמשיך?"
-        : "לבטל הרשמה?";
-      if (!confirm(msg)) return;
+      if (!confirm(late ? "ביטול מאוחר – ייתכן שתחויב. להמשיך?" : "לבטל הרשמה?")) return;
 
-      const newStatus = late ? "cancelled_late" : "cancelled";
-
-      const { error } = await sb
-        .from("registrations")
-        .update({
-          status: newStatus,
-          cancelled_at: new Date().toISOString(),
-          position: 0
-        })
-        .eq("id", id);
+      const { error } = await sb.from("registrations").update({
+        status: late ? "cancelled_late" : "cancelled",
+        cancelled_at: new Date().toISOString(),
+        position: 0
+      }).eq("id", id);
 
       if (error) return showMsg(error.message, false);
 
       await recalculatePositions(currentGame.id);
-      showMsg(late ? "בוטל (ביטול מאוחר)" : "בוטל", true);
+      showMsg(late ? "בוטל (מאוחר)" : "בוטל", true);
       await loadList();
     }
 
@@ -629,15 +696,147 @@
       }
 
       for (let i = 0; i < main.length; i++) {
-        await sb.from("registrations")
-          .update({ status: "main", position: i + 1 })
-          .eq("id", main[i].id);
+        await sb.from("registrations").update({ status: "main", position: i + 1 }).eq("id", main[i].id);
       }
       for (let i = 0; i < wait.length; i++) {
-        await sb.from("registrations")
-          .update({ status: "waitlist", position: i + 1 })
-          .eq("id", wait[i].id);
+        await sb.from("registrations").update({ status: "waitlist", position: i + 1 }).eq("id", wait[i].id);
       }
+    }
+
+    function copyList() {
+      if (!currentGame) return showMsg("אין רשימה", false);
+      const main = lastRegs.filter(r => r.status === "main");
+      const wait = lastRegs.filter(r => r.status === "waitlist");
+      let text = `🏀 רשימת משחק – ${currentGame.game_date}\n\n📋 רשימת המשחק:\n`;
+      if (main.length) main.forEach(r => { text += `${r.position}. ${displayName(r)}\n`; });
+      else text += "אין נרשמים\n";
+      text += `\n⏳ רשימת המתנה:\n`;
+      if (wait.length) wait.forEach(r => { text += `${r.position}. ${displayName(r)}\n`; });
+      else text += "ריקה\n";
+      navigator.clipboard.writeText(text).then(() => showMsg("הועתק!", true)).catch(() => showMsg("העתקה נכשלה", false));
+    }
+
+    function openBit() {
+      const link = getSetting("bit_link", "");
+      if (!link) return showMsg("לינק Bit לא מוגדר ב-settings", false);
+      window.open(link, "_blank");
+    }
+    function openPayBox() {
+      const link = getSetting("paybox_link", "");
+      if (!link) return showMsg("לינק PayBox לא מוגדר ב-settings", false);
+      window.open(link, "_blank");
+    }
+
+    // Teams
+    function openTeams() {
+      const main = lastRegs.filter(r => r.status === "main");
+      if (main.length < 10) return showMsg("צריך לפחות 10 ברשימת המשחק", false);
+      selectedTeamPlayers = [];
+      $("teamsResult").classList.add("hidden");
+      $("btnSplitTeams").classList.remove("hidden");
+      $("teamPickList").classList.remove("hidden");
+      $("teamPickCount").classList.remove("hidden");
+      $("teamPickList").innerHTML = main.map((r, idx) => `
+        <label class="team-pick-item">
+          <input type="checkbox" data-name="${escapeHtml(displayName(r))}" onchange="onTeamPickChange()">
+          <span>${r.position}. ${escapeHtml(displayName(r))}</span>
+        </label>
+      `).join("");
+      updateTeamPickCount();
+      $("teamsModal").classList.remove("hidden");
+    }
+
+    function onTeamPickChange() {
+      const boxes = [...document.querySelectorAll("#teamPickList input[type=checkbox]")];
+      const checked = boxes.filter(b => b.checked);
+      if (checked.length > 10) {
+        checked[checked.length - 1].checked = false;
+        showMsg("עד 10 שחקנים", false);
+      }
+      updateTeamPickCount();
+    }
+    function updateTeamPickCount() {
+      const n = document.querySelectorAll("#teamPickList input[type=checkbox]:checked").length;
+      $("teamPickCount").textContent = "נבחרו: " + n + " / 10";
+    }
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+    function splitTeams() {
+      const names = [...document.querySelectorAll("#teamPickList input[type=checkbox]:checked")]
+        .map(b => b.getAttribute("data-name"));
+      if (names.length !== 10) return showMsg("יש לבחור בדיוק 10", false);
+      selectedTeamPlayers = names;
+      renderTeamsResult(shuffleArray(names));
+    }
+    function reshuffleTeams() {
+      if (selectedTeamPlayers.length !== 10) return;
+      renderTeamsResult(shuffleArray(selectedTeamPlayers));
+    }
+    function renderTeamsResult(shuffled) {
+      $("teamLight").innerHTML = shuffled.slice(0, 5).map(n => `<li>${n}</li>`).join("");
+      $("teamDark").innerHTML = shuffled.slice(5, 10).map(n => `<li>${n}</li>`).join("");
+      $("teamPickList").classList.add("hidden");
+      $("btnSplitTeams").classList.add("hidden");
+      $("teamPickCount").classList.add("hidden");
+      $("teamsResult").classList.remove("hidden");
+    }
+    function backToTeamPick() {
+      $("teamsResult").classList.add("hidden");
+      $("teamPickList").classList.remove("hidden");
+      $("btnSplitTeams").classList.remove("hidden");
+      $("teamPickCount").classList.remove("hidden");
+    }
+
+    // Admin
+    async function openAdmin() {
+      if (!currentProfile?.is_admin) return;
+      $("adminAnnounceText").value = getSetting("announcement_text", "");
+      $("adminAnnounceFrom").value = getSetting("announcement_from", "");
+      $("adminAnnounceTo").value = getSetting("announcement_to", "");
+      $("adminRulesText").value = getSetting("rules_text", "");
+      await loadAdminRemoveList();
+      $("adminModal").classList.remove("hidden");
+    }
+
+    async function setSetting(key, value) {
+      const { error } = await sb.from("settings").upsert({ key, value: String(value ?? "") });
+      return error;
+    }
+
+    async function saveAnnouncement() {
+      const text = $("adminAnnounceText").value;
+      const from = $("adminAnnounceFrom").value;
+      const to = $("adminAnnounceTo").value;
+      let err = await setSetting("announcement_text", text);
+      if (!err) err = await setSetting("announcement_from", from);
+      if (!err) err = await setSetting("announcement_to", to);
+      if (err) return showMsg(err.message, false);
+      await loadSettings();
+      sessionStorage.removeItem(ANNOUNCE_KEY);
+      showMsg("המודעה נשמרה", true);
+    }
+
+    async function saveRules() {
+      const text = $("adminRulesText").value;
+      const err = await setSetting("rules_text", text);
+      if (err) return showMsg(err.message, false);
+      await loadSettings();
+      showMsg("החוקים נשמרו", true);
+    }
+
+    async function lockGameNow() {
+      if (!currentGame) return showMsg("אין משחק", false);
+      if (!confirm("לנעול את ההרשמה עכשיו?")) return;
+      const { error } = await sb.from("games").update({ status: "locked" }).eq("id", currentGame.id);
+      if (error) return showMsg(error.message, false);
+      showMsg("ההרשמה ננעלה", true);
+      await loadList();
     }
 
     function nextSaturday() {
@@ -652,11 +851,7 @@
       if (!currentProfile?.is_admin) return;
       if (!confirm("לסגור משחקים פתוחים ולפתוח שבוע חדש?")) return;
 
-      const { error: e1 } = await sb
-        .from("games")
-        .update({ status: "completed" })
-        .in("status", ["open", "locked"]);
-
+      const { error: e1 } = await sb.from("games").update({ status: "completed" }).in("status", ["open", "locked"]);
       if (e1) return showMsg(e1.message, false);
 
       const gameDate = nextSaturday();
@@ -664,7 +859,6 @@
       const friend = new Date(gameDate + "T00:00:00");
       friend.setDate(friend.getDate() - 1);
       friend.setHours(friendHour, 0, 0, 0);
-
       const maxPlayers = parseInt(getSetting("max_players", "15"), 10);
 
       const { error: e2 } = await sb.from("games").insert({
@@ -673,16 +867,51 @@
         max_players: maxPlayers,
         friend_open_at: friend.toISOString()
       });
-
       if (e2) return showMsg(e2.message, false);
 
-      showMsg("שבוע חדש נפתח ל-" + gameDate, true);
+      showMsg("שבוע חדש: " + gameDate, true);
+      closeModal("adminModal");
       await loadList();
     }
 
+    async function loadAdminRemoveList() {
+      const box = $("adminRemoveList");
+      if (!currentGame) {
+        box.innerHTML = `<div class="empty">אין משחק</div>`;
+        return;
+      }
+      const rows = lastRegs.length ? lastRegs : [];
+      if (!rows.length) {
+        box.innerHTML = `<div class="empty">אין נרשמים</div>`;
+        return;
+      }
+      box.innerHTML = rows.map(r => `
+        <div class="admin-list-item">
+          <span>${escapeHtml(displayName(r))}</span>
+          <button class="btn-danger-soft" data-admin-remove="${r.id}">הסר</button>
+        </div>
+      `).join("");
+    }
+
+    async function adminRemove(id) {
+      if (!confirm("להסיר שחקן מהרשימה?")) return;
+      const { error } = await sb.from("registrations").update({
+        status: "cancelled",
+        cancelled_at: new Date().toISOString(),
+        position: 0
+      }).eq("id", id);
+      if (error) return showMsg(error.message, false);
+      await recalculatePositions(currentGame.id);
+      showMsg("הוסר", true);
+      await loadList();
+      await loadAdminRemoveList();
+    }
+
     document.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-cancel]");
-      if (btn) cancelReg(btn.getAttribute("data-cancel"));
+      const c = e.target.closest("[data-cancel]");
+      if (c) cancelReg(c.getAttribute("data-cancel"));
+      const a = e.target.closest("[data-admin-remove]");
+      if (a) adminRemove(a.getAttribute("data-admin-remove"));
     });
 
     (async () => {
