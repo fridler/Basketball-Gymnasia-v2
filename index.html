@@ -450,7 +450,7 @@
       $("loginMsg").classList.add("hidden");
     }
 
-    async function signup() {
+      async function signup() {
       const name = $("signupName").value.trim();
       const email = $("signupEmail").value.trim().toLowerCase();
       const password = $("signupPassword").value;
@@ -462,26 +462,35 @@
       btn.disabled = true;
       btn.textContent = "שולח...";
 
-      const { data, error } = await sb.auth.signUp({ email, password });
-      if (error) {
-        btn.disabled = false;
-        btn.textContent = "שליחת בקשה";
-        return showLoginMsg(error.message, false);
-      }
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name: name }
+        }
+      });
 
+      btn.disabled = false;
+      btn.textContent = "שליחת בקשה";
+
+      if (error) return showLoginMsg(error.message, false);
+
+      // גיבוי אם ה-trigger לא רץ / משתמש כפול
       const uid = data.user?.id;
       if (uid) {
-        await sb.from("pending_users").insert({
+        const { error: pErr } = await sb.from("pending_users").insert({
           user_id: uid,
           email,
           name,
           source: "signup",
           status: "pending"
         });
+        // התעלם מכפילות (trigger כבר הכניס)
+        if (pErr && !String(pErr.message || "").includes("duplicate")) {
+          console.error("pending insert:", pErr);
+        }
       }
 
-      btn.disabled = false;
-      btn.textContent = "שליחת בקשה";
       currentUser = data.user;
       $("loginScreen").classList.add("hidden");
       $("pendingScreen").classList.remove("hidden");
