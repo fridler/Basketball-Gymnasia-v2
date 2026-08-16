@@ -409,13 +409,22 @@ async function notifyAdmin(event_type, text, payload){
   return notifyExternal(text, text);
 }
 
-async function testNotify(){
-  const btn=$("btnTestNotify");
-  setLoading(btn,true,"בודק");
-  const r = await notifyAdmin("test", "בדיקת התראות מכדורסל v2 – "+new Date().toLocaleString("he-IL"), {});
-  setLoading(btn,false,"בדיקת התראות");
-  if(r && r.ok) showAdminMsg("נשלח ✓ בדוק טלגרם/מייל", true);
-  else showAdminMsg("נכשל: "+(r&&r.error?r.error:"אין Function בשם notify או שגיאת רשת"), false);
+async function testNotify() {
+  const btn = $("btnTestNotify");
+  setLoading(btn, true, "בודק");
+  try {
+    const r = await notifyAdmin(
+      "test",
+      "בדיקת התראות מכדורסל v2 – " + new Date().toLocaleString("he-IL"),
+      {}
+    );
+    if (r && r.ok) showAdminMsg("נשלח ✓ בדוק טלגרם/מייל", true);
+    else showAdminMsg("נכשל: " + (r && r.error ? r.error : "שגיאה"), false);
+  } catch (e) {
+    showAdminMsg("שגיאה: " + String(e), false);
+  } finally {
+    setLoading(btn, false, "בדיקת התראות");
+  }
 }
 
 function phoneToWa(phone){
@@ -660,21 +669,50 @@ async function applyDebtsForGame(game,opts){
   return{count:n};
 }
 
-async function sendWeeklyReport(){
-  if(!currentGame)return showAdminMsg("אין משחק",false);
-  const btn=$("btnWeeklyReport");setLoading(btn,true,"שולח");
-  const {data:regs}=await sb.from("registrations").select("*").eq("game_id",currentGame.id).order("position");
-  const main=(regs||[]).filter(r=>r.status==="main");
-  const canc=(regs||[]).filter(r=>r.status==="cancelled"||r.status==="cancelled_late");
-  let text="דוח משחק "+currentGame.game_date+" · "+currentGame.status+"\n\nרשימת משחק:\n";
-  main.forEach(r=>{text+=r.position+". "+r.player_name+" · רשם: "+(profileMap[r.registered_by]?.name||"?")+"\n"});
-  text+="\nביטולים:\n";
-  if(!canc.length)text+="אין\n";
-  canc.forEach(r=>{text+=r.player_name+" · "+r.status+" · "+(r.cancelled_at||"")+"\n"});
-  const r=await notifyAdmin("weekly_report",text,{game_id:currentGame.id});
-  setLoading(btn,false,"שלח דוח שבועי");
-  if(r&&r.ok) showAdminMsg("הדוח נשלח ✓",true);
-  else showAdminMsg("שליחה נכשלה: "+(r&&r.error?r.error:"בדוק Function"),false);
+async function sendWeeklyReport() {
+  if (!currentGame) return showAdminMsg("אין משחק", false);
+  const btn = $("btnWeeklyReport");
+  setLoading(btn, true, "שולח");
+  try {
+    const { data: regs } = await sb
+      .from("registrations")
+      .select("*")
+      .eq("game_id", currentGame.id)
+      .order("position");
+    const main = (regs || []).filter((r) => r.status === "main");
+    const canc = (regs || []).filter(
+      (r) => r.status === "cancelled" || r.status === "cancelled_late"
+    );
+    let text =
+      "דוח משחק " + currentGame.game_date + " · " + currentGame.status + "\n\nרשימת משחק:\n";
+    main.forEach((r) => {
+      text +=
+        r.position +
+        ". " +
+        r.player_name +
+        " · רשם: " +
+        (profileMap[r.registered_by]?.name || "?") +
+        "\n";
+    });
+    text += "\nביטולים:\n";
+    if (!canc.length) text += "אין\n";
+    canc.forEach((r) => {
+      text += r.player_name + " · " + r.status + " · " + (r.cancelled_at || "") + "\n";
+    });
+    const r = await notifyAdmin("weekly_report", text, {
+      game_id: currentGame.id,
+    });
+    if (r && r.ok) showAdminMsg("הדוח נשלח ✓", true);
+    else
+      showAdminMsg(
+        "שליחה נכשלה: " + (r && r.error ? r.error : "בדוק Function"),
+        false
+      );
+  } catch (e) {
+    showAdminMsg("שגיאה: " + String(e), false);
+  } finally {
+    setLoading(btn, false, "שלח דוח שבועי");
+  }
 }
 
 async function loadList(silent){
