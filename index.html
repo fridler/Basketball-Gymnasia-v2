@@ -705,6 +705,23 @@ async function chargeCurrentGame(){
     if(result.error){showAdminMsg(result.error,false);return}
     // Sheets
     const sheetRes=await sheetWriteDebtBulk(currentGame,result.counts||{});
+    console.log("sheet charge", sheetRes);
+
+if (!sheetRes || sheetRes.ok === false) {
+  showAdminMsg(
+    "חיוב ב-DB בוצע, שיטס נכשל: " + (sheetRes && sheetRes.error ? sheetRes.error : "לא ידוע"),
+    false
+  );
+} else {
+  const results = sheetRes.results || [];
+  const written = results.filter((r) => r.status === "written").length;
+  const skipped = results.filter((r) => r.status === "skipped_exists").length;
+  const failed = results.filter((r) => !r.ok || r.error).length;
+  showAdminMsg(
+    `חיוב: ${result.count} | שיטס נכתב: ${written}, דולג: ${skipped}, שגיאה: ${failed}`,
+    failed === 0
+  );
+}
     const nowIso=new Date().toISOString();
     const {error}=await sb.from("games").update({charged_at:nowIso}).eq("id",currentGame.id);
     if(error){showAdminMsg(error.message,false);return}
