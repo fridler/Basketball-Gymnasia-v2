@@ -763,31 +763,27 @@ async function chargeCurrentGame() {
     currentGame.charged_at = nowIso;
     updateGeneralButtons();
 
-    if (!sheetRes.ok) {
-      showAdminMsg(
-        "DB חויב (" +
-          result.count +
-          ") | שיטס נכשל: " +
-          (sheetRes.error || "לא ידוע"),
-        false
-      );
-    } else {
-      const results = sheetRes.results || [];
-      const written = results.filter((r) => r.status === "written").length;
-      const skipped = results.filter((r) => r.status === "skipped_exists").length;
-      const failed = results.filter((r) => r.error || r.ok === false).length;
-      showAdminMsg(
-        "DB: " +
-          result.count +
-          " | שיטס נכתב: " +
-          written +
-          ", דולג: " +
-          skipped +
-          ", שגיאה: " +
-          failed,
-        failed === 0
-      );
-    }
+if (!sheetRes.ok) {
+  showAdminMsg(
+    "DB חויב | שיטס נכשל: " + (sheetRes.error || JSON.stringify(sheetRes.raw || sheetRes).slice(0, 180)),
+    false
+  );
+} else {
+  const results = sheetRes.results || [];
+  const written = results.filter((r) => r.status === "written").length;
+  const skipped = results.filter((r) => r.status === "skipped_exists").length;
+  const failed = results.filter((r) => r.error || r.status === "error" || r.ok === false);
+  let msg =
+    "DB: " + result.count +
+    " | שיטס נכתב: " + written +
+    ", דולג: " + skipped +
+    ", שגיאה: " + failed.length;
+  if (failed.length) {
+    msg += " → " + (failed[0].error || failed[0].status || "unknown");
+    if (failed[0].name) msg += " (" + failed[0].name + ")";
+  }
+  showAdminMsg(msg, failed.length === 0);
+}
 
     notifyAdmin(
       "charge",
