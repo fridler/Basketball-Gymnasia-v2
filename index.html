@@ -420,39 +420,80 @@ async function syncBalancesFromSheet(silent){
   finally{syncingBalances=false}
 }
 
-async function sheetWriteDebtBulk(game, countsByUid){
-  const items=[];
-  for(const uid of Object.keys(countsByUid)){
-    const p=profileMap[uid];
-    const cname=(p&&p.collection_name||"").trim();
-    if(!cname){
+async function sheetWriteDebtBulk(game, countsByUid) {
+  const items = [];
+  const skipped = [];
+
+  for (const uid of Object.keys(countsByUid || {})) {
+    const p = profileMap[uid];
+    const cname = ((p && p.collection_name) || "").trim();
+    if (!cname) {
+      skipped.push((p && p.name) || uid);
       await sb.from("payment_log").insert({
-        game_id:game.id,email:(p&&p.email)||"",collection_name:"",
-        amount:-gamePrice()*countsByUid[uid],status:"skipped_no_match",
-        note:"אין collection_name ל-"+((p&&p.name)||uid)
+        game_id: game.id,
+        email: (p && p.email) || "",
+        collection_name: "",
+        amount: -gamePrice() * countsByUid[uid],
+        status: "skipped_no_match",
+        note: "אין collection_name – " + ((p && p.name) || uid),
       });
       continue;
     }
-    items.push({name:cname,amount:-Math.abs(gamePrice()*countsByUid[uid])});
-  }
-  if(!items.length)return{ok:true,results:[]};
-  try{
-    const {data,error}=await sb.functions.invoke("collection",{
-      body:{action:"charge_bulk",gameDate:game.game_date,items}
+    items.push({
+      name: cname,
+      amount: -Math.abs(gamePrice() * countsByUid[uid]),
     });
-    if(error)return{ok:false,error:error.message};
-    const results=(data&&data.results)||[];
-    for(const r of results){
+  }
+
+  if (!items.length) {
+    return {
+      ok: false,
+      error:
+        "אין שחקנים עם collection_name. דולגו: " +
+        (skipped.join(", ") || "—"),
+      results: [],
+    };
+  }
+
+  try {
+    const { data, error } = await sb.functions.invoke("collection", {
+      body: {
+        action: "charge_bulk",
+        gameDate: game.game_date,
+        items: items,
+      },
+    });
+
+    if (error) {
+      return { ok: false, error: error.message || String(error), results: [] };
+    }
+
+    const results = (data && data.results) || [];
+    for (const r of results) {
       await sb.from("payment_log").insert({
-        game_id:game.id,
-        collection_name:r.name||"",
-        amount:r.amount!=null?r.amount:0,
-        status:r.status||(r.ok?"written":"error"),
-        note:"sheets Debt "+(r.error||r.status||"")
+        game_id: game.id,
+        collection_name: r.name || "",
+        amount: r.amount != null ? r.amount : 0,
+        status: r.status || (r.ok ? "written" : "error"),
+        note:
+          "sheets Debt " +
+          (r.error || r.status || "") +
+          (r.col ? " col=" + r.col : ""),
       });
     }
-    return data||{ok:true,results};
-  }catch(e){return{ok:false,error:String(e)}}
+
+    if (!data || data.ok === false) {
+      return {
+        ok: false,
+        error: (data && data.error) || "charge_bulk failed",
+        results,
+        raw: data,
+      };
+    }
+    return { ok: true, results, raw: data };
+  } catch (e) {
+    return { ok: false, error: String(e), results: [] };
+  }
 }
 
 async function sheetPaid(collectionName, amount, uid){
@@ -692,47 +733,80 @@ async function applyDebtsForGame(game,opts){
   return{count:n,counts};
 }
 
-async function chargeCurrentGame(){
-  if(!currentGame)return showAdminMsg("אין משחק",false);
-  if(currentGame.charged_at){
-    if(!confirm("השבוע כבר חויב.\nלחיוב חוזר?"))return;
-    if(!confirm("אישור סופי לחיוב חוזר?"))return;
-  }else if(!confirm("לחייב את רשימת המשחק? (Supabase + Sheets)"))return;
-  const btn=$("btnChargeGame");setLoading(btn,true,"מחייב");
-  try{
-    await loadProfiles();
-    const result=await applyDebtsForGame(currentGame,{force:!!currentGame.charged_at});
-    if(result.error){showAdminMsg(result.error,false);return}
-    // Sheets
-    const sheetRes=await sheetWriteDebtBulk(currentGame,result.counts||{});
-    console.log("sheet charge", sheetRes);
+async function chargeCurrentGame() {
+  if (!currentGame) return showAdminMsg("אין משחק", false);
+  if (currentGame.charged_at) {
+    if (!confirm("השבוע כבר חויב.\nלחיוב חוזר?")) return;
+    if (!confirm("אישור סופי לחיוב חוזר?")) return;
+  } else if (!confirm("לחייב את רשימת המשחק? (Supabase + Sheets)")) return;
 
-if (!sheetRes || sheetRes.ok === false) {
-  showAdminMsg(
-    "חיוב ב-DB בוצע, שיטס נכשל: " + (sheetRes && sheetRes.error ? sheetRes.error : "לא ידוע"),
-    false
-  );
-} else {
-  const results = sheetRes.results || [];
-  const written = results.filter((r) => r.status === "written").length;
-  const skipped = results.filter((r) => r.status === "skipped_exists").length;
-  const failed = results.filter((r) => !r.ok || r.error).length;
-  showAdminMsg(
-    `חיוב: ${result.count} | שיטס נכתב: ${written}, דולג: ${skipped}, שגיאה: ${failed}`,
-    failed === 0
-  );
-}
-    const nowIso=new Date().toISOString();
-    const {error}=await sb.from("games").update({charged_at:nowIso}).eq("id",currentGame.id);
-    if(error){showAdminMsg(error.message,false);return}
-    currentGame.charged_at=nowIso;
-    showAdminMsg("בוצע חיוב ("+result.count+" הרשמות)"+(sheetRes&&sheetRes.ok?"":" · בדוק Sheets"),true);
+  const btn = $("btnChargeGame");
+  setLoading(btn, true, "מחייב");
+  try {
+    await loadProfiles();
+    const result = await applyDebtsForGame(currentGame, {
+      force: !!currentGame.charged_at,
+    });
+    if (result.error) {
+      showAdminMsg(result.error, false);
+      return;
+    }
+
+    const sheetRes = await sheetWriteDebtBulk(
+      currentGame,
+      result.counts || {}
+    );
+    console.log("sheet charge result", sheetRes);
+
+    const nowIso = new Date().toISOString();
+    await sb.from("games").update({ charged_at: nowIso }).eq("id", currentGame.id);
+    currentGame.charged_at = nowIso;
     updateGeneralButtons();
-    notifyAdmin("charge","בוצע חיוב למשחק "+currentGame.game_date+" · "+result.count+" הרשמות",{game_id:currentGame.id});
+
+    if (!sheetRes.ok) {
+      showAdminMsg(
+        "DB חויב (" +
+          result.count +
+          ") | שיטס נכשל: " +
+          (sheetRes.error || "לא ידוע"),
+        false
+      );
+    } else {
+      const results = sheetRes.results || [];
+      const written = results.filter((r) => r.status === "written").length;
+      const skipped = results.filter((r) => r.status === "skipped_exists").length;
+      const failed = results.filter((r) => r.error || r.ok === false).length;
+      showAdminMsg(
+        "DB: " +
+          result.count +
+          " | שיטס נכתב: " +
+          written +
+          ", דולג: " +
+          skipped +
+          ", שגיאה: " +
+          failed,
+        failed === 0
+      );
+    }
+
+    notifyAdmin(
+      "charge",
+      "בוצע חיוב למשחק " + currentGame.game_date + " · " + result.count,
+      { game_id: currentGame.id }
+    );
     syncBalancesFromSheet(true);
-    const {data:me}=await sb.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
-    if(me){currentProfile=me;updateBalanceUI()}
-  }finally{setLoading(btn,false,"חיוב שבוע זה")}
+    const { data: me } = await sb
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+    if (me) {
+      currentProfile = me;
+      updateBalanceUI();
+    }
+  } finally {
+    setLoading(btn, false, "חיוב שבוע זה");
+  }
 }
 
 async function sendWeeklyReport(){
