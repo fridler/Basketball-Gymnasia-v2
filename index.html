@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -9,10 +8,7 @@
   <title>כדורסל v2</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --primary:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#d97706;
-      --bg:#f1f5f9;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;
-    }
+    :root{--primary:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#d97706;--bg:#f1f5f9;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.3;min-height:100vh;padding-bottom:20px}
     .header{background:var(--primary);color:#fff;padding:8px 10px 6px;position:sticky;top:0;z-index:50}
@@ -32,11 +28,8 @@
     .btn-sm{width:auto;padding:5px 8px;font-size:.74rem;border-radius:7px;border:none;font-weight:600;cursor:pointer}
     .btn-sm:disabled{opacity:.55;cursor:not-allowed}
     .btn-icon{width:28px;height:28px;border:none;border-radius:7px;background:#f1f5f9;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.95rem}
-    .btn-primary{background:var(--primary);color:#fff}
-    .btn-success{background:var(--success);color:#fff}
-    .btn-secondary{background:#e2e8f0;color:var(--text)}
-    .btn-warning{background:var(--warning);color:#fff}
-    .btn-danger{background:var(--danger);color:#fff}
+    .btn-primary{background:var(--primary);color:#fff}.btn-success{background:var(--success);color:#fff}
+    .btn-secondary{background:#e2e8f0;color:var(--text)}.btn-warning{background:var(--warning);color:#fff}.btn-danger{background:var(--danger);color:#fff}
     button{width:100%;padding:12px;font-size:.95rem;font-weight:600;border:none;border-radius:12px;cursor:pointer}
     button:disabled{opacity:.65;cursor:not-allowed}
     .list-item{display:flex;align-items:center;position:relative;padding:3px 6px 3px 34px;font-size:.8rem;min-height:28px;border-bottom:1px solid #eef2f7;gap:6px}
@@ -47,8 +40,7 @@
     .empty{text-align:center;color:var(--muted);padding:12px 8px;font-size:.82rem}
     .free-spots{text-align:center;margin-top:6px;font-size:.75rem;color:var(--muted)}
     .message{padding:8px 10px;border-radius:10px;margin-bottom:8px;text-align:center;font-weight:500;font-size:.84rem}
-    .success{background:#dcfce7;color:#166534}
-    .error{background:#fee2e2;color:#991b1b}
+    .success{background:#dcfce7;color:#166534}.error{background:#fee2e2;color:#991b1b}
     .hidden{display:none!important}
     .form-group{margin-bottom:8px}
     .form-group label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px}
@@ -82,8 +74,7 @@
     .team-dark{background:#1e293b;border:1.5px solid #0f172a;color:#f8fafc}
     .team-box h4{font-size:.9rem;margin-bottom:8px;text-align:center;color:inherit}
     .team-box ol{padding-right:18px;font-size:.85rem;line-height:1.6}
-    .teams-actions{display:flex;gap:8px;margin-top:12px}
-    .teams-actions button{flex:1}
+    .teams-actions{display:flex;gap:8px;margin-top:12px}.teams-actions button{flex:1}
     .skeleton-item{height:28px;margin:4px 0;border-radius:6px;background:linear-gradient(90deg,#eef2f7 25%,#e2e8f0 50%,#eef2f7 75%);background-size:200% 100%;animation:shimmer 1.2s infinite}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     .success-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.25);pointer-events:none}
@@ -93,12 +84,10 @@
     .admin-tab.active{background:#f59e0b;color:#fff;border-color:#d97706}
     .tab-badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;margin-right:4px;border-radius:10px;background:var(--danger);color:#fff;font-size:.7rem;font-weight:700;align-items:center;justify-content:center}
     .admin-tab.active .tab-badge{background:#fff;color:var(--danger)}
-    .admin-pane{display:none}
-    .admin-pane.active{display:block}
+    .admin-pane{display:none}.admin-pane.active{display:block}
     .profile-card{border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;background:#fff}
     .profile-card .email-ro{font-size:.78rem;color:var(--muted);margin-bottom:8px}
-    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .profile-grid .full{grid-column:1/-1}
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.profile-grid .full{grid-column:1/-1}
     .profile-card input,.profile-card select{padding:8px;font-size:.85rem}
     .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:6px}
     .btn-secondary .spinner{border-color:rgba(15,23,42,.2);border-top-color:var(--text)}
@@ -279,14 +268,12 @@
         <button class="btn-success" onclick="saveRules()">שמור חוקים</button>
       </div>
       <div id="pane-balances" class="admin-pane">
+        <p class="empty" style="padding:0 0 8px;font-size:.78rem">היתרה נקבעת מהשיטס. כפתורים כותבים ל-Debt/Paid ואז מסנכרנים.</p>
         <div id="balanceList"></div>
         <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן</button>
       </div>
       <div id="pane-profiles" class="admin-pane">
-        <div class="form-group">
-          <label>בחר שחקן</label>
-          <select id="profileSelect" onchange="fillProfileEditor()"></select>
-        </div>
+        <div class="form-group"><label>בחר שחקן</label><select id="profileSelect" onchange="fillProfileEditor()"></select></div>
         <div id="profileEditor"><div class="empty">בחר שחקן לעריכה</div></div>
       </div>
       <div id="pane-roster" class="admin-pane">
@@ -331,13 +318,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser=null, currentProfile=null, currentGame=null;
 let lastRegs=[], settings={}, profileMap={}, selectedTeamPlayers=[];
-let pendingCount=0, refreshTimer=null, lastPromote=null;
-let syncingBalances=false;
+let pendingCount=0, refreshTimer=null, lastPromote=null, syncingBalances=false;
 
 const $ = id => document.getElementById(id);
 function showLoginMsg(t,ok){const el=$("loginMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden")}
 function showMsg(t,ok){const el=$("appMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),4000)}
-function showAdminMsg(t,ok){const el=$("adminMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),5000)}
+function showAdminMsg(t,ok){const el=$("adminMsg");el.textContent=t;el.className="message "+(ok?"success":"error");el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),6000)}
 function escapeHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function closeModal(id){$(id).classList.add("hidden")}
 function backdrop(e,id){if(e.target.id===id)closeModal(id)}
@@ -351,65 +337,39 @@ function setLoading(btn,on,label){if(!btn)return;if(on){btn.dataset.label=btn.da
 
 function getLoginGuard(){try{return JSON.parse(localStorage.getItem(LOGIN_GUARD_KEY)||"{}")}catch(e){return{}}}
 function saveLoginGuard(g){localStorage.setItem(LOGIN_GUARD_KEY,JSON.stringify(g))}
-function checkLoginAllowed(email){
-  const g=getLoginGuard();const row=g[email]||{fails:0,lockedUntil:0};
-  if(row.lockedUntil&&Date.now()<row.lockedUntil)return{ok:false,msg:"נחסם זמנית. נסה שוב בעוד "+Math.ceil((row.lockedUntil-Date.now())/60000)+" דקות."};
-  return{ok:true};
-}
+function checkLoginAllowed(email){const g=getLoginGuard();const row=g[email]||{fails:0,lockedUntil:0};if(row.lockedUntil&&Date.now()<row.lockedUntil)return{ok:false,msg:"נחסם זמנית. נסה שוב בעוד "+Math.ceil((row.lockedUntil-Date.now())/60000)+" דקות."};return{ok:true}}
 function recordLoginFail(email){const g=getLoginGuard();const row=g[email]||{fails:0,lockedUntil:0};row.fails=(row.fails||0)+1;if(row.fails>=5){row.lockedUntil=Date.now()+15*60*1000;row.fails=0}g[email]=row;saveLoginGuard(g)}
 function recordLoginOk(email){const g=getLoginGuard();delete g[email];saveLoginGuard(g)}
 
 async function logEvent(event_type,payload){try{await sb.from("app_events").insert({event_type,payload:payload||{}})}catch(e){}}
-
 async function notifyExternal(text,emailBody,emailToOverride){
-  const token=getSetting("telegram_bot_token","");
-  const chat=getSetting("telegram_chat_id","");
+  const token=getSetting("telegram_bot_token","");const chat=getSetting("telegram_chat_id","");
   const emailTo=emailToOverride||getSetting("notify_email","");
   if(!token&&!chat&&!emailTo)return{ok:false,error:"לא הוגדרו טלגרם/מייל"};
   try{
-    const {data,error}=await sb.functions.invoke("notify",{body:{
-      telegram_bot_token:token,telegram_chat_id:chat,text,
-      email_to:emailTo,email_subject:"כדורסל – התראה",email_body:emailBody||text
-    }});
+    const {data,error}=await sb.functions.invoke("notify",{body:{telegram_bot_token:token,telegram_chat_id:chat,text,email_to:emailTo,email_subject:"כדורסל – התראה",email_body:emailBody||text}});
     if(error)return{ok:false,error:error.message||String(error)};
-    if(data&&data.telegram&&data.telegram.ok===false)return{ok:false,error:"טלגרם: "+(data.telegram.description||"שגיאה")};
     return{ok:true,data};
   }catch(e){return{ok:false,error:String(e)}}
 }
-async function notifyAdmin(event_type,text,payload){
-  await logEvent(event_type,Object.assign({text},payload||{}));
-  return notifyExternal(text,text);
-}
+async function notifyAdmin(event_type,text,payload){await logEvent(event_type,Object.assign({text},payload||{}));return notifyExternal(text,text)}
 async function notifyPlayerEmail(email,subject,body){
   if(!email)return{ok:false};
-  try{
-    const {data,error}=await sb.functions.invoke("notify",{body:{
-      telegram_bot_token:"",telegram_chat_id:"",text:body,
-      email_to:email,email_subject:subject||"כדורסל",email_body:body
-    }});
-    if(error)return{ok:false,error:error.message||String(error)};
-    return{ok:true,data};
-  }catch(e){return{ok:false,error:String(e)}}
+  try{const {data,error}=await sb.functions.invoke("notify",{body:{telegram_bot_token:"",telegram_chat_id:"",text:body,email_to:email,email_subject:subject||"כדורסל",email_body:body}});if(error)return{ok:false,error:error.message};return{ok:true,data}}catch(e){return{ok:false,error:String(e)}}
 }
-
 async function testNotify(){
   const btn=$("btnTestNotify");setLoading(btn,true,"בודק");
-  try{
-    const r=await notifyAdmin("test","בדיקת התראות מכדורסל v2 – "+new Date().toLocaleString("he-IL"),{});
-    if(r&&r.ok)showAdminMsg("נשלח ✓ בדוק טלגרם/מייל",true);
-    else showAdminMsg("נכשל: "+(r&&r.error?r.error:"שגיאה"),false);
-  }catch(e){showAdminMsg("שגיאה: "+String(e),false)}
-  finally{setLoading(btn,false,"בדיקת התראות")}
+  try{const r=await notifyAdmin("test","בדיקת התראות – "+new Date().toLocaleString("he-IL"),{});showAdminMsg(r&&r.ok?"נשלח ✓":("נכשל: "+(r&&r.error)),!!(r&&r.ok))}
+  catch(e){showAdminMsg(String(e),false)}finally{setLoading(btn,false,"בדיקת התראות")}
 }
 
-/* —— Sheets Collection —— */
+/* —— Sheets: מקור האמת —— */
 async function syncBalancesFromSheet(silent){
   if(syncingBalances)return;
   syncingBalances=true;
   try{
     const {data,error}=await sb.functions.invoke("collection",{body:{action:"sync"}});
-    if(error){console.warn("sync",error);if(!silent)showAdminMsg(error.message||"שגיאת סנכרון",false);return}
-    if(!data||!data.ok){console.warn("sync",data);if(!silent)showAdminMsg((data&&data.error)||"סנכרון נכשל",false);return}
+    if(error||!data||!data.ok){console.warn("sync",error||data);if(!silent)showAdminMsg((error&&error.message)||(data&&data.error)||"סנכרון נכשל",false);return}
     await loadProfiles();
     if(currentUser){
       const {data:me}=await sb.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
@@ -420,98 +380,115 @@ async function syncBalancesFromSheet(silent){
   finally{syncingBalances=false}
 }
 
-async function sheetWriteDebtBulk(game, countsByUid) {
-  const items = [];
-  const skipped = [];
+async function chargeCurrentGame(){
+  if(!currentGame)return showAdminMsg("אין משחק",false);
+  await loadProfiles();
 
-  for (const uid of Object.keys(countsByUid || {})) {
-    const p = profileMap[uid];
-    const cname = ((p && p.collection_name) || "").trim();
-    if (!cname) {
-      skipped.push((p && p.name) || uid);
-      await sb.from("payment_log").insert({
-        game_id: game.id,
-        email: (p && p.email) || "",
-        collection_name: "",
-        amount: -gamePrice() * countsByUid[uid],
-        status: "skipped_no_match",
-        note: "אין collection_name – " + ((p && p.name) || uid),
+  const {data:regs}=await sb.from("registrations").select("registered_by").eq("game_id",currentGame.id).eq("status","main");
+  if(!regs||!regs.length)return showAdminMsg("אין שחקנים ב-main",false);
+
+  const counts={};
+  regs.forEach(r=>{if(!r.registered_by)return;counts[r.registered_by]=(counts[r.registered_by]||0)+1});
+
+  const items=[];
+  const noMatch=[];
+  for(const uid of Object.keys(counts)){
+    const p=profileMap[uid];
+    const cname=((p&&p.collection_name)||"").trim();
+    if(!cname){noMatch.push((p&&p.name)||uid);continue}
+    items.push({name:cname,amount:-Math.abs(gamePrice()*counts[uid]),displayName:(p&&p.name)||cname,count:counts[uid]});
+  }
+
+  let msg="חיוב שבוע "+currentGame.game_date+"\n\n";
+  msg+="ייכתבו לשיטס (רק תאים ריקים): "+items.length+"\n";
+  if(noMatch.length)msg+="\n⚠ בלי התאמה לשיטס (בדוק ידנית):\n- "+noMatch.join("\n- ")+"\n";
+  msg+="\nתאים שכבר מלאים ידולגו (בלי דריסה).\nהיתרה ב-DB תתעדכן מסנכרון אחרי הכתיבה.\n\nלהמשיך?";
+  if(!confirm(msg))return;
+
+  const btn=$("btnChargeGame");setLoading(btn,true,"מחייב");
+  try{
+    let results=[];
+    if(items.length){
+      const {data,error}=await sb.functions.invoke("collection",{
+        body:{action:"charge_bulk",gameDate:currentGame.game_date,items:items.map(it=>({name:it.name,amount:it.amount}))}
       });
-      continue;
-    }
-    items.push({
-      name: cname,
-      amount: -Math.abs(gamePrice() * countsByUid[uid]),
-    });
-  }
-
-  if (!items.length) {
-    return {
-      ok: false,
-      error:
-        "אין שחקנים עם collection_name. דולגו: " +
-        (skipped.join(", ") || "—"),
-      results: [],
-    };
-  }
-
-  try {
-    const { data, error } = await sb.functions.invoke("collection", {
-      body: {
-        action: "charge_bulk",
-        gameDate: game.game_date,
-        items: items,
-      },
-    });
-
-    if (error) {
-      return { ok: false, error: error.message || String(error), results: [] };
+      if(error){showAdminMsg("שיטס: "+error.message,false);return}
+      if(!data||data.ok===false){showAdminMsg("שיטס: "+((data&&data.error)||"שגיאה"),false);return}
+      results=data.results||[];
+      for(const r of results){
+        await sb.from("payment_log").insert({
+          game_id:currentGame.id,collection_name:r.name||"",amount:r.amount!=null?r.amount:0,
+          status:r.status||(r.ok?"written":"error"),
+          note:"sheets Debt weekly "+(r.error||r.status||"")
+        });
+      }
+      for(const name of noMatch){
+        await sb.from("payment_log").insert({
+          game_id:currentGame.id,collection_name:"",amount:0,status:"skipped_no_match",
+          note:"אין collection_name – "+name
+        });
+      }
     }
 
-    const results = (data && data.results) || [];
-    for (const r of results) {
-      await sb.from("payment_log").insert({
-        game_id: game.id,
-        collection_name: r.name || "",
-        amount: r.amount != null ? r.amount : 0,
-        status: r.status || (r.ok ? "written" : "error"),
-        note:
-          "sheets Debt " +
-          (r.error || r.status || "") +
-          (r.col ? " col=" + r.col : ""),
-      });
-    }
+    const written=results.filter(r=>r.status==="written").length;
+    const skipped=results.filter(r=>r.status==="skipped_exists").length;
+    const failed=results.filter(r=>r.error||r.ok===false).length;
 
-    if (!data || data.ok === false) {
-      return {
-        ok: false,
-        error: (data && data.error) || "charge_bulk failed",
-        results,
-        raw: data,
-      };
-    }
-    return { ok: true, results, raw: data };
-  } catch (e) {
-    return { ok: false, error: String(e), results: [] };
-  }
+    const nowIso=new Date().toISOString();
+    await sb.from("games").update({charged_at:nowIso}).eq("id",currentGame.id);
+    currentGame.charged_at=nowIso;
+    updateGeneralButtons();
+
+    let out="שיטס נכתב: "+written+", דולג (מלא): "+skipped+", שגיאה: "+failed;
+    if(noMatch.length)out+=" | בלי התאמה: "+noMatch.join(", ");
+    showAdminMsg(out,failed===0);
+
+    notifyAdmin("charge","חיוב שבוע "+currentGame.game_date+" · נכתב "+written,{game_id:currentGame.id});
+    await syncBalancesFromSheet(true);
+  }finally{setLoading(btn,false,"חיוב שבוע זה")}
 }
 
-async function sheetPaid(collectionName, amount, uid){
-  if(!currentGame||!collectionName)return;
-  try{
-    const {data}=await sb.functions.invoke("collection",{
-      body:{action:"paid",name:collectionName,gameDate:currentGame.game_date,amount:Math.abs(amount)}
+/** פאנל יתרות: כתיבה לשיטס בלבד (+ שאלת דריסה) ואז סנכרון */
+async function adjustBalance(uid,delta){
+  const p=profileMap[uid];if(!p)return;
+  const amount=Number(delta);if(!amount||isNaN(amount))return showAdminMsg("סכום לא תקין",false);
+  if(!currentGame)return showAdminMsg("אין משחק פתוח – לא ניתן לכתוב לשיטס",false);
+  const cname=(p.collection_name||"").trim();
+  if(!cname)return showAdminMsg("חסר collection_name לפרופיל "+p.name,false);
+
+  const kind=amount>0?"paid":"debt";
+  const sheetAmount=amount>0?Math.abs(amount):-Math.abs(amount);
+
+  async function write(force){
+    const {data,error}=await sb.functions.invoke("collection",{
+      body:{action:kind,name:cname,gameDate:currentGame.game_date,amount:sheetAmount,force:!!force}
     });
-    await sb.from("payment_log").insert({
-      game_id:currentGame.id,
-      email:(profileMap[uid]&&profileMap[uid].email)||"",
-      collection_name:collectionName,
-      amount:Math.abs(amount),
-      status:(data&&data.status)||(data&&data.ok?"written":"error"),
-      note:"sheets Paid "+((data&&data.error)||"")
-    });
-    return data;
-  }catch(e){console.warn(e)}
+    if(error)return{ok:false,error:error.message};
+    return data||{ok:false,error:"no data"};
+  }
+
+  let res=await write(false);
+  if(res&&res.status==="skipped_exists"){
+    const prev=res.existing;
+    if(!confirm("בשיטס כבר רשום: "+prev+"\nלדרוס?")){
+      showAdminMsg("בוטל – לא נכתב",false);return;
+    }
+    res=await write(true);
+  }
+
+  if(!res||res.ok===false){
+    showAdminMsg("שיטס נכשל: "+((res&&res.error)||"שגיאה"),false);return;
+  }
+
+  await sb.from("payment_log").insert({
+    game_id:currentGame.id,email:p.email||"",collection_name:cname,
+    amount:sheetAmount,status:res.status||"written",
+    note:"sheets "+(kind==="paid"?"Paid":"Debt")+" panel"
+  });
+
+  showAdminMsg("נרשם בשיטס ("+(res.status||"written")+") – מסנכרן יתרה...",true);
+  await syncBalancesFromSheet(true);
+  await loadBalanceList();
 }
 
 function phoneToWa(phone){if(!phone)return"";let p=String(phone).replace(/\D/g,"");if(p.startsWith("0"))p="972"+p.slice(1);return p}
@@ -528,57 +505,35 @@ function switchAdminTab(name){
   if(name==="archive")loadArchive();
   if(name==="settings")fillSettingsForm();
 }
-function updatePendingBadge(){
-  const badge=$("pendingBadge");
-  if(pendingCount>0){badge.textContent=String(pendingCount);badge.classList.remove("hidden")}
-  else badge.classList.add("hidden");
-}
+function updatePendingBadge(){const badge=$("pendingBadge");if(pendingCount>0){badge.textContent=String(pendingCount);badge.classList.remove("hidden")}else badge.classList.add("hidden")}
 function showSignup(on){$("loginFields").classList.toggle("hidden",on);$("signupFields").classList.toggle("hidden",!on);$("loginMsg").classList.add("hidden")}
 
 async function signup(){
-  const name=$("signupName").value.trim();
-  const email=$("signupEmail").value.trim().toLowerCase();
-  const password=$("signupPassword").value;
+  const name=$("signupName").value.trim(),email=$("signupEmail").value.trim().toLowerCase(),password=$("signupPassword").value;
   if(!name||!email||password.length<6)return showLoginMsg("שם, מייל וסיסמה (6+) נדרשים",false);
   const btn=$("btnSignup");setLoading(btn,true,"שולח");
   const {data,error}=await sb.auth.signUp({email,password,options:{data:{name}}});
   setLoading(btn,false,"שליחת בקשה");
   if(error)return showLoginMsg(error.message,false);
-  const uid=data.user?.id;
-  if(uid){
-    await sb.from("pending_users").insert({user_id:uid,email,name,source:"signup",status:"pending"});
-    notifyAdmin("pending_join","בקשת הצטרפות חדשה: "+name+" ("+email+")",{email,name});
-  }
-  currentUser=data.user;
-  $("loginScreen").classList.add("hidden");
-  $("pendingScreen").classList.remove("hidden");
+  if(data.user?.id){await sb.from("pending_users").insert({user_id:data.user.id,email,name,source:"signup",status:"pending"});notifyAdmin("pending_join","בקשה: "+name+" ("+email+")",{})}
+  currentUser=data.user;$("loginScreen").classList.add("hidden");$("pendingScreen").classList.remove("hidden");
 }
-
 async function login(){
-  const email=$("email").value.trim().toLowerCase();
-  const password=$("password").value;
+  const email=$("email").value.trim().toLowerCase(),password=$("password").value;
   if(!email||!password)return showLoginMsg("נא למלא מייל וסיסמה",false);
-  const guard=checkLoginAllowed(email);
-  if(!guard.ok)return showLoginMsg(guard.msg,false);
+  const guard=checkLoginAllowed(email);if(!guard.ok)return showLoginMsg(guard.msg,false);
   const btn=$("btnLogin");setLoading(btn,true,"מתחבר");
   const {data,error}=await sb.auth.signInWithPassword({email,password});
   setLoading(btn,false,"התחברות");
   if(error){recordLoginFail(email);return showLoginMsg(error.message,false)}
-  recordLoginOk(email);
-  currentUser=data.user;
-  await afterLogin();
+  recordLoginOk(email);currentUser=data.user;await afterLogin();
 }
-
 async function afterLogin(){
   const {data:profile}=await sb.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
   if(!profile){
     const {data:existing}=await sb.from("pending_users").select("id").eq("user_id",currentUser.id).eq("status","pending").maybeSingle();
-    if(!existing){
-      await sb.from("pending_users").insert({user_id:currentUser.id,email:currentUser.email,name:currentUser.email?.split("@")[0]||"משתמש",source:"login",status:"pending"});
-      notifyAdmin("pending_join","בקשת הצטרפות: "+currentUser.email,{email:currentUser.email});
-    }
-    $("loginScreen").classList.add("hidden");$("appScreen").classList.add("hidden");$("pendingScreen").classList.remove("hidden");
-    return;
+    if(!existing){await sb.from("pending_users").insert({user_id:currentUser.id,email:currentUser.email,name:currentUser.email?.split("@")[0]||"משתמש",source:"login",status:"pending"});notifyAdmin("pending_join","בקשה: "+currentUser.email,{})}
+    $("loginScreen").classList.add("hidden");$("appScreen").classList.add("hidden");$("pendingScreen").classList.remove("hidden");return;
   }
   currentProfile=profile;
   $("loginScreen").classList.add("hidden");$("pendingScreen").classList.add("hidden");$("appScreen").classList.remove("hidden");
@@ -588,94 +543,24 @@ async function afterLogin(){
   await loadSettings();await loadProfiles();
   if(profile.is_admin)await refreshPendingCount();
   $("mainList").innerHTML=skeleton(8);$("waitList").innerHTML=skeleton(3);
-  await loadList();
-  startAutoRefresh();
-  maybeShowAnnouncement();
-  showDebtPopupIfNeeded();
+  await loadList();startAutoRefresh();maybeShowAnnouncement();showDebtPopupIfNeeded();
   syncBalancesFromSheet(true);
 }
-
-async function logout(){
-  stopAutoRefresh();
-  await sb.auth.signOut();
-  currentUser=null;currentProfile=null;currentGame=null;
-  $("appScreen").classList.add("hidden");$("pendingScreen").classList.add("hidden");$("loginScreen").classList.remove("hidden");
-  showSignup(false);
-}
-
-function updateBalanceUI(){
-  const el=$("userBalance");
-  if(!currentProfile||currentProfile.balance==null){el.classList.add("hidden");return}
-  const n=Number(currentProfile.balance);
-  el.textContent=(n>0?"+":"")+n+"₪";el.classList.remove("hidden");el.classList.toggle("debt",n<0);
-}
-function showDebtPopupIfNeeded(){
-  if(!currentProfile)return;
-  const n=Number(currentProfile.balance);
-  if(isNaN(n)||n>=0)return;
-  $("debtAmountText").textContent=n+"₪";
-  $("debtBlockHint").textContent=isBlocked()?"ההרשמה חסומה עד להסדרת חוב מעל "+maxDebt()+"₪.":"אפשר להירשם, אך מומלץ להסדיר את החוב.";
-  $("debtModal").classList.remove("hidden");
-}
-
-async function loadSettings(){
-  const {data}=await sb.from("settings").select("key,value");
-  settings={};(data||[]).forEach(r=>settings[r.key]=r.value);
-}
-async function loadProfiles(){
-  const {data}=await sb.from("profiles").select("id,email,name,symbol,phone,collection_name,balance,is_admin");
-  profileMap={};(data||[]).forEach(p=>profileMap[p.id]=p);
-}
-
-function friendOpenNow(){
-  if(!currentGame)return false;
-  const hour=parseInt(getSetting("friend_open_hour","12"),10);
-  const d=new Date(currentGame.game_date+"T00:00:00");d.setDate(d.getDate()-1);d.setHours(hour,0,0,0);
-  return new Date()>=d;
-}
-function isPastLockTime(game){
-  if(!game)return false;
-  const lockHour=parseInt(getSetting("lock_hour","20"),10);
-  const lockTime=new Date(game.game_date+"T00:00:00");lockTime.setHours(lockHour,0,0,0);
-  return new Date()>=lockTime;
-}
+async function logout(){stopAutoRefresh();await sb.auth.signOut();currentUser=null;currentProfile=null;currentGame=null;$("appScreen").classList.add("hidden");$("pendingScreen").classList.add("hidden");$("loginScreen").classList.remove("hidden");showSignup(false)}
+function updateBalanceUI(){const el=$("userBalance");if(!currentProfile||currentProfile.balance==null){el.classList.add("hidden");return}const n=Number(currentProfile.balance);el.textContent=(n>0?"+":"")+n+"₪";el.classList.remove("hidden");el.classList.toggle("debt",n<0)}
+function showDebtPopupIfNeeded(){if(!currentProfile)return;const n=Number(currentProfile.balance);if(isNaN(n)||n>=0)return;$("debtAmountText").textContent=n+"₪";$("debtBlockHint").textContent=isBlocked()?"ההרשמה חסומה עד להסדרת חוב מעל "+maxDebt()+"₪.":"מומלץ להסדיר את החוב.";$("debtModal").classList.remove("hidden")}
+async function loadSettings(){const {data}=await sb.from("settings").select("key,value");settings={};(data||[]).forEach(r=>settings[r.key]=r.value)}
+async function loadProfiles(){const {data}=await sb.from("profiles").select("id,email,name,symbol,phone,collection_name,balance,is_admin");profileMap={};(data||[]).forEach(p=>profileMap[p.id]=p)}
+function friendOpenNow(){if(!currentGame)return false;const hour=parseInt(getSetting("friend_open_hour","12"),10);const d=new Date(currentGame.game_date+"T00:00:00");d.setDate(d.getDate()-1);d.setHours(hour,0,0,0);return new Date()>=d}
+function isPastLockTime(game){if(!game)return false;const lockHour=parseInt(getSetting("lock_hour","20"),10);const lockTime=new Date(game.game_date+"T00:00:00");lockTime.setHours(lockHour,0,0,0);return new Date()>=lockTime}
 function isGameLocked(game){if(!game)return true;return game.status==="locked"||isPastLockTime(game)}
-function isLateCancel(){
-  if(!currentGame)return false;
-  const lateHour=parseInt(getSetting("late_cancel_hour","17"),10);
-  const d=new Date(currentGame.game_date+"T00:00:00");d.setHours(lateHour,0,0,0);
-  return new Date()>=d;
-}
-function activeAnnouncement(){
-  const text=String(getSetting("announcement_text","")).trim();if(!text)return null;
-  const from=getSetting("announcement_from","");const to=getSetting("announcement_to","");
-  const now=new Date();now.setHours(12,0,0,0);
-  if(from){const f=new Date(from);f.setHours(0,0,0,0);if(now<f)return null}
-  if(to){const t=new Date(to);t.setHours(23,59,59,999);if(now>t)return null}
-  return text;
-}
-function maybeShowAnnouncement(){
-  const text=activeAnnouncement();if(!text)return;
-  if(sessionStorage.getItem(ANNOUNCE_KEY)===text)return;
-  $("announceBody").textContent=text;$("announceModal").classList.remove("hidden");
-  sessionStorage.setItem(ANNOUNCE_KEY,text);
-}
+function isLateCancel(){if(!currentGame)return false;const lateHour=parseInt(getSetting("late_cancel_hour","17"),10);const d=new Date(currentGame.game_date+"T00:00:00");d.setHours(lateHour,0,0,0);return new Date()>=d}
+function activeAnnouncement(){const text=String(getSetting("announcement_text","")).trim();if(!text)return null;const from=getSetting("announcement_from","");const to=getSetting("announcement_to","");const now=new Date();now.setHours(12,0,0,0);if(from){const f=new Date(from);f.setHours(0,0,0,0);if(now<f)return null}if(to){const t=new Date(to);t.setHours(23,59,59,999);if(now>t)return null}return text}
+function maybeShowAnnouncement(){const text=activeAnnouncement();if(!text)return;if(sessionStorage.getItem(ANNOUNCE_KEY)===text)return;$("announceBody").textContent=text;$("announceModal").classList.remove("hidden");sessionStorage.setItem(ANNOUNCE_KEY,text)}
 function openRules(){$("rulesBody").textContent=getSetting("rules_text","")||"אין חוקים מוגדרים.";$("rulesModal").classList.remove("hidden")}
-function startAutoRefresh(){
-  stopAutoRefresh();
-  const sec=parseInt(getSetting("auto_refresh_sec","30"),10);
-  if(!sec||sec<5)return;
-  refreshTimer=setInterval(()=>{if(!$("adminModal").classList.contains("hidden"))return;loadList(true)},sec*1000);
-}
+function startAutoRefresh(){stopAutoRefresh();const sec=parseInt(getSetting("auto_refresh_sec","30"),10);if(!sec||sec<5)return;refreshTimer=setInterval(()=>{if(!$("adminModal").classList.contains("hidden"))return;loadList(true)},sec*1000)}
 function stopAutoRefresh(){if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}}
-
-async function ensureDbLock(game){
-  if(!game||game.status!=="open")return game;
-  if(!isPastLockTime(game))return game;
-  if(currentProfile?.is_admin)await sb.from("games").update({status:"locked"}).eq("id",game.id);
-  return Object.assign({},game,{status:"locked"});
-}
-
+async function ensureDbLock(game){if(!game||game.status!=="open")return game;if(!isPastLockTime(game))return game;if(currentProfile?.is_admin)await sb.from("games").update({status:"locked"}).eq("id",game.id);return Object.assign({},game,{status:"locked"})}
 function updateGeneralButtons(){
   const btnLock=$("btnLockGame"),btnOpen=$("btnOpenGame"),btnCharge=$("btnChargeGame"),st=$("chargeStatus");
   if(!btnLock)return;
@@ -683,166 +568,36 @@ function updateGeneralButtons(){
   const dbLocked=currentGame.status==="locked";
   btnLock.classList.toggle("hidden",dbLocked);btnOpen.classList.toggle("hidden",!dbLocked);
   if(currentGame.charged_at){btnCharge.textContent="חויב ✓";st.textContent="חויב ב: "+new Date(currentGame.charged_at).toLocaleString("he-IL")}
-  else{btnCharge.textContent="חיוב שבוע זה";st.textContent=dbLocked?"טרם בוצע חיוב לשבוע זה":"מומלץ לנעול לפני חיוב"}
+  else{btnCharge.textContent="חיוב שבוע זה";st.textContent=dbLocked?"טרם בוצע חיוב":"מומלץ לנעול לפני חיוב"}
   btnCharge.disabled=false;
 }
-
-async function lockGameOnly(){
-  if(!currentGame)return showAdminMsg("אין משחק",false);
-  if(currentGame.status==="locked")return showAdminMsg("כבר נעול",false);
-  if(!confirm("לנעול את ההרשמה? (בלי חיוב)"))return;
-  const {error}=await sb.from("games").update({status:"locked"}).eq("id",currentGame.id);
-  if(error)return showAdminMsg(error.message,false);
-  currentGame.status="locked";
-  showAdminMsg("ההרשמה ננעלה",true);
-  notifyAdmin("lock","ננעלה הרשמה למשחק "+currentGame.game_date,{game_id:currentGame.id});
-  updateGeneralButtons();await loadList();
-}
-async function openGameOnly(){
-  if(!currentGame)return showAdminMsg("אין משחק",false);
-  if(currentGame.status!=="locked")return showAdminMsg("המשחק לא נעול",false);
-  if(!confirm("לפתוח מחדש את ההרשמה?"))return;
-  const {error}=await sb.from("games").update({status:"open"}).eq("id",currentGame.id);
-  if(error)return showAdminMsg(error.message,false);
-  currentGame.status="open";
-  showAdminMsg("ההרשמה נפתחה מחדש",true);
-  notifyAdmin("unlock","נפתחה הרשמה למשחק "+currentGame.game_date,{game_id:currentGame.id});
-  updateGeneralButtons();await loadList();
-}
-
-async function applyDebtsForGame(game,opts){
-  opts=opts||{};const price=gamePrice();
-  const {data:regs}=await sb.from("registrations").select("registered_by").eq("game_id",game.id).eq("status","main");
-  if(!regs||!regs.length)return{count:0,counts:{}};
-  const counts={};
-  regs.forEach(r=>{if(!r.registered_by)return;counts[r.registered_by]=(counts[r.registered_by]||0)+1});
-  let n=0;
-  for(const uid of Object.keys(counts)){
-    const {data:prof}=await sb.from("profiles").select("balance,email,name").eq("id",uid).maybeSingle();
-    if(!prof)continue;
-    const debit=price*counts[uid];const next=Number(prof.balance||0)-debit;
-    const {error}=await sb.from("profiles").update({balance:next}).eq("id",uid);
-    if(error)return{error:error.message,counts};
-    await sb.from("payment_log").insert({
-      game_id:game.id,email:prof.email||"",collection_name:prof.name||"",
-      amount:-debit,status:"written",
-      note:(opts.force?"חיוב חוזר · ":"")+"supabase "+counts[uid]+" הרשמות"
-    });
-    n+=counts[uid];
-  }
-  return{count:n,counts};
-}
-
-async function chargeCurrentGame() {
-  if (!currentGame) return showAdminMsg("אין משחק", false);
-  if (currentGame.charged_at) {
-    if (!confirm("השבוע כבר חויב.\nלחיוב חוזר?")) return;
-    if (!confirm("אישור סופי לחיוב חוזר?")) return;
-  } else if (!confirm("לחייב את רשימת המשחק? (Supabase + Sheets)")) return;
-
-  const btn = $("btnChargeGame");
-  setLoading(btn, true, "מחייב");
-  try {
-    await loadProfiles();
-    const result = await applyDebtsForGame(currentGame, {
-      force: !!currentGame.charged_at,
-    });
-    if (result.error) {
-      showAdminMsg(result.error, false);
-      return;
-    }
-
-    const sheetRes = await sheetWriteDebtBulk(
-      currentGame,
-      result.counts || {}
-    );
-    console.log("sheet charge result", sheetRes);
-
-    const nowIso = new Date().toISOString();
-    await sb.from("games").update({ charged_at: nowIso }).eq("id", currentGame.id);
-    currentGame.charged_at = nowIso;
-    updateGeneralButtons();
-
-if (!sheetRes.ok) {
-  showAdminMsg(
-    "DB חויב | שיטס נכשל: " + (sheetRes.error || JSON.stringify(sheetRes.raw || sheetRes).slice(0, 180)),
-    false
-  );
-} else {
-  const results = sheetRes.results || [];
-  const written = results.filter((r) => r.status === "written").length;
-  const skipped = results.filter((r) => r.status === "skipped_exists").length;
-  const failed = results.filter((r) => r.error || r.status === "error" || r.ok === false);
-  let msg =
-    "DB: " + result.count +
-    " | שיטס נכתב: " + written +
-    ", דולג: " + skipped +
-    ", שגיאה: " + failed.length;
-  if (failed.length) {
-    msg += " → " + (failed[0].error || failed[0].status || "unknown");
-    if (failed[0].name) msg += " (" + failed[0].name + ")";
-  }
-  showAdminMsg(msg, failed.length === 0);
-}
-
-    notifyAdmin(
-      "charge",
-      "בוצע חיוב למשחק " + currentGame.game_date + " · " + result.count,
-      { game_id: currentGame.id }
-    );
-    syncBalancesFromSheet(true);
-    const { data: me } = await sb
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .maybeSingle();
-    if (me) {
-      currentProfile = me;
-      updateBalanceUI();
-    }
-  } finally {
-    setLoading(btn, false, "חיוב שבוע זה");
-  }
-}
-
+async function lockGameOnly(){if(!currentGame)return showAdminMsg("אין משחק",false);if(currentGame.status==="locked")return showAdminMsg("כבר נעול",false);if(!confirm("לנעול?"))return;const {error}=await sb.from("games").update({status:"locked"}).eq("id",currentGame.id);if(error)return showAdminMsg(error.message,false);currentGame.status="locked";showAdminMsg("ננעל",true);notifyAdmin("lock","ננעל "+currentGame.game_date,{});updateGeneralButtons();await loadList()}
+async function openGameOnly(){if(!currentGame)return showAdminMsg("אין משחק",false);if(currentGame.status!=="locked")return showAdminMsg("לא נעול",false);if(!confirm("לפתוח מחדש?"))return;const {error}=await sb.from("games").update({status:"open"}).eq("id",currentGame.id);if(error)return showAdminMsg(error.message,false);currentGame.status="open";showAdminMsg("נפתח",true);updateGeneralButtons();await loadList()}
 async function sendWeeklyReport(){
   if(!currentGame)return showAdminMsg("אין משחק",false);
   const btn=$("btnWeeklyReport");setLoading(btn,true,"שולח");
   try{
     const {data:regs}=await sb.from("registrations").select("*").eq("game_id",currentGame.id).order("position");
     const main=(regs||[]).filter(r=>r.status==="main");
-    const canc=(regs||[]).filter(r=>r.status==="cancelled"||r.status==="cancelled_late");
-    let text="דוח משחק "+currentGame.game_date+" · "+currentGame.status+"\n\nרשימת משחק:\n";
-    main.forEach(r=>{text+=r.position+". "+r.player_name+" · רשם: "+(profileMap[r.registered_by]?.name||"?")+"\n"});
-    text+="\nביטולים:\n";
-    if(!canc.length)text+="אין\n";
-    canc.forEach(r=>{text+=r.player_name+" · "+r.status+" · "+(r.cancelled_at||"")+"\n"});
-    const r=await notifyAdmin("weekly_report",text,{game_id:currentGame.id});
-    if(r&&r.ok)showAdminMsg("הדוח נשלח ✓",true);
-    else showAdminMsg("שליחה נכשלה: "+(r&&r.error?r.error:"בדוק Function"),false);
-  }catch(e){showAdminMsg(String(e),false)}
-  finally{setLoading(btn,false,"שלח דוח שבועי")}
+    let text="דוח "+currentGame.game_date+"\n\n";
+    main.forEach(r=>{text+=r.position+". "+r.player_name+"\n"});
+    const r=await notifyAdmin("weekly_report",text,{});
+    showAdminMsg(r&&r.ok?"נשלח ✓":("נכשל: "+(r&&r.error)),!!(r&&r.ok));
+  }catch(e){showAdminMsg(String(e),false)}finally{setLoading(btn,false,"שלח דוח שבועי")}
 }
 
 async function loadList(silent){
   if(!silent)$("mainList").innerHTML=skeleton(6);
   const {data:games,error:gErr}=await sb.from("games").select("*").in("status",["open","locked"]).order("game_date",{ascending:false}).limit(1);
   if(gErr){$("gameInfo").textContent="שגיאה";$("mainList").innerHTML=`<div class="empty">${escapeHtml(gErr.message)}</div>`;return}
-  if(!games||!games.length){
-    currentGame=null;lastRegs=[];
-    $("gameInfo").textContent="אין משחק פתוח";
-    $("mainList").innerHTML=`<div class="empty">אין משחק</div>`;$("waitList").innerHTML=`<div class="empty">—</div>`;
-    $("freeSpots").textContent="";updateButtons(true);updateGeneralButtons();return;
-  }
+  if(!games||!games.length){currentGame=null;lastRegs=[];$("gameInfo").textContent="אין משחק פתוח";$("mainList").innerHTML=`<div class="empty">אין משחק</div>`;$("waitList").innerHTML=`<div class="empty">—</div>`;$("freeSpots").textContent="";updateButtons(true);updateGeneralButtons();return}
   currentGame=await ensureDbLock(games[0]);
   const locked=isGameLocked(currentGame);
   $("gameInfo").textContent=`משחק ${currentGame.game_date}`+(locked?" · סגור":" · פתוח")+(!locked?(friendOpenNow()?" · חברים: פתוח":" · חברים: סגור"):"");
-
   const {data:regs,error:rErr}=await sb.from("registrations").select("*").eq("game_id",currentGame.id).in("status",["main","waitlist"]).order("position",{ascending:true});
   if(rErr){$("mainList").innerHTML=`<div class="empty">${escapeHtml(rErr.message)}</div>`;return}
   lastRegs=regs||[];
-  const main=lastRegs.filter(r=>r.status==="main");
-  const wait=lastRegs.filter(r=>r.status==="waitlist");
+  const main=lastRegs.filter(r=>r.status==="main");const wait=lastRegs.filter(r=>r.status==="waitlist");
   $("mainList").innerHTML=main.length?main.map(r=>rowHtml(r,locked)).join(""):`<div class="empty">ריקה</div>`;
   $("waitList").innerHTML=wait.length?wait.map(r=>rowHtml(r,locked)).join(""):`<div class="empty">ריקה</div>`;
   $("freeSpots").textContent=`פנויים: ${Math.max(0,currentGame.max_players-main.length)} / ${currentGame.max_players}`;
@@ -850,21 +605,8 @@ async function loadList(silent){
   if(lastPromote)renderPromoteBox();
   if(!silent)syncBalancesFromSheet(true);
 }
-
-function displayName(r){
-  let label=r.player_name;
-  if(!r.player_email)label=r.player_name+(r.registered_by===currentUser.id?" (חבר)":"");
-  if(r.player_email){
-    const self=Object.values(profileMap).find(x=>x.email&&x.email.toLowerCase()===String(r.player_email).toLowerCase());
-    if(self?.symbol)label+=" "+self.symbol;
-  }
-  return label;
-}
-function rowHtml(r,locked){
-  const mine=r.registered_by===currentUser.id;
-  const cancelBtn=(mine&&!locked)?`<button type="button" class="btn-minus" data-cancel="${r.id}" title="ביטול">−</button>`:"";
-  return `<div class="list-item"><span class="num">${r.position||""}.</span><span class="name">${escapeHtml(displayName(r))}</span>${cancelBtn}</div>`;
-}
+function displayName(r){let label=r.player_name;if(!r.player_email)label=r.player_name+(r.registered_by===currentUser.id?" (חבר)":"");if(r.player_email){const self=Object.values(profileMap).find(x=>x.email&&x.email.toLowerCase()===String(r.player_email).toLowerCase());if(self?.symbol)label+=" "+self.symbol}return label}
+function rowHtml(r,locked){const mine=r.registered_by===currentUser.id;const cancelBtn=(mine&&!locked)?`<button type="button" class="btn-minus" data-cancel="${r.id}">−</button>`:"";return `<div class="list-item"><span class="num">${r.position||""}.</span><span class="name">${escapeHtml(displayName(r))}</span>${cancelBtn}</div>`}
 function updateButtons(locked){
   const btn=$("btnReg"),btnFriend=$("btnFriend");
   if(!currentGame||locked){btn.disabled=true;btn.textContent="סגור";btnFriend.classList.add("hidden");return}
@@ -873,261 +615,113 @@ function updateButtons(locked){
   if(already){btn.disabled=true;btn.textContent="✓ רשום"}else{btn.disabled=false;btn.textContent="+ הרשמה"}
   if(friendOpenNow())btnFriend.classList.remove("hidden");else btnFriend.classList.add("hidden");
 }
-
 async function registerSelf(){
   if(!currentGame||isGameLocked(currentGame))return showMsg("ההרשמה נסגרה",false);
-  if(isBlocked())return showMsg("יש חוב גבוה – ההרשמה חסומה",false);
+  if(isBlocked())return showMsg("יש חוב גבוה",false);
   const btn=$("btnReg");setLoading(btn,true,"נרשם");
   const mainCount=lastRegs.filter(r=>r.status==="main").length;
   const status=mainCount<currentGame.max_players?"main":"waitlist";
-  const {error}=await sb.from("registrations").insert({
-    game_id:currentGame.id,player_name:currentProfile.name,player_email:currentProfile.email,
-    registered_by:currentUser.id,status,position:mainCount+1
-  });
-  if(error){setLoading(btn,false,"+ הרשמה");showMsg(error.message,false);return}
-  await recalculatePositions(currentGame.id);
-  notifyAdmin("register",currentProfile.name+" נרשם ("+status+")",{});
-  showSuccessAnimation();showMsg(status==="main"?"נרשמת בהצלחה!":"נרשמת להמתנה",true);
-  await loadList();
+  const {error}=await sb.from("registrations").insert({game_id:currentGame.id,player_name:currentProfile.name,player_email:currentProfile.email,registered_by:currentUser.id,status,position:mainCount+1});
+  if(error){setLoading(btn,false,"+ הרשמה");return showMsg(error.message,false)}
+  await recalculatePositions(currentGame.id);notifyAdmin("register",currentProfile.name+" נרשם",{});
+  showSuccessAnimation();showMsg(status==="main"?"נרשמת!":"להמתנה",true);await loadList();
 }
-function openFriend(){
-  if(!currentGame||isGameLocked(currentGame))return showMsg("ההרשמה נסגרה",false);
-  if(isBlocked())return showMsg("יש חוב גבוה",false);
-  if(!friendOpenNow())return showMsg("הרשמת חברים עדיין לא נפתחה",false);
-  $("friendName").value="";$("friendModal").classList.remove("hidden");
-}
+function openFriend(){if(!currentGame||isGameLocked(currentGame))return showMsg("נסגרה",false);if(isBlocked())return showMsg("חוב גבוה",false);if(!friendOpenNow())return showMsg("חברים עדיין סגור",false);$("friendName").value="";$("friendModal").classList.remove("hidden")}
 async function registerFriend(){
-  const name=$("friendName").value.trim();if(!name)return showMsg("נא להזין שם",false);
+  const name=$("friendName").value.trim();if(!name)return showMsg("שם חובה",false);
   const btn=$("btnFriendGo");setLoading(btn,true,"רושם");
   const mainCount=lastRegs.filter(r=>r.status==="main").length;
   const status=mainCount<currentGame.max_players?"main":"waitlist";
-  const {error}=await sb.from("registrations").insert({
-    game_id:currentGame.id,player_name:name,player_email:"",registered_by:currentUser.id,status,position:mainCount+1
-  });
-  setLoading(btn,false,"אישור הרשמה");
-  if(error)return showMsg(error.message,false);
-  await recalculatePositions(currentGame.id);
-  notifyAdmin("register_friend",currentProfile.name+" רשם את "+name+" ("+status+")",{});
-  closeModal("friendModal");showSuccessAnimation();showMsg(status==="main"?"החבר נרשם!":"החבר בהמתנה",true);
-  await loadList();
+  const {error}=await sb.from("registrations").insert({game_id:currentGame.id,player_name:name,player_email:"",registered_by:currentUser.id,status,position:mainCount+1});
+  setLoading(btn,false,"אישור הרשמה");if(error)return showMsg(error.message,false);
+  await recalculatePositions(currentGame.id);closeModal("friendModal");showSuccessAnimation();showMsg("החבר נרשם",true);await loadList();
 }
-
 async function cancelReg(id){
-  if(!currentGame||isGameLocked(currentGame))return showMsg("ההרשמה נסגרה",false);
-  const late=isLateCancel();
-  if(!confirm(late?"ביטול מאוחר – ייתכן שתחויב. להמשיך?":"לבטל הרשמה?"))return;
+  if(!currentGame||isGameLocked(currentGame))return showMsg("נסגרה",false);
+  const late=isLateCancel();if(!confirm(late?"ביטול מאוחר – להמשיך?":"לבטל?"))return;
   const before=lastRegs.slice();
-  const {error}=await sb.from("registrations").update({
-    status:late?"cancelled_late":"cancelled",cancelled_at:new Date().toISOString(),position:0
-  }).eq("id",id);
+  const {error}=await sb.from("registrations").update({status:late?"cancelled_late":"cancelled",cancelled_at:new Date().toISOString(),position:0}).eq("id",id);
   if(error)return showMsg(error.message,false);
   const cancelled=before.find(r=>r.id===id);
   const promoted=await recalculatePositions(currentGame.id);
-  notifyAdmin("cancel",(cancelled?cancelled.player_name:"?")+" ביטל"+(late?" (מאוחר)":""),{late});
+  notifyAdmin("cancel",(cancelled?cancelled.player_name:"?")+" ביטל",{late});
   if(promoted)await handlePromoted(promoted,cancelled);
-  showSuccessAnimation();showMsg(late?"בוטל (מאוחר)":"בוטל",true);
-  await loadList();
+  showSuccessAnimation();showMsg("בוטל",true);await loadList();
 }
-
 async function handlePromoted(promoted,cancelled){
   lastPromote={promoted,cancelled};
-  const adminMsg="עלה מההמתנה לרשימה: "+promoted.player_name+(cancelled?" (במקום "+cancelled.player_name+")":"");
-  notifyAdmin("promote",adminMsg,{promoted:promoted.player_name});
-  const playerEmail=(promoted.player_email||"").trim();
-  if(playerEmail){
-    const body="היי"+(promoted.player_name?" "+promoted.player_name:"")+",\n\nהתפנה מקום במשחק הכדורסל.\nעברת לרשימה הראשית (לא בהמתנה).\n"+(currentGame?"תאריך משחק: "+currentGame.game_date+"\n":"")+"\nנתראה בשבת.";
-    notifyPlayerEmail(playerEmail,"כדורסל – עלית לרשימת המשחק",body);
+  notifyAdmin("promote","עלה: "+promoted.player_name,{});
+  if((promoted.player_email||"").trim()){
+    notifyPlayerEmail(promoted.player_email,"כדורסל – עלית לרשימה","היי,\nהתפנה מקום ועברת לרשימה הראשית.\nנתראה בשבת.");
   }
   renderPromoteBox();
 }
 function renderPromoteBox(){
-  const box=$("promoteBox");
-  if(!lastPromote){box.classList.add("hidden");return}
-  const p=lastPromote.promoted;
-  const regBy=profileMap[p.registered_by];
-  const phone=regBy?.phone||"";
-  const isFriend=!p.player_email;
-  const text=isFriend
-    ?("היי, התפנה מקום במשחק הכדורסל.\nהחבר שרשמת ("+p.player_name+") עבר לרשימה הראשית. נתראה בשבת.")
-    :("היי, התפנה מקום במשחק הכדורסל.\nעברת לרשימה הראשית (לא בהמתנה). נתראה בשבת.");
+  const box=$("promoteBox");if(!lastPromote){box.classList.add("hidden");return}
+  const p=lastPromote.promoted;const regBy=profileMap[p.registered_by];const phone=regBy?.phone||"";
+  const text=!p.player_email?("היי, החבר "+p.player_name+" עבר לרשימה הראשית."):("היי, עברת לרשימה הראשית. נתראה בשבת.");
   const link=waLink(phone,text);
   box.classList.remove("hidden");
-  box.innerHTML=`<strong>מישהו עלה מההמתנה:</strong> ${escapeHtml(p.player_name)}
-    ${link?`<br><a class="wa-link" target="_blank" href="${link}">שלח בוואטסאפ</a>`:`<br><span class="empty" style="padding:4px 0">אין טלפון בפרופיל</span>`}
-    <br><button class="btn-sm btn-secondary" style="margin-top:6px" onclick="lastPromote=null;renderPromoteBox()">סגור</button>`;
+  box.innerHTML=`<strong>עלה מהמתנה:</strong> ${escapeHtml(p.player_name)}${link?`<br><a class="wa-link" target="_blank" href="${link}">וואטסאפ</a>`:""}<br><button class="btn-sm btn-secondary" style="margin-top:6px" onclick="lastPromote=null;renderPromoteBox()">סגור</button>`;
 }
-
 async function recalculatePositions(gameId){
-  const {data:game}=await sb.from("games").select("*").eq("id",gameId).single();
-  if(!game)return null;
-  const {data:regs}=await sb.from("registrations").select("*").eq("game_id",gameId).in("status",["main","waitlist"]).order("created_at",{ascending:true});
-  if(!regs)return null;
-  let main=regs.filter(r=>r.status==="main");
-  let wait=regs.filter(r=>r.status==="waitlist");
-  let promoted=null;
-  while(main.length<game.max_players&&wait.length){
-    const next=wait.shift();next.status="main";main.push(next);if(!promoted)promoted=next;
-  }
+  const {data:game}=await sb.from("games").select("*").eq("id",gameId).single();if(!game)return null;
+  const {data:regs}=await sb.from("registrations").select("*").eq("game_id",gameId).in("status",["main","waitlist"]).order("created_at",{ascending:true});if(!regs)return null;
+  let main=regs.filter(r=>r.status==="main"),wait=regs.filter(r=>r.status==="waitlist"),promoted=null;
+  while(main.length<game.max_players&&wait.length){const next=wait.shift();next.status="main";main.push(next);if(!promoted)promoted=next}
   for(let i=0;i<main.length;i++)await sb.from("registrations").update({status:"main",position:i+1}).eq("id",main[i].id);
   for(let i=0;i<wait.length;i++)await sb.from("registrations").update({status:"waitlist",position:i+1}).eq("id",wait[i].id);
   return promoted;
 }
-
-function copyList(){
-  if(!currentGame)return showMsg("אין רשימה",false);
-  const main=lastRegs.filter(r=>r.status==="main");const wait=lastRegs.filter(r=>r.status==="waitlist");
-  let text=`🏀 רשימת משחק – ${currentGame.game_date}\n\n📋 רשימת המשחק:\n`;
-  if(main.length)main.forEach(r=>{text+=`${r.position}. ${displayName(r)}\n`});else text+="אין נרשמים\n";
-  text+=`\n⏳ רשימת המתנה:\n`;
-  if(wait.length)wait.forEach(r=>{text+=`${r.position}. ${displayName(r)}\n`});else text+="ריקה\n";
-  navigator.clipboard.writeText(text).then(()=>showMsg("הועתק!",true)).catch(()=>showMsg("העתקה נכשלה",false));
-}
-function openBit(){const l=getSetting("bit_link","");if(!l)return showMsg("לינק Bit לא מוגדר",false);window.open(l,"_blank")}
-function openPayBox(){const l=getSetting("paybox_link","");if(!l)return showMsg("לינק PayBox לא מוגדר",false);window.open(l,"_blank")}
-
-function openTeams(){
-  const main=lastRegs.filter(r=>r.status==="main");
-  if(main.length<10)return showMsg("צריך לפחות 10 ברשימת המשחק",false);
-  selectedTeamPlayers=[];
-  $("teamsResult").classList.add("hidden");$("btnSplitTeams").classList.remove("hidden");
-  $("teamPickList").classList.remove("hidden");$("teamPickCount").classList.remove("hidden");
-  $("teamPickList").innerHTML=main.map(r=>`<label class="team-pick-item"><input type="checkbox" data-name="${escapeHtml(displayName(r))}" onchange="onTeamPickChange()"><span>${r.position}. ${escapeHtml(displayName(r))}</span></label>`).join("");
-  updateTeamPickCount();$("teamsModal").classList.remove("hidden");
-}
-function onTeamPickChange(){const boxes=[...document.querySelectorAll("#teamPickList input[type=checkbox]")];const checked=boxes.filter(b=>b.checked);if(checked.length>10){checked[checked.length-1].checked=false;showMsg("עד 10 שחקנים",false)}updateTeamPickCount()}
-function updateTeamPickCount(){const n=document.querySelectorAll("#teamPickList input[type=checkbox]:checked").length;$("teamPickCount").textContent="נבחרו: "+n+" / 10"}
-function shuffleArray(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
-function splitTeams(){const names=[...document.querySelectorAll("#teamPickList input[type=checkbox]:checked")].map(b=>b.getAttribute("data-name"));if(names.length!==10)return showMsg("יש לבחור בדיוק 10",false);selectedTeamPlayers=names;renderTeamsResult(shuffleArray(names))}
-function reshuffleTeams(){if(selectedTeamPlayers.length!==10)return;renderTeamsResult(shuffleArray(selectedTeamPlayers))}
-function renderTeamsResult(shuffled){$("teamLight").innerHTML=shuffled.slice(0,5).map(n=>`<li>${n}</li>`).join("");$("teamDark").innerHTML=shuffled.slice(5,10).map(n=>`<li>${n}</li>`).join("");$("teamPickList").classList.add("hidden");$("btnSplitTeams").classList.add("hidden");$("teamPickCount").classList.add("hidden");$("teamsResult").classList.remove("hidden")}
+function copyList(){if(!currentGame)return;const main=lastRegs.filter(r=>r.status==="main");const wait=lastRegs.filter(r=>r.status==="waitlist");let text=`🏀 ${currentGame.game_date}\n\n`;main.forEach(r=>{text+=`${r.position}. ${displayName(r)}\n`});text+=`\nהמתנה:\n`;wait.forEach(r=>{text+=`${r.position}. ${displayName(r)}\n`});navigator.clipboard.writeText(text).then(()=>showMsg("הועתק",true))}
+function openBit(){const l=getSetting("bit_link","");if(l)window.open(l,"_blank")}
+function openPayBox(){const l=getSetting("paybox_link","");if(l)window.open(l,"_blank")}
+function openTeams(){const main=lastRegs.filter(r=>r.status==="main");if(main.length<10)return showMsg("צריך 10",false);selectedTeamPlayers=[];$("teamsResult").classList.add("hidden");$("btnSplitTeams").classList.remove("hidden");$("teamPickList").classList.remove("hidden");$("teamPickCount").classList.remove("hidden");$("teamPickList").innerHTML=main.map(r=>`<label class="team-pick-item"><input type="checkbox" data-name="${escapeHtml(displayName(r))}" onchange="onTeamPickChange()"><span>${r.position}. ${escapeHtml(displayName(r))}</span></label>`).join("");updateTeamPickCount();$("teamsModal").classList.remove("hidden")}
+function onTeamPickChange(){const boxes=[...document.querySelectorAll("#teamPickList input[type=checkbox]")];const checked=boxes.filter(b=>b.checked);if(checked.length>10){checked[checked.length-1].checked=false}updateTeamPickCount()}
+function updateTeamPickCount(){$("teamPickCount").textContent="נבחרו: "+document.querySelectorAll("#teamPickList input:checked").length+" / 10"}
+function shuffleArray(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function splitTeams(){const names=[...document.querySelectorAll("#teamPickList input:checked")].map(b=>b.getAttribute("data-name"));if(names.length!==10)return showMsg("בדיוק 10",false);selectedTeamPlayers=names;renderTeamsResult(shuffleArray(names))}
+function reshuffleTeams(){if(selectedTeamPlayers.length===10)renderTeamsResult(shuffleArray(selectedTeamPlayers))}
+function renderTeamsResult(shuffled){$("teamLight").innerHTML=shuffled.slice(0,5).map(n=>`<li>${n}</li>`).join("");$("teamDark").innerHTML=shuffled.slice(5).map(n=>`<li>${n}</li>`).join("");$("teamPickList").classList.add("hidden");$("btnSplitTeams").classList.add("hidden");$("teamPickCount").classList.add("hidden");$("teamsResult").classList.remove("hidden")}
 function backToTeamPick(){$("teamsResult").classList.add("hidden");$("teamPickList").classList.remove("hidden");$("btnSplitTeams").classList.remove("hidden");$("teamPickCount").classList.remove("hidden")}
-
 async function refreshPendingCount(){const {count}=await sb.from("pending_users").select("*",{count:"exact",head:true}).eq("status","pending");pendingCount=count||0;updatePendingBadge()}
-async function openAdmin(){
-  if(!currentProfile?.is_admin)return;
-  await loadSettings();
-  $("adminAnnounceText").value=getSetting("announcement_text","");
-  $("adminAnnounceFrom").value=getSetting("announcement_from","");
-  $("adminAnnounceTo").value=getSetting("announcement_to","");
-  $("adminRulesText").value=getSetting("rules_text","");
-  $("adminMsg").classList.add("hidden");
-  await refreshPendingCount();
-  switchAdminTab("general");
-  $("adminModal").classList.remove("hidden");
-}
+async function openAdmin(){if(!currentProfile?.is_admin)return;await loadSettings();$("adminAnnounceText").value=getSetting("announcement_text","");$("adminAnnounceFrom").value=getSetting("announcement_from","");$("adminAnnounceTo").value=getSetting("announcement_to","");$("adminRulesText").value=getSetting("rules_text","");$("adminMsg").classList.add("hidden");await refreshPendingCount();switchAdminTab("general");$("adminModal").classList.remove("hidden")}
 async function setSetting(key,value){const {error}=await sb.from("settings").upsert({key,value:String(value??"")});return error}
-async function saveAnnouncement(){
-  let err=await setSetting("announcement_text",$("adminAnnounceText").value);
-  if(!err)err=await setSetting("announcement_from",$("adminAnnounceFrom").value);
-  if(!err)err=await setSetting("announcement_to",$("adminAnnounceTo").value);
-  if(err)return showAdminMsg(err.message,false);
-  await loadSettings();sessionStorage.removeItem(ANNOUNCE_KEY);showAdminMsg("המודעה נשמרה ✓",true);
-}
-async function saveRules(){
-  const err=await setSetting("rules_text",$("adminRulesText").value);
-  if(err)return showAdminMsg(err.message,false);
-  await loadSettings();showAdminMsg("החוקים נשמרו ✓",true);
-}
+async function saveAnnouncement(){let err=await setSetting("announcement_text",$("adminAnnounceText").value);if(!err)err=await setSetting("announcement_from",$("adminAnnounceFrom").value);if(!err)err=await setSetting("announcement_to",$("adminAnnounceTo").value);if(err)return showAdminMsg(err.message,false);await loadSettings();sessionStorage.removeItem(ANNOUNCE_KEY);showAdminMsg("נשמר ✓",true)}
+async function saveRules(){const err=await setSetting("rules_text",$("adminRulesText").value);if(err)return showAdminMsg(err.message,false);await loadSettings();showAdminMsg("נשמר ✓",true)}
 function fillSettingsForm(){
-  $("set_max_players").value=getSetting("max_players","15");
-  $("set_game_price").value=getSetting("game_price","35");
-  $("set_max_debt").value=getSetting("max_debt","70");
-  $("set_lock_hour").value=getSetting("lock_hour","20");
-  $("set_late_cancel_hour").value=getSetting("late_cancel_hour","17");
-  $("set_friend_open_hour").value=getSetting("friend_open_hour","12");
-  $("set_auto_refresh_sec").value=getSetting("auto_refresh_sec","30");
-  $("set_bit_link").value=getSetting("bit_link","");
-  $("set_paybox_link").value=getSetting("paybox_link","");
-  $("set_notify_email").value=getSetting("notify_email","");
-  $("set_telegram_bot_token").value=getSetting("telegram_bot_token","");
-  $("set_telegram_chat_id").value=getSetting("telegram_chat_id","");
+  $("set_max_players").value=getSetting("max_players","15");$("set_game_price").value=getSetting("game_price","35");
+  $("set_max_debt").value=getSetting("max_debt","70");$("set_lock_hour").value=getSetting("lock_hour","20");
+  $("set_late_cancel_hour").value=getSetting("late_cancel_hour","17");$("set_friend_open_hour").value=getSetting("friend_open_hour","12");
+  $("set_auto_refresh_sec").value=getSetting("auto_refresh_sec","30");$("set_bit_link").value=getSetting("bit_link","");
+  $("set_paybox_link").value=getSetting("paybox_link","");$("set_notify_email").value=getSetting("notify_email","");
+  $("set_telegram_bot_token").value=getSetting("telegram_bot_token","");$("set_telegram_chat_id").value=getSetting("telegram_chat_id","");
 }
 async function saveAllSettings(){
   const btn=$("btnSaveSettings");setLoading(btn,true,"שומר");
-  const pairs=[
-    ["max_players",$("set_max_players").value],["game_price",$("set_game_price").value],["max_debt",$("set_max_debt").value],
-    ["lock_hour",$("set_lock_hour").value],["late_cancel_hour",$("set_late_cancel_hour").value],["friend_open_hour",$("set_friend_open_hour").value],
-    ["auto_refresh_sec",$("set_auto_refresh_sec").value],["bit_link",$("set_bit_link").value],["paybox_link",$("set_paybox_link").value],
-    ["notify_email",$("set_notify_email").value],["telegram_bot_token",$("set_telegram_bot_token").value],["telegram_chat_id",$("set_telegram_chat_id").value]
-  ];
+  const pairs=[["max_players",$("set_max_players").value],["game_price",$("set_game_price").value],["max_debt",$("set_max_debt").value],["lock_hour",$("set_lock_hour").value],["late_cancel_hour",$("set_late_cancel_hour").value],["friend_open_hour",$("set_friend_open_hour").value],["auto_refresh_sec",$("set_auto_refresh_sec").value],["bit_link",$("set_bit_link").value],["paybox_link",$("set_paybox_link").value],["notify_email",$("set_notify_email").value],["telegram_bot_token",$("set_telegram_bot_token").value],["telegram_chat_id",$("set_telegram_chat_id").value]];
   for(const [k,v] of pairs){const err=await setSetting(k,v);if(err){setLoading(btn,false,"שמור הגדרות");return showAdminMsg(err.message,false)}}
-  await loadSettings();startAutoRefresh();
-  setLoading(btn,false,"שמור הגדרות");showAdminMsg("ההגדרות נשמרו ✓",true);
+  await loadSettings();startAutoRefresh();setLoading(btn,false,"שמור הגדרות");showAdminMsg("נשמר ✓",true);
 }
-
 async function loadPending(){
   await refreshPendingCount();
   const {data,error}=await sb.from("pending_users").select("*").eq("status","pending").order("created_at",{ascending:false});
   const box=$("pendingList");
   if(error){box.innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`;return}
   if(!data||!data.length){box.innerHTML=`<div class="empty">אין בקשות</div>`;return}
-  box.innerHTML=data.map(p=>`<div class="pending-item"><div><strong>${escapeHtml(p.name)}</strong></div>
-    <div style="color:#64748b;font-size:.8rem">${escapeHtml(p.email)} · ${escapeHtml(p.source||"")}</div>
-    <div class="row-actions">
-      <button class="btn-success" data-approve="${p.id}" data-uid="${p.user_id||""}" data-email="${escapeHtml(p.email)}" data-name="${escapeHtml(p.name)}">אשר</button>
-      <button class="btn-danger" data-reject="${p.id}">דחה</button>
-    </div></div>`).join("");
+  box.innerHTML=data.map(p=>`<div class="pending-item"><div><strong>${escapeHtml(p.name)}</strong></div><div style="color:#64748b;font-size:.8rem">${escapeHtml(p.email)}</div><div class="row-actions"><button class="btn-success" data-approve="${p.id}" data-uid="${p.user_id||""}" data-email="${escapeHtml(p.email)}" data-name="${escapeHtml(p.name)}">אשר</button><button class="btn-danger" data-reject="${p.id}">דחה</button></div></div>`).join("");
 }
-async function approvePending(id,uid,email,name){
-  if(!uid)return showAdminMsg("חסר user_id",false);
-  if(!confirm("לאשר את "+email+"?"))return;
-  const {error:e1}=await sb.from("profiles").upsert({id:uid,email,name,is_admin:false,balance:0});
-  if(e1)return showAdminMsg(e1.message,false);
-  const {error:e2}=await sb.from("pending_users").update({status:"approved"}).eq("id",id);
-  if(e2)return showAdminMsg(e2.message,false);
-  showAdminMsg("אושר: "+name,true);await loadPending();await loadProfiles();
-}
-async function rejectPending(id){
-  if(!confirm("לדחות?"))return;
-  const {error}=await sb.from("pending_users").update({status:"rejected"}).eq("id",id);
-  if(error)return showAdminMsg(error.message,false);
-  showAdminMsg("נדחה",true);await loadPending();
-}
-
-async function logPayment(uid,amount,note){
-  const p=profileMap[uid]||{};
-  await sb.from("payment_log").insert({
-    game_id:currentGame?.id||null,email:p.email||"",collection_name:p.collection_name||p.name||"",
-    amount,status:"written",note:note||""
-  });
-}
-async function adjustBalance(uid,delta,note){
-  const p=profileMap[uid];if(!p)return;
-  const amount=Number(delta);if(!amount||isNaN(amount))return showAdminMsg("סכום לא תקין",false);
-  const next=Number(p.balance||0)+amount;
-  const {error}=await sb.from("profiles").update({balance:next}).eq("id",uid);
-  if(error)return showAdminMsg(error.message,false);
-  await logPayment(uid,amount,note||("התאמה "+amount));
-  // זיכוי → Paid בשיטס
-  if(amount>0&&p.collection_name&&currentGame){
-    await sheetPaid(p.collection_name,amount,uid);
-  }
-  // חיוב ידני → Debt בשיטס
-  if(amount<0&&p.collection_name&&currentGame){
-    try{
-      const {data}=await sb.functions.invoke("collection",{
-        body:{action:"debt",name:p.collection_name,gameDate:currentGame.game_date,amount:amount}
-      });
-      await sb.from("payment_log").insert({
-        game_id:currentGame.id,collection_name:p.collection_name,email:p.email||"",
-        amount:amount,status:(data&&data.status)||"written",note:"sheets Debt manual"
-      });
-    }catch(e){console.warn(e)}
-  }
-  if(uid===currentUser.id){currentProfile.balance=next;updateBalanceUI()}
-  showAdminMsg("יתרה עודכנה: "+next+"₪",true);
-  syncBalancesFromSheet(true);
-  await loadBalanceList();
-}
+async function approvePending(id,uid,email,name){if(!uid)return;if(!confirm("לאשר?"))return;const {error:e1}=await sb.from("profiles").upsert({id:uid,email,name,is_admin:false,balance:0});if(e1)return showAdminMsg(e1.message,false);await sb.from("pending_users").update({status:"approved"}).eq("id",id);showAdminMsg("אושר",true);await loadPending();await loadProfiles()}
+async function rejectPending(id){if(!confirm("לדחות?"))return;await sb.from("pending_users").update({status:"rejected"}).eq("id",id);showAdminMsg("נדחה",true);await loadPending()}
 async function loadBalanceList(){
   await loadProfiles();
   const list=Object.values(profileMap).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
   const box=$("balanceList");
-  if(!list.length){box.innerHTML=`<div class="empty">אין פרופילים</div>`;return}
+  if(!list.length){box.innerHTML=`<div class="empty">אין</div>`;return}
   box.innerHTML=list.map(p=>`<div class="admin-list-item" style="flex-wrap:wrap;gap:8px">
     <span style="min-width:120px">${escapeHtml(p.name)} <small style="color:#64748b">${Number(p.balance||0)}₪</small>
-    ${p.collection_name?`<br><small style="color:#94a3b8">${escapeHtml(p.collection_name)}</small>`:""}</span>
-    <span style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+    ${p.collection_name?`<br><small style="color:#94a3b8">${escapeHtml(p.collection_name)}</small>`:`<br><small style="color:#dc2626">חסר collection_name</small>`}</span>
+    <span style="display:flex;flex-wrap:wrap;gap:4px">
       <button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal="${p.id}" data-delta="-35">-35</button>
       <button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal="${p.id}" data-delta="35">+35</button>
       <input type="number" id="amt_${p.id}" placeholder="סכום" style="width:72px;padding:6px;font-size:.8rem;margin:0">
@@ -1135,32 +729,21 @@ async function loadBalanceList(){
       <button class="btn-success" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal-custom="${p.id}" data-sign="1">זיכוי</button>
     </span></div>`).join("");
 }
-
-async function loadProfilesEditor(){
-  await loadProfiles();
-  const list=Object.values(profileMap).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
-  const sel=$("profileSelect");
-  sel.innerHTML=`<option value="">— בחר —</option>`+list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
-  $("profileEditor").innerHTML=`<div class="empty">בחר שחקן לעריכה</div>`;
-}
+async function loadProfilesEditor(){await loadProfiles();const list=Object.values(profileMap).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));$("profileSelect").innerHTML=`<option value="">— בחר —</option>`+list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");$("profileEditor").innerHTML=`<div class="empty">בחר שחקן</div>`}
 function fillProfileEditor(){
-  const uid=$("profileSelect").value;
-  const p=profileMap[uid];
-  const box=$("profileEditor");
-  if(!p){box.innerHTML=`<div class="empty">בחר שחקן לעריכה</div>`;return}
+  const uid=$("profileSelect").value;const p=profileMap[uid];const box=$("profileEditor");
+  if(!p){box.innerHTML=`<div class="empty">בחר שחקן</div>`;return}
   box.innerHTML=`<div class="profile-card" data-profile-id="${p.id}">
     <div class="email-ro">מייל: ${escapeHtml(p.email||"")}</div>
     <div class="profile-grid">
       <div class="full"><label style="font-size:.75rem;color:#64748b">שם</label><input data-f="name" value="${escapeHtml(p.name||"")}"></div>
-      <div class="full"><label style="font-size:.75rem;color:#64748b">שם בשיטס (collection_name)</label><input data-f="collection_name" value="${escapeHtml(p.collection_name||"")}" placeholder="כמו בעמודה B"></div>
+      <div class="full"><label style="font-size:.75rem;color:#64748b">collection_name (שיטס)</label><input data-f="collection_name" value="${escapeHtml(p.collection_name||"")}"></div>
       <div><label style="font-size:.75rem;color:#64748b">סמל</label><input data-f="symbol" value="${escapeHtml(p.symbol||"")}"></div>
-      <div><label style="font-size:.75rem;color:#64748b">טלפון</label><input data-f="phone" value="${escapeHtml(p.phone||"")}" placeholder="05..."></div>
+      <div><label style="font-size:.75rem;color:#64748b">טלפון</label><input data-f="phone" value="${escapeHtml(p.phone||"")}"></div>
       <div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label>
-        <select data-f="is_admin"><option value="false" ${!p.is_admin?"selected":""}>לא</option><option value="true" ${p.is_admin?"selected":""}>כן</option></select>
-      </div>
+        <select data-f="is_admin"><option value="false" ${!p.is_admin?"selected":""}>לא</option><option value="true" ${p.is_admin?"selected":""}>כן</option></select></div>
     </div>
-    <button class="btn-success" style="margin-top:8px" data-save-profile="${p.id}">שמור פרופיל</button>
-  </div>`;
+    <button class="btn-success" style="margin-top:8px" data-save-profile="${p.id}">שמור</button></div>`;
 }
 async function saveProfile(uid){
   const card=document.querySelector(`.profile-card[data-profile-id="${uid}"]`);if(!card)return;
@@ -1173,76 +756,15 @@ async function saveProfile(uid){
   const {error}=await sb.from("profiles").update({name,collection_name,symbol,phone,is_admin}).eq("id",uid);
   if(error)return showAdminMsg(error.message,false);
   if(uid===currentUser.id){currentProfile=Object.assign({},currentProfile,{name,collection_name,symbol,phone,is_admin});$("userLabel").textContent=name+(is_admin?" · מנהל":"")}
-  showAdminMsg("הפרופיל נשמר ✓",true);await loadProfiles();
+  showAdminMsg("נשמר ✓",true);await loadProfiles();
 }
-
-async function loadAddPlayerSelect(){
-  await loadProfiles();
-  const sel=$("addPlayerSelect");
-  const taken=new Set(lastRegs.map(r=>(r.player_email||"").toLowerCase()).filter(Boolean));
-  const list=Object.values(profileMap).filter(p=>!taken.has((p.email||"").toLowerCase())).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
-  sel.innerHTML=list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.email)})</option>`).join("")||`<option value="">אין פנויים</option>`;
-}
-async function loadRemovePlayerSelect(){
-  const sel=$("removePlayerSelect");
-  if(!lastRegs.length){sel.innerHTML=`<option value="">אין נרשמים</option>`;return}
-  sel.innerHTML=lastRegs.map(r=>`<option value="${r.id}">${escapeHtml(displayName(r))} (${r.status})</option>`).join("");
-}
-async function adminAddPlayer(){
-  if(!currentGame||isGameLocked(currentGame))return showAdminMsg("אין משחק פתוח",false);
-  const uid=$("addPlayerSelect").value;const p=profileMap[uid];if(!p)return showAdminMsg("בחר שחקן",false);
-  const btn=$("btnAdminAdd");setLoading(btn,true,"מוסיף");
-  const mainCount=lastRegs.filter(r=>r.status==="main").length;
-  const status=mainCount<currentGame.max_players?"main":"waitlist";
-  const {error}=await sb.from("registrations").insert({
-    game_id:currentGame.id,player_name:p.name,player_email:p.email,registered_by:currentUser.id,status,position:mainCount+1
-  });
-  setLoading(btn,false,"הוסף לרשימה");
-  if(error)return showAdminMsg(error.message,false);
-  await recalculatePositions(currentGame.id);
-  showAdminMsg("נוסף: "+p.name,true);await loadList();loadAddPlayerSelect();loadRemovePlayerSelect();
-}
-async function adminRemoveSelected(){
-  const id=$("removePlayerSelect").value;
-  if(!id)return showAdminMsg("בחר שחקן",false);
-  if(!confirm("להסיר שחקן מהרשימה?"))return;
-  const btn=$("btnAdminRemove");setLoading(btn,true,"מסיר");
-  const {error}=await sb.from("registrations").update({status:"cancelled",cancelled_at:new Date().toISOString(),position:0}).eq("id",id);
-  setLoading(btn,false,"הסר מהרשימה");
-  if(error)return showAdminMsg(error.message,false);
-  await recalculatePositions(currentGame.id);
-  showAdminMsg("הוסר",true);await loadList();loadRemovePlayerSelect();loadAddPlayerSelect();
-}
-
-async function loadArchive(){
-  const box=$("archiveList");
-  if(!currentGame){box.innerHTML=`<div class="empty">אין משחק</div>`;return}
-  const {data,error}=await sb.from("registrations").select("*").eq("game_id",currentGame.id).in("status",["cancelled","cancelled_late"]).order("cancelled_at",{ascending:false});
-  if(error){box.innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`;return}
-  if(!data||!data.length){box.innerHTML=`<div class="empty">אין ביטולים</div>`;return}
-  box.innerHTML=data.map(r=>`<div class="archive-item"><strong>${escapeHtml(r.player_name)}</strong> · ${r.status==="cancelled_late"?"מאוחר":"ביטול"} · ${r.cancelled_at?new Date(r.cancelled_at).toLocaleString("he-IL"):""}</div>`).join("");
-}
-
+async function loadAddPlayerSelect(){await loadProfiles();const taken=new Set(lastRegs.map(r=>(r.player_email||"").toLowerCase()).filter(Boolean));const list=Object.values(profileMap).filter(p=>!taken.has((p.email||"").toLowerCase())).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));$("addPlayerSelect").innerHTML=list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("")||`<option value="">אין</option>`}
+async function loadRemovePlayerSelect(){const sel=$("removePlayerSelect");if(!lastRegs.length){sel.innerHTML=`<option value="">אין</option>`;return}sel.innerHTML=lastRegs.map(r=>`<option value="${r.id}">${escapeHtml(displayName(r))}</option>`).join("")}
+async function adminAddPlayer(){if(!currentGame||isGameLocked(currentGame))return showAdminMsg("אין משחק פתוח",false);const uid=$("addPlayerSelect").value;const p=profileMap[uid];if(!p)return;const mainCount=lastRegs.filter(r=>r.status==="main").length;const status=mainCount<currentGame.max_players?"main":"waitlist";const {error}=await sb.from("registrations").insert({game_id:currentGame.id,player_name:p.name,player_email:p.email,registered_by:currentUser.id,status,position:mainCount+1});if(error)return showAdminMsg(error.message,false);await recalculatePositions(currentGame.id);showAdminMsg("נוסף",true);await loadList();loadAddPlayerSelect();loadRemovePlayerSelect()}
+async function adminRemoveSelected(){const id=$("removePlayerSelect").value;if(!id||!confirm("להסיר?"))return;await sb.from("registrations").update({status:"cancelled",cancelled_at:new Date().toISOString(),position:0}).eq("id",id);await recalculatePositions(currentGame.id);showAdminMsg("הוסר",true);await loadList();loadRemovePlayerSelect();loadAddPlayerSelect()}
+async function loadArchive(){const box=$("archiveList");if(!currentGame){box.innerHTML=`<div class="empty">אין</div>`;return}const {data}=await sb.from("registrations").select("*").eq("game_id",currentGame.id).in("status",["cancelled","cancelled_late"]).order("cancelled_at",{ascending:false});if(!data||!data.length){box.innerHTML=`<div class="empty">אין ביטולים</div>`;return}box.innerHTML=data.map(r=>`<div class="archive-item"><strong>${escapeHtml(r.player_name)}</strong> · ${r.status}</div>`).join("")}
 function nextSaturday(){const d=new Date();const day=d.getDay();const diff=(6-day+7)%7||7;d.setDate(d.getDate()+diff);return d.toISOString().slice(0,10)}
-async function startNewWeek(){
-  if(!currentProfile?.is_admin)return;
-  if(!confirm("לסגור משחקים ולפתוח שבוע חדש?"))return;
-  const btn=$("btnNewWeek");setLoading(btn,true,"פותח");
-  const {error:e1}=await sb.from("games").update({status:"completed"}).in("status",["open","locked"]);
-  if(e1){setLoading(btn,false,"התחל שבוע חדש");return showAdminMsg(e1.message,false)}
-  const gameDate=nextSaturday();
-  const friendHour=parseInt(getSetting("friend_open_hour","12"),10);
-  const friend=new Date(gameDate+"T00:00:00");friend.setDate(friend.getDate()-1);friend.setHours(friendHour,0,0,0);
-  const {error:e2}=await sb.from("games").insert({
-    game_date:gameDate,status:"open",max_players:parseInt(getSetting("max_players","15"),10),
-    friend_open_at:friend.toISOString(),charged_at:null
-  });
-  setLoading(btn,false,"התחל שבוע חדש");
-  if(e2)return showAdminMsg(e2.message,false);
-  showAdminMsg("שבוע חדש: "+gameDate,true);
-  notifyAdmin("new_week","נפתח שבוע חדש: "+gameDate,{gameDate});
-  closeModal("adminModal");await loadList();
-}
+async function startNewWeek(){if(!currentProfile?.is_admin)return;if(!confirm("שבוע חדש?"))return;const btn=$("btnNewWeek");setLoading(btn,true,"פותח");await sb.from("games").update({status:"completed"}).in("status",["open","locked"]);const gameDate=nextSaturday();const friendHour=parseInt(getSetting("friend_open_hour","12"),10);const friend=new Date(gameDate+"T00:00:00");friend.setDate(friend.getDate()-1);friend.setHours(friendHour,0,0,0);const {error}=await sb.from("games").insert({game_date:gameDate,status:"open",max_players:parseInt(getSetting("max_players","15"),10),friend_open_at:friend.toISOString(),charged_at:null});setLoading(btn,false,"התחל שבוע חדש");if(error)return showAdminMsg(error.message,false);showAdminMsg("שבוע: "+gameDate,true);closeModal("adminModal");await loadList()}
 
 document.addEventListener("click",(e)=>{
   const c=e.target.closest("[data-cancel]");if(c)cancelReg(c.getAttribute("data-cancel"));
@@ -1250,20 +772,10 @@ document.addEventListener("click",(e)=>{
   const rj=e.target.closest("[data-reject]");if(rj)rejectPending(rj.getAttribute("data-reject"));
   const bal=e.target.closest("[data-bal]");if(bal)adjustBalance(bal.getAttribute("data-bal"),bal.getAttribute("data-delta"));
   const balCustom=e.target.closest("[data-bal-custom]");
-  if(balCustom){
-    const uid=balCustom.getAttribute("data-bal-custom");
-    const sign=Number(balCustom.getAttribute("data-sign")||"1");
-    const raw=Number(($("amt_"+uid)||{}).value);
-    if(!raw||isNaN(raw)||raw<=0)return showAdminMsg("הזן סכום חיובי",false);
-    adjustBalance(uid,sign*raw,(sign<0?"חיוב ידני ":"זיכוי ידני ")+raw);
-  }
+  if(balCustom){const uid=balCustom.getAttribute("data-bal-custom");const sign=Number(balCustom.getAttribute("data-sign")||"1");const raw=Number(($("amt_"+uid)||{}).value);if(!raw||raw<=0)return showAdminMsg("הזן סכום חיובי",false);adjustBalance(uid,sign*raw)}
   const sp=e.target.closest("[data-save-profile]");if(sp)saveProfile(sp.getAttribute("data-save-profile"));
 });
-
-(async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){currentUser=session.user;await afterLogin()}
-})();
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(session){currentUser=session.user;await afterLogin()}})();
 </script>
 </body>
 </html>
