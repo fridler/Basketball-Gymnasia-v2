@@ -706,25 +706,55 @@ async function testNotify() {
   }
 }
 
-function computeConfirmDeadline(fromDate) {
-  const base = fromDate ? new Date(fromDate) : new Date();
-  const fmt = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Jerusalem",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  });
-  const parts = {};
-  for (const p of fmt.formatToParts(base)) {
-    if (p.type !== "literal") parts[p.type] = p.value;
+function computeConfirmDeadline(gameDateStr, cancelAt) {
+  const cancel = cancelAt ? new Date(cancelAt) : new Date();
+
+  // גבולות שבת המשחק לפי שעון ישראל
+  function israelWallToUtcMs(dateStr, hour, minute) {
+    // dateStr = YYYY-MM-DD ; בונים רגע UTC שמקביל לשעה בישראל
+    const probe = new Date(dateStr + "T" + String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0") + ":00");
+    // חישוב offset ישראל באותו יום
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Jerusalem",
+      timeZoneName: "shortOffset",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false
+    });
+    // גישה פשוטה ויציבה: השוואה דרך חלקי תאריך בישראל
+    const partsOf = (d) => {
+      const p = {};
+      for (const x of new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Jerusalem",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+      }).formatToParts(d)) if (x.type !== "literal") p[x.type] = x.value;
+      return p;
+    };
+    // חיפוש timestamp שמתאים לתאריך+שעה בישראל
+    let t = Date.parse(dateStr + "T00:00:00Z") - 3 * 3600 * 1000;
+    for (let i = 0; i < 48; i++) {
+      const d = new Date(t + i * 15 * 60 * 1000);
+      const p = partsOf(d);
+      if (p.year + "-" + p.month + "-" + p.day === dateStr &&
+          Number(p.hour) === hour && Number(p.minute) === minute) {
+        return d.getTime();
+      }
+    }
+    // גיבוי: נניח UTC+3
+    return Date.parse(dateStr + "T" + String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0") + ":00+03:00");
   }
-  const mins = Number(parts.hour) * 60 + Number(parts.minute);
-  let addMs;
-  if (mins < 8 * 60) addMs = Math.max(60 * 1000, (10 * 60 - mins) * 60 * 1000);
-  else if (mins < 12 * 60) addMs = 60 * 60 * 1000;
-  else if (mins < 17 * 60) addMs = 30 * 60 * 1000;
-  else addMs = 15 * 60 * 1000;
-  return new Date(base.getTime() + addMs).toISOString();
+
+  const sat8 = israelWallToUtcMs(gameDateStr, 8, 0);
+  const sat10 = israelWallToUtcMs(gameDateStr, 10, 0);
+  const sat12 = israelWallToUtcMs(gameDateStr, 12, 0);
+  const sat17 = israelWallToUtcMs(gameDateStr, 17, 0);
+  const c = cancel.getTime();
+
+  if (c < sat8) return new Date(sat10).toISOString();
+  if (c < sat12) return new Date(c + 60 * 60 * 1000).toISOString();
+  if (c < sat17) return new Date(c + 30 * 60 * 1000).toISOString();
+  return new Date(c + 15 * 60 * 1000).toISOString();
 }
 
 function nextSaturday() {
@@ -1215,34 +1245,107 @@ async function sendWeeklyReport() {
 async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   const { data: game } = await sb.from("games").select("*").eq("id", gameId).single();
   if (!game || game.status !== "open") return null;
-  const { data: waits } = await sb.from("registrations").select("*").eq("game_id", gameId).eq("status", "waitlist").order("created_at", { ascending: true });
+
+  const { data: waits } = await sb
+    .from("registrations")
+    .select("*")
+    .eq("game_id", gameId)
+    .eq("status", "waitlist")
+    .order("created_at", { ascending: true });
+
   if (!waits || !waits.length) return null;
+
   const next = waits[0];
-  const deadline = computeConfirmDeadline(cancelAtIso || new Date());
-  await sb.from("registrations").update({
-    status: "pending_confirm",
-    promoted_at: new Date().toISOString(),
-    confirm_deadline: deadline,
-    position: 1
-  }).eq("id", next.id);
+  const deadline = computeConfirmDeadline(game.game_date, cancelAtIso || new Date());
+
+  const { data: updated, error } = await sb
+    .from("registrations")
+    .update({
+      status: "pending_confirm",
+      promoted_at: new Date().toISOString(),
+      confirm_deadline: deadline,
+      position: 1
+    })
+    .eq("id", next.id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("promote failed", error);
+    showMsg("שגיאה בקידום מהמתנה: " + error.message, false);
+    return null;
+  }
+
   const link = siteUrl();
   const until = new Date(deadline).toLocaleString("he-IL");
-  const body = "היי " + next.player_name + ",\n\nנפתח לך מקום ברשימת המשחק.\nיש לאשר הגעה באתר עד:\n" + until + "\n\n" + link;
-  if (next.player_email) notifyPlayerEmail(next.player_email, "כדורסל – נפתח מקום (יש לאשר)", body);
-  notifyAdminAlways("ממתין לאישור: " + next.player_name + "\nעד " + until + "\n" + link, {});
+  const isFriend = !(next.player_email || "").trim();
+  const registrar = profileMap[next.registered_by];
+
+  // מי מקבל מייל: השחקן עצמו, או מי שרשם (בחבר)
+  let notifyEmail = (next.player_email || "").trim();
+  let notifyName = next.player_name;
+  if (isFriend && registrar) {
+    notifyEmail = (registrar.email || "").trim();
+    notifyName = registrar.name || notifyName;
+  }
+
+  const body = isFriend
+    ? ("היי " + notifyName + ",\n\n" +
+       "החבר שרשמת (" + next.player_name + ") עלה לרשימת המשחק.\n" +
+       "יש לאשר את הגעתו באתר עד:\n" + until + "\n\n" + link)
+    : ("היי " + next.player_name + ",\n\n" +
+       "נפתח לך מקום ברשימת המשחק.\n" +
+       "יש לאשר הגעה באתר עד:\n" + until + "\n\n" + link);
+
+  if (notifyEmail) {
+    notifyPlayerEmail(
+      notifyEmail,
+      isFriend ? "כדורסל – יש לאשר הגעת חבר" : "כדורסל – נפתח מקום (יש לאשר)",
+      body
+    );
+  }
+
+  notifyAdminAlways(
+    "ממתין לאישור: " + next.player_name +
+      (isFriend ? " (חבר של " + (registrar ? registrar.name : "?") + ")" : "") +
+      "\nעד " + until + "\n" + link,
+    {}
+  );
+
   await recalculatePositions(gameId);
-  return next;
+  return updated || next;
 }
 
 async function checkPendingConfirm() {
   if (!currentUser || !currentProfile || !currentGame) return;
-  const { data } = await sb.from("registrations").select("*").eq("game_id", currentGame.id).eq("status", "pending_confirm");
-  const mine = (data || []).find((r) =>
-    r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
-  );
+
+  const { data, error } = await sb
+    .from("registrations")
+    .select("*")
+    .eq("game_id", currentGame.id)
+    .eq("status", "pending_confirm");
+
+  if (error) {
+    console.error("checkPendingConfirm", error);
+    return;
+  }
+
+  const myEmail = (currentProfile.email || "").toLowerCase();
+  const mine = (data || []).find((r) => {
+    const pe = (r.player_email || "").trim().toLowerCase();
+    if (pe && pe === myEmail) return true;
+    // חבר בלי מייל – מי שרשם מאשר
+    if (!pe && r.registered_by === currentUser.id) return true;
+    return false;
+  });
+
   if (!mine) return;
+
   pendingConfirmReg = mine;
-  $("confirmText").textContent = "נפתח לך מקום ברשימת המשחק (" + mine.player_name + "). האם אתה מאשר הגעה?";
+  const isFriend = !(mine.player_email || "").trim();
+  $("confirmText").textContent = isFriend
+    ? ("החבר שרשמת (" + mine.player_name + ") עלה לרשימה. לאשר את הגעתו?")
+    : ("נפתח לך מקום ברשימת המשחק (" + mine.player_name + "). לאשר הגעה?");
   $("confirmDeadline").textContent = mine.confirm_deadline
     ? "יש לענות עד: " + new Date(mine.confirm_deadline).toLocaleString("he-IL")
     : "";
