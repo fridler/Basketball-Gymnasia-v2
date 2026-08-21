@@ -515,7 +515,6 @@
 <script>
 const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
-
 const ANNOUNCE_KEY = "v2_announce_seen";
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -647,47 +646,93 @@ function israelPartsOf(d) {
 }
 
 /**
- * דדליין לאישור הגעה – לפי יום המשחק (שבת), לא לפי "כל יום אחרי 17:00".
- * לפני שבת 08:00 (כולל שישי) → עד שבת 10:00.
+ * מחזיר ISO לרגע dateStr בשעה hour:minute לפי שעון ישראל.
  */
-function computeConfirmDeadline(gameDateStr, cancelAt) {
+function israelWallIso(dateStr, hour, minute) {
+  const start = Date.parse(dateStr + "T00:00:00.000Z") - 12 * 3600 * 1000;
+  for (let i = 0; i < 120; i++) {
+    const t = start + i * 15 * 60 * 1000;
+    const p = israelPartsOf(new Date(t));
+    const d = p.year + "-" + p.month + "-" + p.day;
+    const mins = Number(p.hour) * 60 + Number(p.minute);
+    if (d === dateStr && mins === hour * 60 + minute) {
+      return new Date(t).toISOString();
+    }
+  }
+  return new Date(
+    dateStr + "T" + String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0") + ":00+03:00"
+  ).toISOString();
+}
+
+/** אם התאריך לא שבת – מתקדם לשבת הקרובה (לפי ישראל). */
+function resolveToSaturday(dateStr) {
+  let s = String(dateStr || "").slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const wdFmt = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Jerusalem", weekday: "short" });
+  let probe = new Date(s + "T12:00:00+03:00");
+  for (let i = 0; i < 8; i++) {
+    if (wdFmt.format(probe).toLowerCase().startsWith("sat")) {
+      const p = israelPartsOf(probe);
+      return p.year + "-" + p.month + "-" + p.day;
+    }
+    probe = new Date(probe.getTime() + 24 * 3600 * 1000);
+  }
+  return s;
+}
+
+/**
+ * דדליין לאישור הגעה – לפי יום המשחק (שבת).
+ * כל ביטול לפני שבת (כולל כל יום שישי) → עד שבת 10:00.
+ * רבע שעה רק בשבת אחרי 17:00.
+ */
+function computeConfirmDeadline(gameDateRaw, cancelAt) {
   const cancel = cancelAt ? new Date(cancelAt) : new Date();
+  let gameDateStr = resolveToSaturday(String(gameDateRaw || "").slice(0, 10));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(gameDateStr)) {
+    console.warn("[deadline] bad gameDate", gameDateRaw);
+    return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
+  }
+
   const cp = israelPartsOf(cancel);
   const cancelDate = cp.year + "-" + cp.month + "-" + cp.day;
   const cancelMins = Number(cp.hour) * 60 + Number(cp.minute);
 
-  function saturdayAt10Iso() {
-    for (let h = 6; h <= 9; h++) {
-      const d = new Date(gameDateStr + "T" + String(h).padStart(2, "0") + ":00:00.000Z");
-      const p = israelPartsOf(d);
-      const dateStr = p.year + "-" + p.month + "-" + p.day;
-      if (dateStr === gameDateStr && Number(p.hour) === 10 && Number(p.minute) === 0) {
-        return d.toISOString();
-      }
+  let result;
+  let branch;
+
+  // לפני יום המשחק (שבת) – תמיד עד שבת 10:00 (כולל שישי)
+  if (cancelDate < gameDateStr) {
+    result = israelWallIso(gameDateStr, 10, 0);
+    branch = "before_game_day → sat_10:00";
+  } else if (cancelDate === gameDateStr) {
+    if (cancelMins < 8 * 60) {
+      result = israelWallIso(gameDateStr, 10, 0);
+      branch = "sat_before_08 → sat_10:00";
+    } else if (cancelMins < 12 * 60) {
+      result = new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
+      branch = "sat_08-12 → +1h";
+    } else if (cancelMins < 17 * 60) {
+      result = new Date(cancel.getTime() + 30 * 60 * 1000).toISOString();
+      branch = "sat_12-17 → +30m";
+    } else {
+      result = new Date(cancel.getTime() + 15 * 60 * 1000).toISOString();
+      branch = "sat_after_17 → +15m";
     }
-    return new Date(gameDateStr + "T07:00:00.000Z").toISOString();
+  } else {
+    result = new Date(cancel.getTime() + 15 * 60 * 1000).toISOString();
+    branch = "after_game_day → +15m";
   }
 
-  if (!gameDateStr) {
-    return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
-  }
-
-  // לפני שבת 08:00 (שישי וכו') → שבת 10:00
-  if (cancelDate < gameDateStr || (cancelDate === gameDateStr && cancelMins < 8 * 60)) {
-    return saturdayAt10Iso();
-  }
-
-  if (cancelDate === gameDateStr && cancelMins < 12 * 60) {
-    return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
-  }
-  if (cancelDate === gameDateStr && cancelMins < 17 * 60) {
-    return new Date(cancel.getTime() + 30 * 60 * 1000).toISOString();
-  }
-  if (cancelDate === gameDateStr) {
-    return new Date(cancel.getTime() + 15 * 60 * 1000).toISOString();
-  }
-
-  return saturdayAt10Iso();
+  console.log("[deadline]", {
+    rawGameDate: gameDateRaw,
+    gameDateStr,
+    cancelDate,
+    cancelMins,
+    branch,
+    result,
+    resultIsrael: israelPartsOf(new Date(result))
+  });
+  return result;
 }
 
 function nextSaturday() {
@@ -1261,8 +1306,9 @@ async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   if (!waits || !waits.length) return null;
 
   const next = waits[0];
-  // חשוב: מעבירים game_date כדי ששישי → שבת 10:00
-  const deadline = computeConfirmDeadline(game.game_date, cancelAtIso || new Date());
+  const cancelAt = cancelAtIso || new Date();
+  const deadline = computeConfirmDeadline(game.game_date, cancelAt);
+  console.log("[promote] game.game_date=", game.game_date, "deadline=", deadline);
 
   const { data: updated, error } = await sb
     .from("registrations")
@@ -1283,7 +1329,7 @@ async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   }
 
   const link = siteUrl();
-  const until = new Date(deadline).toLocaleString("he-IL");
+  const until = new Date(deadline).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" });
   const isFriend = !(next.player_email || "").trim();
   const registrar = profileMap[next.registered_by];
 
@@ -1313,9 +1359,13 @@ async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   notifyAdminAlways(
     "ממתין לאישור: " + next.player_name +
       (isFriend ? " (חבר של " + (registrar ? registrar.name : "?") + ")" : "") +
+      "\nמשחק: " + String(game.game_date).slice(0, 10) +
       "\nעד " + until + "\n" + link,
     {}
   );
+
+  // חיווי במסך (עוזר לדיבוג)
+  showMsg("דדליין אישור: " + until, true);
 
   await recalculatePositions(gameId);
   return updated || next;
