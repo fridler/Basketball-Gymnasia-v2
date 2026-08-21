@@ -71,6 +71,12 @@
     .btn-secondary { background: #e2e8f0; color: var(--text); }
     .btn-warning { background: var(--warning); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #fff; color: #3c4043; border: 1.5px solid #dadce0;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05); margin-bottom: 4px;
+    }
+    .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
     button {
       width: 100%; padding: 12px; font-size: .95rem; font-weight: 600;
       border: none; border-radius: 12px; cursor: pointer;
@@ -140,9 +146,12 @@
     .admin-section { background: #fffbeb; border: 1.5px dashed #f59e0b; }
     .pay-row { display: flex; gap: 10px; }
     .pay-btn {
-      flex: 1; display: flex; align-items: center; justify-content: center;
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px;
       background: #fff; cursor: pointer; font-weight: 600; font-size: .85rem; color: var(--text);
+    }
+    .pay-btn img {
+      width: 28px; height: 28px; object-fit: contain; border-radius: 6px;
     }
     .debt-amount {
       font-size: 1.6rem; font-weight: 700; color: var(--danger); text-align: center;
@@ -237,10 +246,20 @@
       <h2>כדורסל v2</h2>
       <p class="login-sub">מערכת הרשמה למשחק</p>
       <div id="loginFields">
+        <button type="button" class="btn-google" id="btnGoogle" onclick="loginGoogle()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            <path fill="none" d="M0 0h48v48H0z"/>
+          </svg>
+          התחברות עם Google
+        </button>
+        <div class="divider">או עם מייל</div>
         <div class="form-group"><input type="email" id="email" placeholder="מייל" autocomplete="username"></div>
         <div class="form-group"><input type="password" id="password" placeholder="סיסמה" autocomplete="current-password"></div>
         <button class="btn-primary" id="btnLogin" onclick="login()">התחברות</button>
-        <button class="btn-secondary" id="btnGoogle" style="margin-top:8px" onclick="loginGoogle()">התחברות עם Google</button>
         <div class="divider">חדש במערכת?</div>
         <button class="btn-secondary" onclick="showSignup(true)">בקשת הצטרפות / הרשמה</button>
       </div>
@@ -300,8 +319,14 @@
       </div>
       <div class="card">
         <div class="pay-row">
-          <button class="pay-btn" onclick="openBit()">Bit</button>
-          <button class="pay-btn" onclick="openPayBox()">PayBox</button>
+          <button type="button" class="pay-btn" onclick="openBit()">
+            <img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/92/ae/b1/92aeb103-d961-c3e5-9bb5-16a4cfe65b2f/Placeholder.mill/200x200bb-75.webp" alt="Bit" width="28" height="28">
+            Bit
+          </button>
+          <button type="button" class="pay-btn" onclick="openPayBox()">
+            <img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/12/06/b0/1206b081-574f-ac46-551d-ba5c4378cecd/Placeholder.mill/200x200bb-75.webp" alt="PayBox" width="28" height="28">
+            PayBox
+          </button>
         </div>
       </div>
     </div>
@@ -338,8 +363,14 @@
       <div class="debt-amount" id="debtAmountText">0₪</div>
       <p class="empty" id="debtBlockHint"></p>
       <div class="pay-row">
-        <button class="pay-btn" onclick="openBit()">Bit</button>
-        <button class="pay-btn" onclick="openPayBox()">PayBox</button>
+        <button type="button" class="pay-btn" onclick="openBit()">
+          <img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/92/ae/b1/92aeb103-d961-c3e5-9bb5-16a4cfe65b2f/Placeholder.mill/200x200bb-75.webp" alt="Bit" width="28" height="28">
+          Bit
+        </button>
+        <button type="button" class="pay-btn" onclick="openPayBox()">
+          <img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/12/06/b0/1206b081-574f-ac46-551d-ba5c4378cecd/Placeholder.mill/200x200bb-75.webp" alt="PayBox" width="28" height="28">
+          PayBox
+        </button>
       </div>
     </div>
   </div>
@@ -487,6 +518,7 @@
 <script>
 const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
+
 const ANNOUNCE_KEY = "v2_announce_seen";
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -629,14 +661,12 @@ async function notifyExternal(text, emailBody, emailToOverride) {
   }
 }
 
-/** התראות על שינויי רשימה – רק בשבת */
 async function notifyAdminChange(text, payload) {
   await logEvent("change", Object.assign({ text }, payload || {}));
   if (!isSaturdayIsrael()) return { ok: true, skipped: true };
   return notifyExternal(text, text);
 }
 
-/** התראות תמיד (נעילה, אישור הגעה, בדיקה...) */
 async function notifyAdminAlways(text, payload) {
   await logEvent("always", Object.assign({ text }, payload || {}));
   return notifyExternal(text, text);
@@ -690,26 +720,47 @@ function computeConfirmDeadline(fromDate) {
   }
   const mins = Number(parts.hour) * 60 + Number(parts.minute);
   let addMs;
-  if (mins < 8 * 60) {
-    addMs = Math.max(60 * 1000, (10 * 60 - mins) * 60 * 1000);
-  } else if (mins < 12 * 60) {
-    addMs = 60 * 60 * 1000;
-  } else if (mins < 17 * 60) {
-    addMs = 30 * 60 * 1000;
-  } else {
-    addMs = 15 * 60 * 1000;
-  }
+  if (mins < 8 * 60) addMs = Math.max(60 * 1000, (10 * 60 - mins) * 60 * 1000);
+  else if (mins < 12 * 60) addMs = 60 * 60 * 1000;
+  else if (mins < 17 * 60) addMs = 30 * 60 * 1000;
+  else addMs = 15 * 60 * 1000;
   return new Date(base.getTime() + addMs).toISOString();
 }
 
-/* —— Sheets —— */
+function nextSaturday() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short"
+  });
+  let probe = new Date();
+  for (let i = 0; i < 10; i++) {
+    const parts = {};
+    for (const p of fmt.formatToParts(probe)) {
+      if (p.type !== "literal") parts[p.type] = p.value;
+    }
+    const isSat = String(parts.weekday || "").toLowerCase().startsWith("sat");
+    const dateStr = parts.year + "-" + parts.month + "-" + parts.day;
+    if (isSat) {
+      if (i === 0) {
+        probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
+        continue;
+      }
+      return dateStr;
+    }
+    probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return new Date().toISOString().slice(0, 10);
+}
+
 async function syncBalancesFromSheet(silent) {
   if (syncingBalances) return;
   syncingBalances = true;
   try {
     const { data, error } = await sb.functions.invoke("collection", { body: { action: "sync" } });
     if (error || !data || !data.ok) {
-      console.warn("sync", error || data);
       if (!silent) showAdminMsg((error && error.message) || (data && data.error) || "סנכרון נכשל", false);
       return;
     }
@@ -723,7 +774,6 @@ async function syncBalancesFromSheet(silent) {
     }
     if (!silent) showAdminMsg("יתרות סונכרנו (" + (data.updated || 0) + " עודכנו)", true);
   } catch (e) {
-    console.warn(e);
     if (!silent) showAdminMsg(String(e), false);
   } finally {
     syncingBalances = false;
@@ -733,21 +783,13 @@ async function syncBalancesFromSheet(silent) {
 async function chargeCurrentGame() {
   if (!currentGame) return showAdminMsg("אין משחק", false);
   await loadProfiles();
-
-  const { data: regs } = await sb
-    .from("registrations")
-    .select("registered_by")
-    .eq("game_id", currentGame.id)
-    .eq("status", "main");
-
-  if (!regs || !regs.length) return showAdminMsg("אין שחקנים ב-main (רק מי שאישר נחשב לחיוב)", false);
-
+  const { data: regs } = await sb.from("registrations").select("registered_by").eq("game_id", currentGame.id).eq("status", "main");
+  if (!regs || !regs.length) return showAdminMsg("אין שחקנים ב-main (רק מי שאישר)", false);
   const counts = {};
   regs.forEach((r) => {
     if (!r.registered_by) return;
     counts[r.registered_by] = (counts[r.registered_by] || 0) + 1;
   });
-
   const items = [];
   const noMatch = [];
   for (const uid of Object.keys(counts)) {
@@ -757,38 +799,22 @@ async function chargeCurrentGame() {
       noMatch.push((p && p.name) || uid);
       continue;
     }
-    items.push({
-      name: cname,
-      amount: -Math.abs(gamePrice() * counts[uid])
-    });
+    items.push({ name: cname, amount: -Math.abs(gamePrice() * counts[uid]) });
   }
-
-  let msg = "חיוב שבוע " + currentGame.game_date + "\n\n";
-  msg += "ייכתבו לשיטס (רק תאים ריקים): " + items.length + "\n";
-  if (noMatch.length) {
-    msg += "\n⚠ בלי התאמה לשיטס (בדוק ידנית):\n- " + noMatch.join("\n- ") + "\n";
-  }
-  msg += "\nתאים מלאים ידולגו.\nלהמשיך?";
+  let msg = "חיוב שבוע " + currentGame.game_date + "\n\nייכתבו (רק תאים ריקים): " + items.length + "\n";
+  if (noMatch.length) msg += "\n⚠ בלי התאמה:\n- " + noMatch.join("\n- ") + "\n";
+  msg += "\nלהמשיך?";
   if (!confirm(msg)) return;
-
   const btn = $("btnChargeGame");
   setLoading(btn, true, "מחייב");
   try {
     let results = [];
     if (items.length) {
       const { data, error } = await sb.functions.invoke("collection", {
-        body: {
-          action: "charge_bulk",
-          gameDate: currentGame.game_date,
-          items: items
-        }
+        body: { action: "charge_bulk", gameDate: currentGame.game_date, items }
       });
-      if (error) {
-        showAdminMsg("שיטס: " + error.message, false);
-        return;
-      }
-      if (!data || data.ok === false) {
-        showAdminMsg("שיטס: " + ((data && data.error) || "שגיאה"), false);
+      if (error || !data || data.ok === false) {
+        showAdminMsg("שיטס: " + ((error && error.message) || (data && data.error) || "שגיאה"), false);
         return;
       }
       results = data.results || [];
@@ -804,27 +830,20 @@ async function chargeCurrentGame() {
     }
     for (const name of noMatch) {
       await sb.from("payment_log").insert({
-        game_id: currentGame.id,
-        collection_name: "",
-        amount: 0,
-        status: "skipped_no_match",
-        note: "אין collection_name – " + name
+        game_id: currentGame.id, collection_name: "", amount: 0,
+        status: "skipped_no_match", note: "אין collection_name – " + name
       });
     }
-
     const written = results.filter((r) => r.status === "written").length;
     const skipped = results.filter((r) => r.status === "skipped_exists").length;
     const failed = results.filter((r) => r.error || r.ok === false).length;
-
     const nowIso = new Date().toISOString();
     await sb.from("games").update({ charged_at: nowIso }).eq("id", currentGame.id);
     currentGame.charged_at = nowIso;
     updateGeneralButtons();
-
-    let out = "שיטס נכתב: " + written + ", דולג (מלא): " + skipped + ", שגיאה: " + failed;
+    let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
     if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
     showAdminMsg(out, failed === 0);
-
     await notifyAdminAlways("חיוב שבוע " + currentGame.game_date + " · נכתב " + written, {});
     await syncBalancesFromSheet(true);
   } finally {
@@ -837,66 +856,38 @@ async function adjustBalance(uid, delta) {
   if (!p) return;
   const amount = Number(delta);
   if (!amount || isNaN(amount)) return showAdminMsg("סכום לא תקין", false);
-  if (!currentGame) return showAdminMsg("אין משחק פתוח – לא ניתן לכתוב לשיטס", false);
+  if (!currentGame) return showAdminMsg("אין משחק פתוח", false);
   const cname = (p.collection_name || "").trim();
-  if (!cname) return showAdminMsg("חסר collection_name לפרופיל " + p.name, false);
-
+  if (!cname) return showAdminMsg("חסר collection_name ל-" + p.name, false);
   const kind = amount > 0 ? "paid" : "debt";
   const sheetAmount = amount > 0 ? Math.abs(amount) : -Math.abs(amount);
-
   async function write(force) {
     const { data, error } = await sb.functions.invoke("collection", {
-      body: {
-        action: kind,
-        name: cname,
-        gameDate: currentGame.game_date,
-        amount: sheetAmount,
-        force: !!force
-      }
+      body: { action: kind, name: cname, gameDate: currentGame.game_date, amount: sheetAmount, force: !!force }
     });
     if (error) return { ok: false, error: error.message };
     return data || { ok: false, error: "no data" };
   }
-
   let res = await write(false);
   if (res && res.status === "skipped_exists") {
-    const prev = res.existing;
-    if (!confirm("בשיטס כבר רשום: " + prev + "\nלדרוס?")) {
-      showAdminMsg("בוטל – לא נכתב", false);
+    if (!confirm("בשיטס כבר רשום: " + res.existing + "\nלדרוס?")) {
+      showAdminMsg("בוטל", false);
       return;
     }
     res = await write(true);
   }
-
   if (!res || res.ok === false) {
     showAdminMsg("שיטס נכשל: " + ((res && res.error) || "שגיאה"), false);
     return;
   }
-
   await sb.from("payment_log").insert({
-    game_id: currentGame.id,
-    email: p.email || "",
-    collection_name: cname,
-    amount: sheetAmount,
-    status: res.status || "written",
+    game_id: currentGame.id, email: p.email || "", collection_name: cname,
+    amount: sheetAmount, status: res.status || "written",
     note: "sheets " + (kind === "paid" ? "Paid" : "Debt") + " panel"
   });
-
-  showAdminMsg("נרשם בשיטס (" + (res.status || "written") + ") – מסנכרן...", true);
+  showAdminMsg("נרשם בשיטס – מסנכרן...", true);
   await syncBalancesFromSheet(true);
   await loadBalanceList();
-}
-
-function phoneToWa(phone) {
-  if (!phone) return "";
-  let p = String(phone).replace(/\D/g, "");
-  if (p.startsWith("0")) p = "972" + p.slice(1);
-  return p;
-}
-function waLink(phone, text) {
-  const p = phoneToWa(phone);
-  if (!p) return "";
-  return "https://wa.me/" + p + "?text=" + encodeURIComponent(text);
 }
 
 function switchAdminTab(name) {
@@ -910,10 +901,7 @@ function switchAdminTab(name) {
   if (name === "pending") loadPending();
   if (name === "balances") loadBalanceList();
   if (name === "profiles") loadProfilesEditor();
-  if (name === "roster") {
-    loadAddPlayerSelect();
-    loadRemovePlayerSelect();
-  }
+  if (name === "roster") { loadAddPlayerSelect(); loadRemovePlayerSelect(); }
   if (name === "archive") loadArchive();
   if (name === "settings") fillSettingsForm();
 }
@@ -923,9 +911,7 @@ function updatePendingBadge() {
   if (pendingCount > 0) {
     badge.textContent = String(pendingCount);
     badge.classList.remove("hidden");
-  } else {
-    badge.classList.add("hidden");
-  }
+  } else badge.classList.add("hidden");
 }
 
 function showSignup(on) {
@@ -946,26 +932,15 @@ async function signup() {
   const name = $("signupName").value.trim();
   const email = $("signupEmail").value.trim().toLowerCase();
   const password = $("signupPassword").value;
-  if (!name || !email || password.length < 6) {
-    return showLoginMsg("שם, מייל וסיסמה (6+) נדרשים", false);
-  }
+  if (!name || !email || password.length < 6) return showLoginMsg("שם, מייל וסיסמה (6+) נדרשים", false);
   const btn = $("btnSignup");
   setLoading(btn, true, "שולח");
-  const { data, error } = await sb.auth.signUp({
-    email,
-    password,
-    options: { data: { name } }
-  });
+  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
   setLoading(btn, false, "שליחת בקשה");
   if (error) return showLoginMsg(error.message, false);
-  const uid = data.user && data.user.id;
-  if (uid) {
+  if (data.user && data.user.id) {
     await sb.from("pending_users").insert({
-      user_id: uid,
-      email,
-      name,
-      source: "signup",
-      status: "pending"
+      user_id: data.user.id, email, name, source: "signup", status: "pending"
     });
     notifyAdminAlways("בקשת הצטרפות: " + name + " (" + email + ")", {});
   }
@@ -994,30 +969,16 @@ async function login() {
 }
 
 async function afterLogin() {
-  const { data: profile } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .maybeSingle();
-
+  const { data: profile } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
   if (!profile) {
-    const { data: existing } = await sb
-      .from("pending_users")
-      .select("id")
-      .eq("user_id", currentUser.id)
-      .eq("status", "pending")
-      .maybeSingle();
+    const { data: existing } = await sb.from("pending_users").select("id").eq("user_id", currentUser.id).eq("status", "pending").maybeSingle();
     if (!existing) {
       const name =
         (currentUser.user_metadata && (currentUser.user_metadata.full_name || currentUser.user_metadata.name)) ||
-        (currentUser.email && currentUser.email.split("@")[0]) ||
-        "משתמש";
+        (currentUser.email && currentUser.email.split("@")[0]) || "משתמש";
       await sb.from("pending_users").insert({
-        user_id: currentUser.id,
-        email: currentUser.email,
-        name,
-        source: "google_or_login",
-        status: "pending"
+        user_id: currentUser.id, email: currentUser.email, name,
+        source: "google_or_login", status: "pending"
       });
       notifyAdminAlways("בקשת הצטרפות: " + name + " (" + currentUser.email + ")", {});
     }
@@ -1026,7 +987,6 @@ async function afterLogin() {
     $("pendingScreen").classList.remove("hidden");
     return;
   }
-
   currentProfile = profile;
   $("loginScreen").classList.add("hidden");
   $("pendingScreen").classList.add("hidden");
@@ -1090,9 +1050,7 @@ async function loadSettings() {
 }
 
 async function loadProfiles() {
-  const { data } = await sb
-    .from("profiles")
-    .select("id,email,name,symbol,phone,collection_name,balance,is_admin");
+  const { data } = await sb.from("profiles").select("id,email,name,symbol,phone,collection_name,balance,is_admin");
   profileMap = {};
   (data || []).forEach((p) => { profileMap[p.id] = p; });
 }
@@ -1105,7 +1063,6 @@ function friendOpenNow() {
   d.setHours(hour, 0, 0, 0);
   return new Date() >= d;
 }
-
 function isPastLockTime(game) {
   if (!game) return false;
   const lockHour = parseInt(getSetting("lock_hour", "20"), 10);
@@ -1113,12 +1070,10 @@ function isPastLockTime(game) {
   lockTime.setHours(lockHour, 0, 0, 0);
   return new Date() >= lockTime;
 }
-
 function isGameLocked(game) {
   if (!game) return true;
   return game.status === "locked" || isPastLockTime(game);
 }
-
 function isLateCancel() {
   if (!currentGame) return false;
   const lateHour = parseInt(getSetting("late_cancel_hour", "17"), 10);
@@ -1146,7 +1101,6 @@ function activeAnnouncement() {
   }
   return text;
 }
-
 function maybeShowAnnouncement() {
   const text = activeAnnouncement();
   if (!text) return;
@@ -1155,12 +1109,10 @@ function maybeShowAnnouncement() {
   $("announceModal").classList.remove("hidden");
   sessionStorage.setItem(ANNOUNCE_KEY, text);
 }
-
 function openRules() {
   $("rulesBody").textContent = getSetting("rules_text", "") || "אין חוקים מוגדרים.";
   $("rulesModal").classList.remove("hidden");
 }
-
 function startAutoRefresh() {
   stopAutoRefresh();
   const sec = parseInt(getSetting("auto_refresh_sec", "30"), 10);
@@ -1170,7 +1122,6 @@ function startAutoRefresh() {
     loadList(true);
   }, sec * 1000);
 }
-
 function stopAutoRefresh() {
   if (refreshTimer) {
     clearInterval(refreshTimer);
@@ -1207,25 +1158,21 @@ function updateGeneralButtons() {
 async function lockGameOnly() {
   if (!currentGame) return showAdminMsg("אין משחק", false);
   if (currentGame.status === "locked") return showAdminMsg("כבר נעול", false);
-  if (!confirm("לנעול את ההרשמה ולשלוח את הרשימה למייל/טלגרם?")) return;
-
+  if (!confirm("לנעול ולשלוח את הרשימה למייל/טלגרם?")) return;
   const { error } = await sb.from("games").update({ status: "locked" }).eq("id", currentGame.id);
   if (error) return showAdminMsg(error.message, false);
   currentGame.status = "locked";
-
   const main = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm");
   const wait = lastRegs.filter((r) => r.status === "waitlist");
   let text = "נעילת הרשמה – " + currentGame.game_date + "\n\nרשימת משחק:\n";
   main.forEach((r) => {
-    text += (r.position || "") + ". " + r.player_name +
-      (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
+    text += (r.position || "") + ". " + r.player_name + (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
   });
   text += "\nהמתנה:\n";
   if (!wait.length) text += "ריקה\n";
   wait.forEach((r) => { text += (r.position || "") + ". " + r.player_name + "\n"; });
-
   await notifyAdminAlways(text, { game_id: currentGame.id });
-  showAdminMsg("ההרשמה ננעלה והרשימה נשלחה", true);
+  showAdminMsg("ננעל והרשימה נשלחה", true);
   updateGeneralButtons();
   await loadList();
 }
@@ -1233,11 +1180,11 @@ async function lockGameOnly() {
 async function openGameOnly() {
   if (!currentGame) return showAdminMsg("אין משחק", false);
   if (currentGame.status !== "locked") return showAdminMsg("המשחק לא נעול", false);
-  if (!confirm("לפתוח מחדש את ההרשמה?")) return;
+  if (!confirm("לפתוח מחדש?")) return;
   const { error } = await sb.from("games").update({ status: "open" }).eq("id", currentGame.id);
   if (error) return showAdminMsg(error.message, false);
   currentGame.status = "open";
-  showAdminMsg("ההרשמה נפתחה מחדש", true);
+  showAdminMsg("נפתח", true);
   updateGeneralButtons();
   await loadList();
 }
@@ -1249,17 +1196,15 @@ async function sendWeeklyReport() {
   try {
     const main = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm");
     const wait = lastRegs.filter((r) => r.status === "waitlist");
-    let text = "דוח משחק " + currentGame.game_date + " · " + currentGame.status + "\n\nרשימת משחק:\n";
+    let text = "דוח " + currentGame.game_date + " · " + currentGame.status + "\n\nמשחק:\n";
     main.forEach((r) => {
-      text += (r.position || "") + ". " + r.player_name +
-        (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
+      text += (r.position || "") + ". " + r.player_name + (r.status === "pending_confirm" ? " (ממתין)" : "") + "\n";
     });
     text += "\nהמתנה:\n";
     if (!wait.length) text += "ריקה\n";
     wait.forEach((r) => { text += (r.position || "") + ". " + r.player_name + "\n"; });
     const r = await notifyAdminAlways(text, { game_id: currentGame.id });
-    if (r && r.ok) showAdminMsg("הדוח נשלח ✓", true);
-    else showAdminMsg("שליחה נכשלה: " + (r && r.error ? r.error : ""), false);
+    showAdminMsg(r && r.ok ? "נשלח ✓" : ("נכשל: " + (r && r.error ? r.error : "")), !!(r && r.ok));
   } catch (e) {
     showAdminMsg(String(e), false);
   } finally {
@@ -1270,64 +1215,34 @@ async function sendWeeklyReport() {
 async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   const { data: game } = await sb.from("games").select("*").eq("id", gameId).single();
   if (!game || game.status !== "open") return null;
-
-  const { data: waits } = await sb
-    .from("registrations")
-    .select("*")
-    .eq("game_id", gameId)
-    .eq("status", "waitlist")
-    .order("created_at", { ascending: true });
-
+  const { data: waits } = await sb.from("registrations").select("*").eq("game_id", gameId).eq("status", "waitlist").order("created_at", { ascending: true });
   if (!waits || !waits.length) return null;
-
   const next = waits[0];
   const deadline = computeConfirmDeadline(cancelAtIso || new Date());
-
   await sb.from("registrations").update({
     status: "pending_confirm",
     promoted_at: new Date().toISOString(),
     confirm_deadline: deadline,
     position: 1
   }).eq("id", next.id);
-
   const link = siteUrl();
   const until = new Date(deadline).toLocaleString("he-IL");
-  const body =
-    "היי " + next.player_name + ",\n\n" +
-    "נפתח לך מקום ברשימת המשחק.\n" +
-    "יש לאשר הגעה באתר עד:\n" + until + "\n\n" +
-    link;
-
-  if (next.player_email) {
-    notifyPlayerEmail(next.player_email, "כדורסל – נפתח מקום (יש לאשר)", body);
-  }
-  notifyAdminAlways(
-    "ממתין לאישור: " + next.player_name + "\nעד " + until + "\n" + link,
-    {}
-  );
-
+  const body = "היי " + next.player_name + ",\n\nנפתח לך מקום ברשימת המשחק.\nיש לאשר הגעה באתר עד:\n" + until + "\n\n" + link;
+  if (next.player_email) notifyPlayerEmail(next.player_email, "כדורסל – נפתח מקום (יש לאשר)", body);
+  notifyAdminAlways("ממתין לאישור: " + next.player_name + "\nעד " + until + "\n" + link, {});
   await recalculatePositions(gameId);
   return next;
 }
 
 async function checkPendingConfirm() {
   if (!currentUser || !currentProfile || !currentGame) return;
-
-  const { data } = await sb
-    .from("registrations")
-    .select("*")
-    .eq("game_id", currentGame.id)
-    .eq("status", "pending_confirm");
-
+  const { data } = await sb.from("registrations").select("*").eq("game_id", currentGame.id).eq("status", "pending_confirm");
   const mine = (data || []).find((r) =>
-    r.player_email &&
-    r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
+    r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
   );
   if (!mine) return;
-
   pendingConfirmReg = mine;
-  $("confirmText").textContent =
-    "נפתח לך מקום ברשימת המשחק (" + mine.player_name + "). האם אתה מאשר הגעה?";
+  $("confirmText").textContent = "נפתח לך מקום ברשימת המשחק (" + mine.player_name + "). האם אתה מאשר הגעה?";
   $("confirmDeadline").textContent = mine.confirm_deadline
     ? "יש לענות עד: " + new Date(mine.confirm_deadline).toLocaleString("he-IL")
     : "";
@@ -1341,21 +1256,13 @@ async function respondConfirm(yes) {
   const btnNo = $("btnConfirmNo");
   setLoading(btnYes, true, "שומר");
   setLoading(btnNo, true, "שומר");
-
   try {
     if (yes) {
-      await sb.from("registrations").update({
-        status: "main",
-        confirm_deadline: null
-      }).eq("id", id);
+      await sb.from("registrations").update({ status: "main", confirm_deadline: null }).eq("id", id);
       notifyAdminAlways((currentProfile.name || "") + " אישר הגעה", {});
       showMsg("אושר – נתראה במשחק!", true);
     } else {
-      await sb.from("registrations").update({
-        status: "waitlist",
-        confirm_deadline: null,
-        position: 9999
-      }).eq("id", id);
+      await sb.from("registrations").update({ status: "waitlist", confirm_deadline: null, position: 9999 }).eq("id", id);
       await promoteNextFromWaitlist(currentGame.id, new Date().toISOString());
       notifyAdminAlways((currentProfile.name || "") + " לא אישר – עוברים לבא", {});
       showMsg("לא אישרת – חזרת להמתנה", true);
@@ -1372,20 +1279,12 @@ async function respondConfirm(yes) {
 
 async function loadList(silent) {
   if (!silent) $("mainList").innerHTML = skeleton(6);
-
-  const { data: games, error: gErr } = await sb
-    .from("games")
-    .select("*")
-    .in("status", ["open", "locked"])
-    .order("game_date", { ascending: false })
-    .limit(1);
-
+  const { data: games, error: gErr } = await sb.from("games").select("*").in("status", ["open", "locked"]).order("game_date", { ascending: false }).limit(1);
   if (gErr) {
     $("gameInfo").textContent = "שגיאה";
     $("mainList").innerHTML = '<div class="empty">' + escapeHtml(gErr.message) + "</div>";
     return;
   }
-
   if (!games || !games.length) {
     currentGame = null;
     lastRegs = [];
@@ -1397,45 +1296,29 @@ async function loadList(silent) {
     updateGeneralButtons();
     return;
   }
-
   currentGame = games[0];
   if (currentGame.status === "open" && isPastLockTime(currentGame) && currentProfile && currentProfile.is_admin) {
     await sb.from("games").update({ status: "locked" }).eq("id", currentGame.id);
     currentGame.status = "locked";
   }
-
   const locked = isGameLocked(currentGame);
   $("gameInfo").textContent =
     "משחק " + currentGame.game_date +
     (locked ? " · סגור" : " · פתוח") +
     (!locked ? (friendOpenNow() ? " · חברים: פתוח" : " · חברים: סגור") : "");
 
-  const { data: regs, error: rErr } = await sb
-    .from("registrations")
-    .select("*")
-    .eq("game_id", currentGame.id)
-    .in("status", ["main", "waitlist", "pending_confirm"])
-    .order("position", { ascending: true });
-
+  const { data: regs, error: rErr } = await sb.from("registrations").select("*").eq("game_id", currentGame.id)
+    .in("status", ["main", "waitlist", "pending_confirm"]).order("position", { ascending: true });
   if (rErr) {
     $("mainList").innerHTML = '<div class="empty">' + escapeHtml(rErr.message) + "</div>";
     return;
   }
-
   lastRegs = regs || [];
   const main = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm");
   const wait = lastRegs.filter((r) => r.status === "waitlist");
-
-  $("mainList").innerHTML = main.length
-    ? main.map((r) => rowHtml(r, locked)).join("")
-    : '<div class="empty">ריקה</div>';
-  $("waitList").innerHTML = wait.length
-    ? wait.map((r) => rowHtml(r, locked)).join("")
-    : '<div class="empty">ריקה</div>';
-
-  $("freeSpots").textContent =
-    "פנויים: " + Math.max(0, currentGame.max_players - main.length) + " / " + currentGame.max_players;
-
+  $("mainList").innerHTML = main.length ? main.map((r) => rowHtml(r, locked)).join("") : '<div class="empty">ריקה</div>';
+  $("waitList").innerHTML = wait.length ? wait.map((r) => rowHtml(r, locked)).join("") : '<div class="empty">ריקה</div>';
+  $("freeSpots").textContent = "פנויים: " + Math.max(0, currentGame.max_players - main.length) + " / " + currentGame.max_players;
   updateButtons(locked);
   updateGeneralButtons();
   if (lastPromote) renderPromoteBox();
@@ -1447,13 +1330,9 @@ async function loadList(silent) {
 
 function displayName(r) {
   let label = r.player_name;
-  if (!r.player_email) {
-    label = r.player_name + (r.registered_by === currentUser.id ? " (חבר)" : "");
-  }
+  if (!r.player_email) label = r.player_name + (r.registered_by === currentUser.id ? " (חבר)" : "");
   if (r.player_email) {
-    const self = Object.values(profileMap).find(
-      (x) => x.email && x.email.toLowerCase() === String(r.player_email).toLowerCase()
-    );
+    const self = Object.values(profileMap).find((x) => x.email && x.email.toLowerCase() === String(r.player_email).toLowerCase());
     if (self && self.symbol) label += " " + self.symbol;
   }
   return label;
@@ -1462,16 +1341,11 @@ function displayName(r) {
 function rowHtml(r, locked) {
   const mine =
     r.registered_by === currentUser.id ||
-    (r.player_email &&
-      r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase());
-  const cancelBtn =
-    mine && !locked
-      ? '<button type="button" class="btn-minus" data-cancel="' + r.id + '" title="ביטול">−</button>'
-      : "";
-  const badge =
-    r.status === "pending_confirm"
-      ? '<span class="badge-pc">ממתין לאישור</span>'
-      : "";
+    (r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase());
+  const cancelBtn = mine && !locked
+    ? '<button type="button" class="btn-minus" data-cancel="' + r.id + '" title="ביטול">−</button>'
+    : "";
+  const badge = r.status === "pending_confirm" ? '<span class="badge-pc">ממתין לאישור</span>' : "";
   return (
     '<div class="list-item">' +
     '<span class="num">' + (r.position || "") + ".</span>" +
@@ -1496,11 +1370,10 @@ function updateButtons(locked) {
     btnFriend.classList.add("hidden");
     return;
   }
-  const already = lastRegs.some(
-    (r) =>
-      (r.status === "main" || r.status === "waitlist" || r.status === "pending_confirm") &&
-      r.player_email &&
-      r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
+  const already = lastRegs.some((r) =>
+    (r.status === "main" || r.status === "waitlist" || r.status === "pending_confirm") &&
+    r.player_email &&
+    r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
   );
   if (already) {
     btn.disabled = true;
@@ -1518,9 +1391,7 @@ async function registerSelf() {
   if (isBlocked()) return showMsg("יש חוב גבוה – ההרשמה חסומה", false);
   const btn = $("btnReg");
   setLoading(btn, true, "נרשם");
-  const mainCount = lastRegs.filter(
-    (r) => r.status === "main" || r.status === "pending_confirm"
-  ).length;
+  const mainCount = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm").length;
   const status = mainCount < currentGame.max_players ? "main" : "waitlist";
   const { error } = await sb.from("registrations").insert({
     game_id: currentGame.id,
@@ -1532,8 +1403,7 @@ async function registerSelf() {
   });
   if (error) {
     setLoading(btn, false, "+ הרשמה");
-    showMsg(error.message, false);
-    return;
+    return showMsg(error.message, false);
   }
   await recalculatePositions(currentGame.id);
   notifyAdminChange(currentProfile.name + " נרשם (" + status + ")", {});
@@ -1555,9 +1425,7 @@ async function registerFriend() {
   if (!name) return showMsg("נא להזין שם", false);
   const btn = $("btnFriendGo");
   setLoading(btn, true, "רושם");
-  const mainCount = lastRegs.filter(
-    (r) => r.status === "main" || r.status === "pending_confirm"
-  ).length;
+  const mainCount = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm").length;
   const status = mainCount < currentGame.max_players ? "main" : "waitlist";
   const { error } = await sb.from("registrations").insert({
     game_id: currentGame.id,
@@ -1578,33 +1446,20 @@ async function registerFriend() {
 }
 
 async function cancelReg(id) {
-  if (!currentGame || isGameLocked(currentGame)) {
-    return showMsg("אחרי נעילה אי אפשר לבטל", false);
-  }
+  if (!currentGame || isGameLocked(currentGame)) return showMsg("אחרי נעילה אי אפשר לבטל", false);
   const late = isLateCancel();
   if (!confirm(late ? "ביטול מאוחר – ייתכן שתחויב. להמשיך?" : "לבטל הרשמה?")) return;
-
   const reg = lastRegs.find((r) => r.id === id);
   const wasInMain = reg && (reg.status === "main" || reg.status === "pending_confirm");
-
   const { error } = await sb.from("registrations").update({
     status: late ? "cancelled_late" : "cancelled",
     cancelled_at: new Date().toISOString(),
     confirm_deadline: null,
     position: 0
   }).eq("id", id);
-
   if (error) return showMsg(error.message, false);
-
-  notifyAdminChange(
-    (reg ? reg.player_name : "?") + " ביטל" + (late ? " (מאוחר)" : ""),
-    { late: late }
-  );
-
-  if (wasInMain) {
-    await promoteNextFromWaitlist(currentGame.id, new Date().toISOString());
-  }
-
+  notifyAdminChange((reg ? reg.player_name : "?") + " ביטל" + (late ? " (מאוחר)" : ""), { late });
+  if (wasInMain) await promoteNextFromWaitlist(currentGame.id, new Date().toISOString());
   await recalculatePositions(currentGame.id);
   showSuccessAnimation();
   showMsg(late ? "בוטל (מאוחר)" : "בוטל", true);
@@ -1618,45 +1473,24 @@ function renderPromoteBox() {
     return;
   }
   const p = lastPromote.promoted;
-  const regBy = profileMap[p.registered_by];
-  const phone = (regBy && regBy.phone) || "";
-  const isFriend = !p.player_email;
-  const text = isFriend
-    ? "היי, התפנה מקום במשחק הכדורסל.\nהחבר שרשמת (" + p.player_name + ") ממתין לאישור הגעה."
-    : "היי, התפנה מקום במשחק הכדורסל.\nיש לאשר הגעה באתר.";
-  const link = waLink(phone, text);
   box.classList.remove("hidden");
   box.innerHTML =
     "<strong>מישהו עלה / ממתין לאישור:</strong> " + escapeHtml(p.player_name) +
-    (link
-      ? '<br><a class="wa-link" target="_blank" href="' + link + '">שלח בוואטסאפ</a>'
-      : '<br><span class="empty" style="padding:4px 0">אין טלפון בפרופיל</span>') +
     '<br><button class="btn-sm btn-secondary" style="margin-top:6px" onclick="lastPromote=null;renderPromoteBox()">סגור</button>';
 }
 
 async function recalculatePositions(gameId) {
-  const { data: game } = await sb.from("games").select("*").eq("id", gameId).single();
-  if (!game) return null;
-
-  const { data: regs } = await sb
-    .from("registrations")
-    .select("*")
-    .eq("game_id", gameId)
-    .in("status", ["main", "pending_confirm", "waitlist"])
-    .order("created_at", { ascending: true });
-
-  if (!regs) return null;
-
+  const { data: regs } = await sb.from("registrations").select("*").eq("game_id", gameId)
+    .in("status", ["main", "pending_confirm", "waitlist"]).order("created_at", { ascending: true });
+  if (!regs) return;
   const active = regs.filter((r) => r.status === "main" || r.status === "pending_confirm");
   const wait = regs.filter((r) => r.status === "waitlist");
-
   for (let i = 0; i < active.length; i++) {
     await sb.from("registrations").update({ position: i + 1 }).eq("id", active[i].id);
   }
   for (let i = 0; i < wait.length; i++) {
     await sb.from("registrations").update({ position: i + 1 }).eq("id", wait[i].id);
   }
-  return null;
 }
 
 function copyList() {
@@ -1666,24 +1500,13 @@ function copyList() {
   let text = "🏀 רשימת משחק – " + currentGame.game_date + "\n\n📋 רשימת המשחק:\n";
   if (main.length) {
     main.forEach((r) => {
-      text +=
-        (r.position || "") + ". " + displayName(r) +
-        (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
+      text += (r.position || "") + ". " + displayName(r) + (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
     });
-  } else {
-    text += "אין נרשמים\n";
-  }
+  } else text += "אין נרשמים\n";
   text += "\n⏳ רשימת המתנה:\n";
-  if (wait.length) {
-    wait.forEach((r) => {
-      text += (r.position || "") + ". " + displayName(r) + "\n";
-    });
-  } else {
-    text += "ריקה\n";
-  }
-  navigator.clipboard.writeText(text)
-    .then(() => showMsg("הועתק!", true))
-    .catch(() => showMsg("העתקה נכשלה", false));
+  if (wait.length) wait.forEach((r) => { text += (r.position || "") + ". " + displayName(r) + "\n"; });
+  else text += "ריקה\n";
+  navigator.clipboard.writeText(text).then(() => showMsg("הועתק!", true)).catch(() => showMsg("העתקה נכשלה", false));
 }
 
 function openBit() {
@@ -1699,20 +1522,16 @@ function openPayBox() {
 
 function openTeams() {
   const main = lastRegs.filter((r) => r.status === "main");
-  if (main.length < 10) return showMsg("צריך לפחות 10 ברשימת המשחק (אחרי אישור)", false);
+  if (main.length < 10) return showMsg("צריך לפחות 10 (אחרי אישור)", false);
   selectedTeamPlayers = [];
   $("teamsResult").classList.add("hidden");
   $("btnSplitTeams").classList.remove("hidden");
   $("teamPickList").classList.remove("hidden");
   $("teamPickCount").classList.remove("hidden");
-  $("teamPickList").innerHTML = main
-    .map(
-      (r) =>
-        '<label class="team-pick-item">' +
-        '<input type="checkbox" data-name="' + escapeHtml(displayName(r)) + '" onchange="onTeamPickChange()">' +
-        "<span>" + r.position + ". " + escapeHtml(displayName(r)) + "</span></label>"
-    )
-    .join("");
+  $("teamPickList").innerHTML = main.map((r) =>
+    '<label class="team-pick-item"><input type="checkbox" data-name="' + escapeHtml(displayName(r)) +
+    '" onchange="onTeamPickChange()"><span>' + r.position + ". " + escapeHtml(displayName(r)) + "</span></label>"
+  ).join("");
   updateTeamPickCount();
   $("teamsModal").classList.remove("hidden");
 }
@@ -1726,23 +1545,18 @@ function onTeamPickChange() {
   updateTeamPickCount();
 }
 function updateTeamPickCount() {
-  const n = document.querySelectorAll("#teamPickList input[type=checkbox]:checked").length;
-  $("teamPickCount").textContent = "נבחרו: " + n + " / 10";
+  $("teamPickCount").textContent = "נבחרו: " + document.querySelectorAll("#teamPickList input[type=checkbox]:checked").length + " / 10";
 }
 function shuffleArray(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    const t = a[i];
-    a[i] = a[j];
-    a[j] = t;
+    const t = a[i]; a[i] = a[j]; a[j] = t;
   }
   return a;
 }
 function splitTeams() {
-  const names = [...document.querySelectorAll("#teamPickList input[type=checkbox]:checked")].map((b) =>
-    b.getAttribute("data-name")
-  );
+  const names = [...document.querySelectorAll("#teamPickList input[type=checkbox]:checked")].map((b) => b.getAttribute("data-name"));
   if (names.length !== 10) return showMsg("יש לבחור בדיוק 10", false);
   selectedTeamPlayers = names;
   renderTeamsResult(shuffleArray(names));
@@ -1767,10 +1581,7 @@ function backToTeamPick() {
 }
 
 async function refreshPendingCount() {
-  const { count } = await sb
-    .from("pending_users")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "pending");
+  const { count } = await sb.from("pending_users").select("*", { count: "exact", head: true }).eq("status", "pending");
   pendingCount = count || 0;
   updatePendingBadge();
 }
@@ -1859,11 +1670,7 @@ async function saveAllSettings() {
 
 async function loadPending() {
   await refreshPendingCount();
-  const { data, error } = await sb
-    .from("pending_users")
-    .select("*")
-    .eq("status", "pending")
-    .order("created_at", { ascending: false });
+  const { data, error } = await sb.from("pending_users").select("*").eq("status", "pending").order("created_at", { ascending: false });
   const box = $("pendingList");
   if (error) {
     box.innerHTML = '<div class="empty">' + escapeHtml(error.message) + "</div>";
@@ -1873,45 +1680,22 @@ async function loadPending() {
     box.innerHTML = '<div class="empty">אין בקשות</div>';
     return;
   }
-  box.innerHTML = data
-    .map(
-      (p) =>
-        '<div class="pending-item"><div><strong>' +
-        escapeHtml(p.name) +
-        "</strong></div>" +
-        '<div style="color:#64748b;font-size:.8rem">' +
-        escapeHtml(p.email) +
-        " · " +
-        escapeHtml(p.source || "") +
-        "</div>" +
-        '<div class="row-actions">' +
-        '<button class="btn-success" data-approve="' +
-        p.id +
-        '" data-uid="' +
-        (p.user_id || "") +
-        '" data-email="' +
-        escapeHtml(p.email) +
-        '" data-name="' +
-        escapeHtml(p.name) +
-        '">אשר</button>' +
-        '<button class="btn-danger" data-reject="' +
-        p.id +
-        '">דחה</button></div></div>'
-    )
-    .join("");
+  box.innerHTML = data.map((p) =>
+    '<div class="pending-item"><div><strong>' + escapeHtml(p.name) + "</strong></div>" +
+    '<div style="color:#64748b;font-size:.8rem">' + escapeHtml(p.email) + " · " + escapeHtml(p.source || "") + "</div>" +
+    '<div class="row-actions">' +
+    '<button class="btn-success" data-approve="' + p.id + '" data-uid="' + (p.user_id || "") +
+    '" data-email="' + escapeHtml(p.email) + '" data-name="' + escapeHtml(p.name) + '">אשר</button>' +
+    '<button class="btn-danger" data-reject="' + p.id + '">דחה</button></div></div>'
+  ).join("");
 }
 
 async function approvePending(id, uid, email, name) {
   if (!uid) return showAdminMsg("חסר user_id", false);
   if (!confirm("לאשר את " + email + "?")) return;
-  const { error: e1 } = await sb
-    .from("profiles")
-    .upsert({ id: uid, email, name, is_admin: false, balance: 0 });
+  const { error: e1 } = await sb.from("profiles").upsert({ id: uid, email, name, is_admin: false, balance: 0 });
   if (e1) return showAdminMsg(e1.message, false);
-  const { error: e2 } = await sb
-    .from("pending_users")
-    .update({ status: "approved" })
-    .eq("id", id);
+  const { error: e2 } = await sb.from("pending_users").update({ status: "approved" }).eq("id", id);
   if (e2) return showAdminMsg(e2.message, false);
   showAdminMsg("אושר: " + name, true);
   await loadPending();
@@ -1920,10 +1704,7 @@ async function approvePending(id, uid, email, name) {
 
 async function rejectPending(id) {
   if (!confirm("לדחות?")) return;
-  const { error } = await sb
-    .from("pending_users")
-    .update({ status: "rejected" })
-    .eq("id", id);
+  const { error } = await sb.from("pending_users").update({ status: "rejected" }).eq("id", id);
   if (error) return showAdminMsg(error.message, false);
   showAdminMsg("נדחה", true);
   await loadPending();
@@ -1931,55 +1712,34 @@ async function rejectPending(id) {
 
 async function loadBalanceList() {
   await loadProfiles();
-  const list = Object.values(profileMap).sort((a, b) =>
-    (a.name || "").localeCompare(b.name || "", "he")
-  );
+  const list = Object.values(profileMap).sort((a, b) => (a.name || "").localeCompare(b.name || "", "he"));
   const box = $("balanceList");
   if (!list.length) {
     box.innerHTML = '<div class="empty">אין פרופילים</div>';
     return;
   }
-  box.innerHTML = list
-    .map(
-      (p) =>
-        '<div class="admin-list-item" style="flex-wrap:wrap;gap:8px">' +
-        '<span style="min-width:120px">' +
-        escapeHtml(p.name) +
-        ' <small style="color:#64748b">' +
-        Number(p.balance || 0) +
-        "₪</small>" +
-        (p.collection_name
-          ? '<br><small style="color:#94a3b8">' + escapeHtml(p.collection_name) + "</small>"
-          : '<br><small style="color:#dc2626">חסר collection_name</small>') +
-        "</span>" +
-        '<span style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">' +
-        '<button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal="' +
-        p.id +
-        '" data-delta="-35">-35</button>' +
-        '<button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal="' +
-        p.id +
-        '" data-delta="35">+35</button>' +
-        '<input type="number" id="amt_' +
-        p.id +
-        '" placeholder="סכום" style="width:72px;padding:6px;font-size:.8rem;margin:0">' +
-        '<button class="btn-danger" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal-custom="' +
-        p.id +
-        '" data-sign="-1">חייב</button>' +
-        '<button class="btn-success" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal-custom="' +
-        p.id +
-        '" data-sign="1">זיכוי</button>' +
-        "</span></div>"
-    )
-    .join("");
+  box.innerHTML = list.map((p) =>
+    '<div class="admin-list-item" style="flex-wrap:wrap;gap:8px">' +
+    '<span style="min-width:120px">' + escapeHtml(p.name) +
+    ' <small style="color:#64748b">' + Number(p.balance || 0) + "₪</small>" +
+    (p.collection_name
+      ? '<br><small style="color:#94a3b8">' + escapeHtml(p.collection_name) + "</small>"
+      : '<br><small style="color:#dc2626">חסר collection_name</small>') +
+    "</span>" +
+    '<span style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">' +
+    '<button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal="' + p.id + '" data-delta="-35">-35</button>' +
+    '<button class="btn-secondary" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal="' + p.id + '" data-delta="35">+35</button>' +
+    '<input type="number" id="amt_' + p.id + '" placeholder="סכום" style="width:72px;padding:6px;font-size:.8rem;margin:0">' +
+    '<button class="btn-danger" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal-custom="' + p.id + '" data-sign="-1">חייב</button>' +
+    '<button class="btn-success" style="width:auto;padding:4px 8px;font-size:.75rem" data-bal-custom="' + p.id + '" data-sign="1">זיכוי</button>' +
+    "</span></div>"
+  ).join("");
 }
 
 async function loadProfilesEditor() {
   await loadProfiles();
-  const list = Object.values(profileMap).sort((a, b) =>
-    (a.name || "").localeCompare(b.name || "", "he")
-  );
-  const sel = $("profileSelect");
-  sel.innerHTML =
+  const list = Object.values(profileMap).sort((a, b) => (a.name || "").localeCompare(b.name || "", "he"));
+  $("profileSelect").innerHTML =
     '<option value="">— בחר —</option>' +
     list.map((p) => '<option value="' + p.id + '">' + escapeHtml(p.name) + "</option>").join("");
   $("profileEditor").innerHTML = '<div class="empty">בחר שחקן לעריכה</div>';
@@ -1994,40 +1754,17 @@ function fillProfileEditor() {
     return;
   }
   box.innerHTML =
-    '<div class="profile-card" data-profile-id="' +
-    p.id +
-    '">' +
-    '<div class="email-ro">מייל: ' +
-    escapeHtml(p.email || "") +
-    "</div>" +
+    '<div class="profile-card" data-profile-id="' + p.id + '">' +
+    '<div class="email-ro">מייל: ' + escapeHtml(p.email || "") + "</div>" +
     '<div class="profile-grid">' +
-    '<div class="full"><label style="font-size:.75rem;color:#64748b">שם</label>' +
-    '<input data-f="name" value="' +
-    escapeHtml(p.name || "") +
-    '"></div>' +
-    '<div class="full"><label style="font-size:.75rem;color:#64748b">שם בשיטס (collection_name)</label>' +
-    '<input data-f="collection_name" value="' +
-    escapeHtml(p.collection_name || "") +
-    '" placeholder="כמו בעמודה B"></div>' +
-    '<div><label style="font-size:.75rem;color:#64748b">סמל</label>' +
-    '<input data-f="symbol" value="' +
-    escapeHtml(p.symbol || "") +
-    '"></div>' +
-    '<div><label style="font-size:.75rem;color:#64748b">טלפון</label>' +
-    '<input data-f="phone" value="' +
-    escapeHtml(p.phone || "") +
-    '" placeholder="05..."></div>' +
-    '<div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label>' +
-    '<select data-f="is_admin">' +
-    '<option value="false"' +
-    (!p.is_admin ? " selected" : "") +
-    ">לא</option>" +
-    '<option value="true"' +
-    (p.is_admin ? " selected" : "") +
-    ">כן</option></select></div></div>" +
-    '<button class="btn-success" style="margin-top:8px" data-save-profile="' +
-    p.id +
-    '">שמור פרופיל</button></div>';
+    '<div class="full"><label style="font-size:.75rem;color:#64748b">שם</label><input data-f="name" value="' + escapeHtml(p.name || "") + '"></div>' +
+    '<div class="full"><label style="font-size:.75rem;color:#64748b">collection_name</label><input data-f="collection_name" value="' + escapeHtml(p.collection_name || "") + '"></div>' +
+    '<div><label style="font-size:.75rem;color:#64748b">סמל</label><input data-f="symbol" value="' + escapeHtml(p.symbol || "") + '"></div>' +
+    '<div><label style="font-size:.75rem;color:#64748b">טלפון</label><input data-f="phone" value="' + escapeHtml(p.phone || "") + '"></div>' +
+    '<div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label><select data-f="is_admin">' +
+    '<option value="false"' + (!p.is_admin ? " selected" : "") + ">לא</option>" +
+    '<option value="true"' + (p.is_admin ? " selected" : "") + ">כן</option></select></div></div>" +
+    '<button class="btn-success" style="margin-top:8px" data-save-profile="' + p.id + '">שמור פרופיל</button></div>';
 }
 
 async function saveProfile(uid) {
@@ -2039,19 +1776,10 @@ async function saveProfile(uid) {
   const phone = card.querySelector('[data-f="phone"]').value.trim();
   const is_admin = card.querySelector('[data-f="is_admin"]').value === "true";
   if (!name) return showAdminMsg("שם חובה", false);
-  const { error } = await sb
-    .from("profiles")
-    .update({ name, collection_name, symbol, phone, is_admin })
-    .eq("id", uid);
+  const { error } = await sb.from("profiles").update({ name, collection_name, symbol, phone, is_admin }).eq("id", uid);
   if (error) return showAdminMsg(error.message, false);
   if (uid === currentUser.id) {
-    currentProfile = Object.assign({}, currentProfile, {
-      name,
-      collection_name,
-      symbol,
-      phone,
-      is_admin
-    });
+    currentProfile = Object.assign({}, currentProfile, { name, collection_name, symbol, phone, is_admin });
     $("userLabel").textContent = name + (is_admin ? " · מנהל" : "");
   }
   showAdminMsg("הפרופיל נשמר ✓", true);
@@ -2060,66 +1788,35 @@ async function saveProfile(uid) {
 
 async function loadAddPlayerSelect() {
   await loadProfiles();
-  const sel = $("addPlayerSelect");
-  const taken = new Set(
-    lastRegs.map((r) => (r.player_email || "").toLowerCase()).filter(Boolean)
-  );
-  const list = Object.values(profileMap)
-    .filter((p) => !taken.has((p.email || "").toLowerCase()))
+  const taken = new Set(lastRegs.map((r) => (r.player_email || "").toLowerCase()).filter(Boolean));
+  const list = Object.values(profileMap).filter((p) => !taken.has((p.email || "").toLowerCase()))
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "he"));
-  sel.innerHTML =
-    list
-      .map(
-        (p) =>
-          '<option value="' +
-          p.id +
-          '">' +
-          escapeHtml(p.name) +
-          " (" +
-          escapeHtml(p.email) +
-          ")</option>"
-      )
-      .join("") || '<option value="">אין פנויים</option>';
+  $("addPlayerSelect").innerHTML = list.map((p) =>
+    '<option value="' + p.id + '">' + escapeHtml(p.name) + " (" + escapeHtml(p.email) + ")</option>"
+  ).join("") || '<option value="">אין פנויים</option>';
 }
 
 async function loadRemovePlayerSelect() {
-  const sel = $("removePlayerSelect");
   if (!lastRegs.length) {
-    sel.innerHTML = '<option value="">אין נרשמים</option>';
+    $("removePlayerSelect").innerHTML = '<option value="">אין נרשמים</option>';
     return;
   }
-  sel.innerHTML = lastRegs
-    .map(
-      (r) =>
-        '<option value="' +
-        r.id +
-        '">' +
-        escapeHtml(displayName(r)) +
-        " (" +
-        r.status +
-        ")</option>"
-    )
-    .join("");
+  $("removePlayerSelect").innerHTML = lastRegs.map((r) =>
+    '<option value="' + r.id + '">' + escapeHtml(displayName(r)) + " (" + r.status + ")</option>"
+  ).join("");
 }
 
 async function adminAddPlayer() {
   if (!currentGame || isGameLocked(currentGame)) return showAdminMsg("אין משחק פתוח", false);
-  const uid = $("addPlayerSelect").value;
-  const p = profileMap[uid];
+  const p = profileMap[$("addPlayerSelect").value];
   if (!p) return showAdminMsg("בחר שחקן", false);
   const btn = $("btnAdminAdd");
   setLoading(btn, true, "מוסיף");
-  const mainCount = lastRegs.filter(
-    (r) => r.status === "main" || r.status === "pending_confirm"
-  ).length;
+  const mainCount = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm").length;
   const status = mainCount < currentGame.max_players ? "main" : "waitlist";
   const { error } = await sb.from("registrations").insert({
-    game_id: currentGame.id,
-    player_name: p.name,
-    player_email: p.email,
-    registered_by: currentUser.id,
-    status,
-    position: mainCount + 1
+    game_id: currentGame.id, player_name: p.name, player_email: p.email,
+    registered_by: currentUser.id, status, position: mainCount + 1
   });
   setLoading(btn, false, "הוסף לרשימה");
   if (error) return showAdminMsg(error.message, false);
@@ -2139,20 +1836,12 @@ async function adminRemoveSelected() {
   setLoading(btn, true, "מסיר");
   const reg = lastRegs.find((r) => r.id === id);
   const wasInMain = reg && (reg.status === "main" || reg.status === "pending_confirm");
-  const { error } = await sb
-    .from("registrations")
-    .update({
-      status: "cancelled",
-      cancelled_at: new Date().toISOString(),
-      position: 0,
-      confirm_deadline: null
-    })
-    .eq("id", id);
+  const { error } = await sb.from("registrations").update({
+    status: "cancelled", cancelled_at: new Date().toISOString(), position: 0, confirm_deadline: null
+  }).eq("id", id);
   setLoading(btn, false, "הסר מהרשימה");
   if (error) return showAdminMsg(error.message, false);
-  if (wasInMain) {
-    await promoteNextFromWaitlist(currentGame.id, new Date().toISOString());
-  }
+  if (wasInMain) await promoteNextFromWaitlist(currentGame.id, new Date().toISOString());
   await recalculatePositions(currentGame.id);
   showAdminMsg("הוסר", true);
   await loadList();
@@ -2166,12 +1855,8 @@ async function loadArchive() {
     box.innerHTML = '<div class="empty">אין משחק</div>';
     return;
   }
-  const { data, error } = await sb
-    .from("registrations")
-    .select("*")
-    .eq("game_id", currentGame.id)
-    .in("status", ["cancelled", "cancelled_late"])
-    .order("cancelled_at", { ascending: false });
+  const { data, error } = await sb.from("registrations").select("*").eq("game_id", currentGame.id)
+    .in("status", ["cancelled", "cancelled_late"]).order("cancelled_at", { ascending: false });
   if (error) {
     box.innerHTML = '<div class="empty">' + escapeHtml(error.message) + "</div>";
     return;
@@ -2180,54 +1865,11 @@ async function loadArchive() {
     box.innerHTML = '<div class="empty">אין ביטולים</div>';
     return;
   }
-  box.innerHTML = data
-    .map(
-      (r) =>
-        '<div class="archive-item"><strong>' +
-        escapeHtml(r.player_name) +
-        "</strong> · " +
-        (r.status === "cancelled_late" ? "מאוחר" : "ביטול") +
-        " · " +
-        (r.cancelled_at ? new Date(r.cancelled_at).toLocaleString("he-IL") : "") +
-        "</div>"
-    )
-    .join("");
-}
-
-function nextSaturday() {
-  // חישוב לפי שעון ישראל, בלי toISOString (UTC)
-  const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jerusalem",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short"
-  });
-
-  // מתחילים מהיום בישראל
-  let probe = new Date();
-  for (let i = 0; i < 8; i++) {
-    const parts = {};
-    for (const p of fmt.formatToParts(probe)) {
-      if (p.type !== "literal") parts[p.type] = p.value;
-    }
-    // en-CA weekday: Sat, Sun, ...
-    const isSat = String(parts.weekday || "").toLowerCase().startsWith("sat");
-    const dateStr = parts.year + "-" + parts.month + "-" + parts.day;
-
-    if (isSat) {
-      // אם היום שבת – לשבוע חדש רוצים את השבת הבאה
-      if (i === 0) {
-        probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
-        continue;
-      }
-      return dateStr;
-    }
-    probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
-  }
-
-  // גיבוי (לא אמור לקרות)
-  return new Date().toISOString().slice(0, 10);
+  box.innerHTML = data.map((r) =>
+    '<div class="archive-item"><strong>' + escapeHtml(r.player_name) + "</strong> · " +
+    (r.status === "cancelled_late" ? "מאוחר" : "ביטול") + " · " +
+    (r.cancelled_at ? new Date(r.cancelled_at).toLocaleString("he-IL") : "") + "</div>"
+  ).join("");
 }
 
 async function startNewWeek() {
@@ -2235,17 +1877,14 @@ async function startNewWeek() {
   if (!confirm("לסגור משחקים ולפתוח שבוע חדש?")) return;
   const btn = $("btnNewWeek");
   setLoading(btn, true, "פותח");
-  const { error: e1 } = await sb
-    .from("games")
-    .update({ status: "completed" })
-    .in("status", ["open", "locked"]);
+  const { error: e1 } = await sb.from("games").update({ status: "completed" }).in("status", ["open", "locked"]);
   if (e1) {
     setLoading(btn, false, "התחל שבוע חדש");
     return showAdminMsg(e1.message, false);
   }
   const gameDate = nextSaturday();
   const friendHour = parseInt(getSetting("friend_open_hour", "12"), 10);
-  const friend = new Date(gameDate + "T00:00:00");
+  const friend = new Date(gameDate + "T12:00:00");
   friend.setDate(friend.getDate() - 1);
   friend.setHours(friendHour, 0, 0, 0);
   const { error: e2 } = await sb.from("games").insert({
@@ -2266,7 +1905,6 @@ async function startNewWeek() {
 document.addEventListener("click", (e) => {
   const c = e.target.closest("[data-cancel]");
   if (c) cancelReg(c.getAttribute("data-cancel"));
-
   const ap = e.target.closest("[data-approve]");
   if (ap) {
     approvePending(
@@ -2276,13 +1914,10 @@ document.addEventListener("click", (e) => {
       ap.getAttribute("data-name")
     );
   }
-
   const rj = e.target.closest("[data-reject]");
   if (rj) rejectPending(rj.getAttribute("data-reject"));
-
   const bal = e.target.closest("[data-bal]");
   if (bal) adjustBalance(bal.getAttribute("data-bal"), bal.getAttribute("data-delta"));
-
   const balCustom = e.target.closest("[data-bal-custom]");
   if (balCustom) {
     const uid = balCustom.getAttribute("data-bal-custom");
@@ -2292,7 +1927,6 @@ document.addEventListener("click", (e) => {
     if (!raw || isNaN(raw) || raw <= 0) return showAdminMsg("הזן סכום חיובי", false);
     adjustBalance(uid, sign * raw);
   }
-
   const sp = e.target.closest("[data-save-profile]");
   if (sp) saveProfile(sp.getAttribute("data-save-profile"));
 });
