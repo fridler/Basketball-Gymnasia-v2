@@ -150,9 +150,7 @@
       padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px;
       background: #fff; cursor: pointer; font-weight: 600; font-size: .85rem; color: var(--text);
     }
-    .pay-btn img {
-      width: 28px; height: 28px; object-fit: contain; border-radius: 6px;
-    }
+    .pay-btn img { width: 28px; height: 28px; object-fit: contain; border-radius: 6px; }
     .debt-amount {
       font-size: 1.6rem; font-weight: 700; color: var(--danger); text-align: center;
       margin: 8px 0 12px; direction: ltr; unicode-bidi: isolate;
@@ -252,7 +250,6 @@
             <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            <path fill="none" d="M0 0h48v48H0z"/>
           </svg>
           התחברות עם Google
         </button>
@@ -633,6 +630,94 @@ function isSaturdayIsrael() {
   return fmt.format(new Date()).toLowerCase().startsWith("sat");
 }
 
+function israelPartsOf(d) {
+  const p = {};
+  for (const x of new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(d)) {
+    if (x.type !== "literal") p[x.type] = x.value;
+  }
+  return p;
+}
+
+/**
+ * דדליין לאישור הגעה – לפי יום המשחק (שבת), לא לפי "כל יום אחרי 17:00".
+ * לפני שבת 08:00 (כולל שישי) → עד שבת 10:00.
+ */
+function computeConfirmDeadline(gameDateStr, cancelAt) {
+  const cancel = cancelAt ? new Date(cancelAt) : new Date();
+  const cp = israelPartsOf(cancel);
+  const cancelDate = cp.year + "-" + cp.month + "-" + cp.day;
+  const cancelMins = Number(cp.hour) * 60 + Number(cp.minute);
+
+  function saturdayAt10Iso() {
+    for (let h = 6; h <= 9; h++) {
+      const d = new Date(gameDateStr + "T" + String(h).padStart(2, "0") + ":00:00.000Z");
+      const p = israelPartsOf(d);
+      const dateStr = p.year + "-" + p.month + "-" + p.day;
+      if (dateStr === gameDateStr && Number(p.hour) === 10 && Number(p.minute) === 0) {
+        return d.toISOString();
+      }
+    }
+    return new Date(gameDateStr + "T07:00:00.000Z").toISOString();
+  }
+
+  if (!gameDateStr) {
+    return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
+  }
+
+  // לפני שבת 08:00 (שישי וכו') → שבת 10:00
+  if (cancelDate < gameDateStr || (cancelDate === gameDateStr && cancelMins < 8 * 60)) {
+    return saturdayAt10Iso();
+  }
+
+  if (cancelDate === gameDateStr && cancelMins < 12 * 60) {
+    return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
+  }
+  if (cancelDate === gameDateStr && cancelMins < 17 * 60) {
+    return new Date(cancel.getTime() + 30 * 60 * 1000).toISOString();
+  }
+  if (cancelDate === gameDateStr) {
+    return new Date(cancel.getTime() + 15 * 60 * 1000).toISOString();
+  }
+
+  return saturdayAt10Iso();
+}
+
+function nextSaturday() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short"
+  });
+  let probe = new Date();
+  for (let i = 0; i < 10; i++) {
+    const parts = {};
+    for (const p of fmt.formatToParts(probe)) {
+      if (p.type !== "literal") parts[p.type] = p.value;
+    }
+    const isSat = String(parts.weekday || "").toLowerCase().startsWith("sat");
+    const dateStr = parts.year + "-" + parts.month + "-" + parts.day;
+    if (isSat) {
+      if (i === 0) {
+        probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
+        continue;
+      }
+      return dateStr;
+    }
+    probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return new Date().toISOString().slice(0, 10);
+}
+
 async function logEvent(event_type, payload) {
   try { await sb.from("app_events").insert({ event_type, payload: payload || {} }); }
   catch (e) {}
@@ -697,97 +782,12 @@ async function testNotify() {
   setLoading(btn, true, "בודק");
   try {
     const r = await notifyAdminAlways("בדיקת התראות – " + new Date().toLocaleString("he-IL"), {});
-    if (r && r.ok) showAdminMsg("נשלח ✓", true);
-    else showAdminMsg("נכשל: " + (r && r.error ? r.error : "שגיאה"), false);
+    showAdminMsg(r && r.ok ? "נשלח ✓" : ("נכשל: " + (r && r.error ? r.error : "")), !!(r && r.ok));
   } catch (e) {
-    showAdminMsg("שגיאה: " + String(e), false);
+    showAdminMsg(String(e), false);
   } finally {
     setLoading(btn, false, "בדיקת התראות");
   }
-}
-
-function computeConfirmDeadline(gameDateStr, cancelAt) {
-  const cancel = cancelAt ? new Date(cancelAt) : new Date();
-
-  function partsOf(d) {
-    const p = {};
-    for (const x of new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Jerusalem",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false
-    }).formatToParts(d)) {
-      if (x.type !== "literal") p[x.type] = x.value;
-    }
-    return p;
-  }
-
-  const cp = partsOf(cancel);
-  const cancelDate = cp.year + "-" + cp.month + "-" + cp.day;
-  const cancelMins = Number(cp.hour) * 60 + Number(cp.minute);
-
-  // שבת 10:00 שעון ישראל
-  function saturdayAt10Iso() {
-    for (let h = 6; h <= 9; h++) {
-      const d = new Date(gameDateStr + "T" + String(h).padStart(2, "0") + ":00:00.000Z");
-      const p = partsOf(d);
-      const dateStr = p.year + "-" + p.month + "-" + p.day;
-      if (dateStr === gameDateStr && Number(p.hour) === 10 && Number(p.minute) === 0) {
-        return d.toISOString();
-      }
-    }
-    // גיבוי: 10:00 IDT = 07:00 UTC
-    return new Date(gameDateStr + "T07:00:00.000Z").toISOString();
-  }
-
-  // לפני שבת 08:00 (כולל כל שישי) → עד שבת 10:00
-  if (cancelDate < gameDateStr || (cancelDate === gameDateStr && cancelMins < 8 * 60)) {
-    return saturdayAt10Iso();
-  }
-
-  // רק ביום שבת עצמו:
-  if (cancelDate === gameDateStr && cancelMins < 12 * 60) {
-    return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString(); // שעה
-  }
-  if (cancelDate === gameDateStr && cancelMins < 17 * 60) {
-    return new Date(cancel.getTime() + 30 * 60 * 1000).toISOString(); // חצי שעה
-  }
-  if (cancelDate === gameDateStr) {
-    return new Date(cancel.getTime() + 15 * 60 * 1000).toISOString(); // רבע שעה
-  }
-
-  return saturdayAt10Iso();
-}
-
-function nextSaturday() {
-  const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jerusalem",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short"
-  });
-  let probe = new Date();
-  for (let i = 0; i < 10; i++) {
-    const parts = {};
-    for (const p of fmt.formatToParts(probe)) {
-      if (p.type !== "literal") parts[p.type] = p.value;
-    }
-    const isSat = String(parts.weekday || "").toLowerCase().startsWith("sat");
-    const dateStr = parts.year + "-" + parts.month + "-" + parts.day;
-    if (isSat) {
-      if (i === 0) {
-        probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
-        continue;
-      }
-      return dateStr;
-    }
-    probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
-  }
-  return new Date().toISOString().slice(0, 10);
 }
 
 async function syncBalancesFromSheet(silent) {
@@ -1261,6 +1261,7 @@ async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   if (!waits || !waits.length) return null;
 
   const next = waits[0];
+  // חשוב: מעבירים game_date כדי ששישי → שבת 10:00
   const deadline = computeConfirmDeadline(game.game_date, cancelAtIso || new Date());
 
   const { data: updated, error } = await sb
@@ -1286,7 +1287,6 @@ async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   const isFriend = !(next.player_email || "").trim();
   const registrar = profileMap[next.registered_by];
 
-  // מי מקבל מייל: השחקן עצמו, או מי שרשם (בחבר)
   let notifyEmail = (next.player_email || "").trim();
   let notifyName = next.player_name;
   if (isFriend && registrar) {
@@ -1339,7 +1339,6 @@ async function checkPendingConfirm() {
   const mine = (data || []).find((r) => {
     const pe = (r.player_email || "").trim().toLowerCase();
     if (pe && pe === myEmail) return true;
-    // חבר בלי מייל – מי שרשם מאשר
     if (!pe && r.registered_by === currentUser.id) return true;
     return false;
   });
