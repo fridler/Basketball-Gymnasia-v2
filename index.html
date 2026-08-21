@@ -2195,11 +2195,39 @@ async function loadArchive() {
 }
 
 function nextSaturday() {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = (6 - day + 7) % 7 || 7;
-  d.setDate(d.getDate() + diff);
-  return d.toISOString().slice(0, 10);
+  // חישוב לפי שעון ישראל, בלי toISOString (UTC)
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short"
+  });
+
+  // מתחילים מהיום בישראל
+  let probe = new Date();
+  for (let i = 0; i < 8; i++) {
+    const parts = {};
+    for (const p of fmt.formatToParts(probe)) {
+      if (p.type !== "literal") parts[p.type] = p.value;
+    }
+    // en-CA weekday: Sat, Sun, ...
+    const isSat = String(parts.weekday || "").toLowerCase().startsWith("sat");
+    const dateStr = parts.year + "-" + parts.month + "-" + parts.day;
+
+    if (isSat) {
+      // אם היום שבת – לשבוע חדש רוצים את השבת הבאה
+      if (i === 0) {
+        probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
+        continue;
+      }
+      return dateStr;
+    }
+    probe = new Date(probe.getTime() + 24 * 60 * 60 * 1000);
+  }
+
+  // גיבוי (לא אמור לקרות)
+  return new Date().toISOString().slice(0, 10);
 }
 
 async function startNewWeek() {
