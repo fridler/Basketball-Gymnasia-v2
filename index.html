@@ -195,8 +195,8 @@
       box-shadow: 0 8px 24px rgba(22,163,74,.35);
     }
     .admin-tabs {
-      display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px;
-      border-bottom: 1px solid #fde68a; -webkit-overflow-scrolling: touch;
+      display: flex; gap: 4px; flex-wrap: wrap; padding-bottom: 8px; margin-bottom: 0;
+      border-bottom: 1px solid #fde68a;
     }
     .admin-tab {
       width: auto; flex: 0 0 auto; padding: 6px 10px; font-size: .78rem; border-radius: 20px;
@@ -209,18 +209,12 @@
       font-weight: 700; align-items: center; justify-content: center;
     }
     .admin-tab.active .tab-badge { background: #fff; color: var(--danger); }
-    .admin-more-wrap { position: relative; flex: 0 0 auto; }
-    .admin-more-menu {
-      display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; z-index: 20;
-      background: #fff; border: 1px solid #fbbf24; border-radius: 10px; min-width: 140px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.12); padding: 4px;
+    .admin-more-row {
+      display: none; flex-wrap: wrap; gap: 4px; padding: 8px 0 10px; margin-bottom: 8px;
+      border-bottom: 1px solid #fde68a;
     }
-    .admin-more-menu.open { display: block; }
-    .admin-more-menu button {
-      width: 100%; text-align: right; padding: 8px 10px; font-size: .8rem; border: none;
-      background: transparent; color: #92400e; border-radius: 8px; cursor: pointer; font-weight: 600;
-    }
-    .admin-more-menu button:hover, .admin-more-menu button.active { background: #fef3c7; }
+    .admin-more-row.open { display: flex; }
+    .admin-more-row .admin-tab { font-size: .74rem; padding: 5px 9px; }
     .settings-section {
       margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #fde68a;
     }
@@ -446,16 +440,14 @@
         <button type="button" class="admin-tab" data-tab="pending" onclick="switchAdminTab('pending')">בקשות<span class="tab-badge hidden" id="pendingBadge">0</span></button>
         <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>
         <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
-        <div class="admin-more-wrap">
-          <button type="button" class="admin-tab" id="btnAdminMore" onclick="toggleAdminMore(event)">עוד ▾</button>
-          <div class="admin-more-menu" id="adminMoreMenu">
-            <button type="button" data-tab="announce" onclick="switchAdminTab('announce')">מודעה</button>
-            <button type="button" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
-            <button type="button" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
-            <button type="button" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
-            <button type="button" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
-          </div>
-        </div>
+        <button type="button" class="admin-tab" id="btnAdminMore" onclick="toggleAdminMore(event)">עוד ▾</button>
+      </div>
+      <div class="admin-more-row" id="adminMoreRow">
+        <button type="button" class="admin-tab" data-tab="announce" onclick="switchAdminTab('announce')">מודעה</button>
+        <button type="button" class="admin-tab" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
+        <button type="button" class="admin-tab" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
+        <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
+        <button type="button" class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
       </div>
 
       <div id="pane-general" class="admin-pane active">
@@ -562,7 +554,6 @@
 const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
 const ANNOUNCE_KEY = "v2_announce_seen";
-
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1028,25 +1019,27 @@ const MAIN_ADMIN_TABS = ["general", "pending", "roster", "balances"];
 
 function toggleAdminMore(e) {
   if (e) e.stopPropagation();
-  const menu = $("adminMoreMenu");
-  if (menu) menu.classList.toggle("open");
+  const row = $("adminMoreRow");
+  if (row) row.classList.toggle("open");
 }
 
 function closeAdminMore() {
-  const menu = $("adminMoreMenu");
-  if (menu) menu.classList.remove("open");
+  const row = $("adminMoreRow");
+  if (row) row.classList.remove("open");
 }
 
 function switchAdminTab(name) {
-  closeAdminMore();
+  const isMore = !MAIN_ADMIN_TABS.includes(name);
+  const row = $("adminMoreRow");
+  if (row) {
+    if (isMore) row.classList.add("open");
+    else row.classList.remove("open");
+  }
   document.querySelectorAll(".admin-tab[data-tab]").forEach((t) => {
     t.classList.toggle("active", t.getAttribute("data-tab") === name);
   });
   const moreBtn = $("btnAdminMore");
-  if (moreBtn) moreBtn.classList.toggle("active", !MAIN_ADMIN_TABS.includes(name));
-  document.querySelectorAll("#adminMoreMenu button").forEach((b) => {
-    b.classList.toggle("active", b.getAttribute("data-tab") === name);
-  });
+  if (moreBtn) moreBtn.classList.toggle("active", isMore);
   document.querySelectorAll(".admin-pane").forEach((p) => {
     p.classList.toggle("active", p.id === "pane-" + name);
   });
@@ -2178,7 +2171,9 @@ async function startNewWeek() {
 }
 
 document.addEventListener("click", (e) => {
-  if (!e.target.closest(".admin-more-wrap")) closeAdminMore();
+  if (!e.target.closest(".admin-tabs") && !e.target.closest("#adminMoreRow") && !e.target.closest("#btnAdminMore")) {
+    /* לא סוגרים אוטומטית כשנמצאים בטאב מתוך ״עוד״ */
+  }
   const c = e.target.closest("[data-cancel]");
   if (c) cancelReg(c.getAttribute("data-cancel"));
   const ap = e.target.closest("[data-approve]");
