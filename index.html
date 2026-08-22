@@ -209,6 +209,25 @@
       font-weight: 700; align-items: center; justify-content: center;
     }
     .admin-tab.active .tab-badge { background: #fff; color: var(--danger); }
+    .admin-more-wrap { position: relative; flex: 0 0 auto; }
+    .admin-more-menu {
+      display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; z-index: 20;
+      background: #fff; border: 1px solid #fbbf24; border-radius: 10px; min-width: 140px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.12); padding: 4px;
+    }
+    .admin-more-menu.open { display: block; }
+    .admin-more-menu button {
+      width: 100%; text-align: right; padding: 8px 10px; font-size: .8rem; border: none;
+      background: transparent; color: #92400e; border-radius: 8px; cursor: pointer; font-weight: 600;
+    }
+    .admin-more-menu button:hover, .admin-more-menu button.active { background: #fef3c7; }
+    .settings-section {
+      margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #fde68a;
+    }
+    .settings-section:last-of-type { border-bottom: none; }
+    .settings-section h4 {
+      font-size: .82rem; color: #b45309; margin: 0 0 8px; font-weight: 700;
+    }
     .admin-pane { display: none; }
     .admin-pane.active { display: block; }
     .profile-card {
@@ -425,13 +444,18 @@
       <div class="admin-tabs">
         <button type="button" class="admin-tab active" data-tab="general" onclick="switchAdminTab('general')">כללי</button>
         <button type="button" class="admin-tab" data-tab="pending" onclick="switchAdminTab('pending')">בקשות<span class="tab-badge hidden" id="pendingBadge">0</span></button>
-        <button type="button" class="admin-tab" data-tab="announce" onclick="switchAdminTab('announce')">מודעה</button>
-        <button type="button" class="admin-tab" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
-        <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
-        <button type="button" class="admin-tab" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
         <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>
-        <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
-        <button type="button" class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
+        <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
+        <div class="admin-more-wrap">
+          <button type="button" class="admin-tab" id="btnAdminMore" onclick="toggleAdminMore(event)">עוד ▾</button>
+          <div class="admin-more-menu" id="adminMoreMenu">
+            <button type="button" data-tab="announce" onclick="switchAdminTab('announce')">מודעה</button>
+            <button type="button" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
+            <button type="button" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
+            <button type="button" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
+            <button type="button" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
+          </div>
+        </div>
       </div>
 
       <div id="pane-general" class="admin-pane active">
@@ -492,19 +516,41 @@
       </div>
 
       <div id="pane-settings" class="admin-pane">
-        <div class="form-group"><label>מקס שחקנים</label><input id="set_max_players" type="number"></div>
-        <div class="form-group"><label>מחיר משחק</label><input id="set_game_price" type="number"></div>
-        <div class="form-group"><label>חוב מקס לחסימה</label><input id="set_max_debt" type="number"></div>
-        <div class="form-group"><label>שעת נעילה (0-23)</label><input id="set_lock_hour" type="number"></div>
-        <div class="form-group"><label>שעת ביטול מאוחר</label><input id="set_late_cancel_hour" type="number"></div>
-        <div class="form-group"><label>שעת פתיחת חברים</label><input id="set_friend_open_hour" type="number"></div>
-        <div class="form-group"><label>רענון אוטומטי (שניות, 0=כבוי)</label><input id="set_auto_refresh_sec" type="number"></div>
-        <div class="form-group"><label>כתובת האתר (לקישורים במייל)</label><input id="set_site_url" type="text" placeholder="https://..."></div>
-        <div class="form-group"><label>לינק Bit</label><input id="set_bit_link" type="text"></div>
-        <div class="form-group"><label>לינק PayBox</label><input id="set_paybox_link" type="text"></div>
-        <div class="form-group"><label>מייל להתראות מנהל</label><input id="set_notify_email" type="email"></div>
-        <div class="form-group"><label>Telegram bot token</label><input id="set_telegram_bot_token" type="text"></div>
-        <div class="form-group"><label>Telegram chat id</label><input id="set_telegram_chat_id" type="text"></div>
+        <div class="settings-section">
+          <h4>משחק והרשמה</h4>
+          <div class="form-group"><label>מקס שחקנים</label><input id="set_max_players" type="number"></div>
+          <div class="form-group"><label>מחיר משחק</label><input id="set_game_price" type="number"></div>
+          <div class="form-group"><label>חוב מקס לחסימה</label><input id="set_max_debt" type="number"></div>
+          <div class="form-group"><label>שעת נעילה (0-23)</label><input id="set_lock_hour" type="number"></div>
+          <div class="form-group"><label>שעת ביטול מאוחר</label><input id="set_late_cancel_hour" type="number"></div>
+          <div class="form-group"><label>שעת פתיחת חברים</label><input id="set_friend_open_hour" type="number"></div>
+          <div class="form-group"><label>רענון גיבוי (שניות, 0=כבוי) – Realtime מעדכן מיד</label><input id="set_auto_refresh_sec" type="number"></div>
+        </div>
+        <div class="settings-section">
+          <h4>אישור הגעה (אחרי ביטול)</h4>
+          <div class="form-group"><label>שעת ביטול מוקדם (לפניה → דדליין קבוע)</label><input id="set_confirm_early_hour" type="number"></div>
+          <div class="form-group"><label>דדליין לאישור בביטול מוקדם (שעה ביום המשחק)</label><input id="set_confirm_early_deadline_hour" type="number"></div>
+          <div class="form-group"><label>סוף חלון בוקר</label><input id="set_confirm_mid_hour" type="number"></div>
+          <div class="form-group"><label>דקות לאישור בחלון בוקר</label><input id="set_confirm_mid_minutes" type="number"></div>
+          <div class="form-group"><label>סוף חלון צהריים</label><input id="set_confirm_late_hour" type="number"></div>
+          <div class="form-group"><label>דקות לאישור בחלון צהריים</label><input id="set_confirm_late_minutes" type="number"></div>
+          <div class="form-group"><label>דקות אחרי השעה המאוחרת</label><input id="set_confirm_final_minutes" type="number"></div>
+        </div>
+        <div class="settings-section">
+          <h4>תשלומים</h4>
+          <div class="form-group"><label>לינק Bit</label><input id="set_bit_link" type="text"></div>
+          <div class="form-group"><label>לינק PayBox</label><input id="set_paybox_link" type="text"></div>
+        </div>
+        <div class="settings-section">
+          <h4>התראות</h4>
+          <div class="form-group"><label>מייל להתראות מנהל</label><input id="set_notify_email" type="email"></div>
+          <div class="form-group"><label>Telegram bot token</label><input id="set_telegram_bot_token" type="text"></div>
+          <div class="form-group"><label>Telegram chat id</label><input id="set_telegram_chat_id" type="text"></div>
+        </div>
+        <div class="settings-section">
+          <h4>כללי</h4>
+          <div class="form-group"><label>כתובת האתר (לקישורים במייל)</label><input id="set_site_url" type="text" placeholder="https://..."></div>
+        </div>
         <button class="btn-success" id="btnSaveSettings" onclick="saveAllSettings()">שמור הגדרות</button>
       </div>
     </div>
@@ -515,7 +561,6 @@
 <script>
 const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
-
 const ANNOUNCE_KEY = "v2_announce_seen";
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -532,6 +577,8 @@ let refreshTimer = null;
 let lastPromote = null;
 let syncingBalances = false;
 let pendingConfirmReg = null;
+let regsChannel = null;
+let subscribedGameId = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -682,9 +729,7 @@ function resolveToSaturday(dateStr) {
 }
 
 /**
- * דדליין לאישור הגעה – לפי יום המשחק (שבת).
- * כל ביטול לפני שבת (כולל כל יום שישי) → עד שבת 10:00.
- * רבע שעה רק בשבת אחרי 17:00.
+ * דדליין לאישור הגעה – לפי יום המשחק (שבת) + הגדרות מהפאנל.
  */
 function computeConfirmDeadline(gameDateRaw, cancelAt) {
   const cancel = cancelAt ? new Date(cancelAt) : new Date();
@@ -694,6 +739,14 @@ function computeConfirmDeadline(gameDateRaw, cancelAt) {
     return new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
   }
 
+  const earlyHour = parseInt(getSetting("confirm_early_hour", "8"), 10);
+  const earlyDeadlineHour = parseInt(getSetting("confirm_early_deadline_hour", "10"), 10);
+  const midHour = parseInt(getSetting("confirm_mid_hour", "12"), 10);
+  const midMinutes = parseInt(getSetting("confirm_mid_minutes", "60"), 10);
+  const lateHour = parseInt(getSetting("confirm_late_hour", "17"), 10);
+  const lateMinutes = parseInt(getSetting("confirm_late_minutes", "30"), 10);
+  const finalMinutes = parseInt(getSetting("confirm_final_minutes", "15"), 10);
+
   const cp = israelPartsOf(cancel);
   const cancelDate = cp.year + "-" + cp.month + "-" + cp.day;
   const cancelMins = Number(cp.hour) * 60 + Number(cp.minute);
@@ -701,27 +754,26 @@ function computeConfirmDeadline(gameDateRaw, cancelAt) {
   let result;
   let branch;
 
-  // לפני יום המשחק (שבת) – תמיד עד שבת 10:00 (כולל שישי)
   if (cancelDate < gameDateStr) {
-    result = israelWallIso(gameDateStr, 10, 0);
-    branch = "before_game_day → sat_10:00";
+    result = israelWallIso(gameDateStr, earlyDeadlineHour, 0);
+    branch = "before_game_day → deadline_hour";
   } else if (cancelDate === gameDateStr) {
-    if (cancelMins < 8 * 60) {
-      result = israelWallIso(gameDateStr, 10, 0);
-      branch = "sat_before_08 → sat_10:00";
-    } else if (cancelMins < 12 * 60) {
-      result = new Date(cancel.getTime() + 60 * 60 * 1000).toISOString();
-      branch = "sat_08-12 → +1h";
-    } else if (cancelMins < 17 * 60) {
-      result = new Date(cancel.getTime() + 30 * 60 * 1000).toISOString();
-      branch = "sat_12-17 → +30m";
+    if (cancelMins < earlyHour * 60) {
+      result = israelWallIso(gameDateStr, earlyDeadlineHour, 0);
+      branch = "sat_before_early → deadline_hour";
+    } else if (cancelMins < midHour * 60) {
+      result = new Date(cancel.getTime() + midMinutes * 60 * 1000).toISOString();
+      branch = "sat_mid → +" + midMinutes + "m";
+    } else if (cancelMins < lateHour * 60) {
+      result = new Date(cancel.getTime() + lateMinutes * 60 * 1000).toISOString();
+      branch = "sat_late → +" + lateMinutes + "m";
     } else {
-      result = new Date(cancel.getTime() + 15 * 60 * 1000).toISOString();
-      branch = "sat_after_17 → +15m";
+      result = new Date(cancel.getTime() + finalMinutes * 60 * 1000).toISOString();
+      branch = "sat_final → +" + finalMinutes + "m";
     }
   } else {
-    result = new Date(cancel.getTime() + 15 * 60 * 1000).toISOString();
-    branch = "after_game_day → +15m";
+    result = new Date(cancel.getTime() + finalMinutes * 60 * 1000).toISOString();
+    branch = "after_game_day → final";
   }
 
   console.log("[deadline]", {
@@ -971,9 +1023,28 @@ async function adjustBalance(uid, delta) {
   await loadBalanceList();
 }
 
+const MAIN_ADMIN_TABS = ["general", "pending", "roster", "balances"];
+
+function toggleAdminMore(e) {
+  if (e) e.stopPropagation();
+  const menu = $("adminMoreMenu");
+  if (menu) menu.classList.toggle("open");
+}
+
+function closeAdminMore() {
+  const menu = $("adminMoreMenu");
+  if (menu) menu.classList.remove("open");
+}
+
 function switchAdminTab(name) {
-  document.querySelectorAll(".admin-tab").forEach((t) => {
+  closeAdminMore();
+  document.querySelectorAll(".admin-tab[data-tab]").forEach((t) => {
     t.classList.toggle("active", t.getAttribute("data-tab") === name);
+  });
+  const moreBtn = $("btnAdminMore");
+  if (moreBtn) moreBtn.classList.toggle("active", !MAIN_ADMIN_TABS.includes(name));
+  document.querySelectorAll("#adminMoreMenu button").forEach((b) => {
+    b.classList.toggle("active", b.getAttribute("data-tab") === name);
   });
   document.querySelectorAll(".admin-pane").forEach((p) => {
     p.classList.toggle("active", p.id === "pane-" + name);
@@ -1090,6 +1161,7 @@ async function afterLogin() {
 
 async function logout() {
   stopAutoRefresh();
+  unsubscribeRegsRealtime();
   await sb.auth.signOut();
   currentUser = null;
   currentProfile = null;
@@ -1196,8 +1268,9 @@ function openRules() {
 }
 function startAutoRefresh() {
   stopAutoRefresh();
-  const sec = parseInt(getSetting("auto_refresh_sec", "30"), 10);
-  if (!sec || sec < 5) return;
+  // גיבוי נדיר – העדכון העיקרי מ-Realtime
+  const sec = parseInt(getSetting("auto_refresh_sec", "120"), 10);
+  if (!sec || sec < 15) return;
   refreshTimer = setInterval(() => {
     if (!$("adminModal").classList.contains("hidden")) return;
     loadList(true);
@@ -1208,6 +1281,34 @@ function stopAutoRefresh() {
     clearInterval(refreshTimer);
     refreshTimer = null;
   }
+}
+
+function unsubscribeRegsRealtime() {
+  if (regsChannel) {
+    try { sb.removeChannel(regsChannel); } catch (e) {}
+    regsChannel = null;
+    subscribedGameId = null;
+  }
+}
+
+function subscribeRegsRealtime(gameId) {
+  if (!gameId) return;
+  if (subscribedGameId === gameId && regsChannel) return;
+  unsubscribeRegsRealtime();
+  subscribedGameId = gameId;
+  regsChannel = sb
+    .channel("regs-" + gameId)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "registrations", filter: "game_id=eq." + gameId },
+      () => {
+        if (!$("adminModal").classList.contains("hidden")) return;
+        loadList(true);
+      }
+    )
+    .subscribe((status) => {
+      console.log("[realtime]", status, gameId);
+    });
 }
 
 function updateGeneralButtons() {
@@ -1446,6 +1547,7 @@ async function loadList(silent) {
   if (!games || !games.length) {
     currentGame = null;
     lastRegs = [];
+    unsubscribeRegsRealtime();
     $("gameInfo").textContent = "אין משחק פתוח";
     $("mainList").innerHTML = '<div class="empty">אין משחק</div>';
     $("waitList").innerHTML = '<div class="empty">—</div>';
@@ -1480,8 +1582,8 @@ async function loadList(silent) {
   updateButtons(locked);
   updateGeneralButtons();
   if (lastPromote) renderPromoteBox();
+  subscribeRegsRealtime(currentGame.id);
   if (!silent) {
-    syncBalancesFromSheet(true);
     checkPendingConfirm();
   }
 }
@@ -1786,7 +1888,14 @@ function fillSettingsForm() {
   $("set_lock_hour").value = getSetting("lock_hour", "20");
   $("set_late_cancel_hour").value = getSetting("late_cancel_hour", "17");
   $("set_friend_open_hour").value = getSetting("friend_open_hour", "12");
-  $("set_auto_refresh_sec").value = getSetting("auto_refresh_sec", "30");
+  $("set_auto_refresh_sec").value = getSetting("auto_refresh_sec", "120");
+  $("set_confirm_early_hour").value = getSetting("confirm_early_hour", "8");
+  $("set_confirm_early_deadline_hour").value = getSetting("confirm_early_deadline_hour", "10");
+  $("set_confirm_mid_hour").value = getSetting("confirm_mid_hour", "12");
+  $("set_confirm_mid_minutes").value = getSetting("confirm_mid_minutes", "60");
+  $("set_confirm_late_hour").value = getSetting("confirm_late_hour", "17");
+  $("set_confirm_late_minutes").value = getSetting("confirm_late_minutes", "30");
+  $("set_confirm_final_minutes").value = getSetting("confirm_final_minutes", "15");
   $("set_site_url").value = getSetting("site_url", "");
   $("set_bit_link").value = getSetting("bit_link", "");
   $("set_paybox_link").value = getSetting("paybox_link", "");
@@ -1806,6 +1915,13 @@ async function saveAllSettings() {
     ["late_cancel_hour", $("set_late_cancel_hour").value],
     ["friend_open_hour", $("set_friend_open_hour").value],
     ["auto_refresh_sec", $("set_auto_refresh_sec").value],
+    ["confirm_early_hour", $("set_confirm_early_hour").value],
+    ["confirm_early_deadline_hour", $("set_confirm_early_deadline_hour").value],
+    ["confirm_mid_hour", $("set_confirm_mid_hour").value],
+    ["confirm_mid_minutes", $("set_confirm_mid_minutes").value],
+    ["confirm_late_hour", $("set_confirm_late_hour").value],
+    ["confirm_late_minutes", $("set_confirm_late_minutes").value],
+    ["confirm_final_minutes", $("set_confirm_final_minutes").value],
     ["site_url", $("set_site_url").value],
     ["bit_link", $("set_bit_link").value],
     ["paybox_link", $("set_paybox_link").value],
@@ -2061,6 +2177,7 @@ async function startNewWeek() {
 }
 
 document.addEventListener("click", (e) => {
+  if (!e.target.closest(".admin-more-wrap")) closeAdminMore();
   const c = e.target.closest("[data-cancel]");
   if (c) cancelReg(c.getAttribute("data-cancel"));
   const ap = e.target.closest("[data-approve]");
