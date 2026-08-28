@@ -94,11 +94,35 @@
       font-size: .65rem; background: #fef3c7; color: #92400e;
       padding: 1px 5px; border-radius: 6px; margin-left: 4px;
     }
+    .badge-arrival {
+      font-size: .65rem; background: #e0e7ff; color: #3730a3;
+      padding: 1px 5px; border-radius: 6px; margin-left: 4px;
+    }
+    .badge-arrival.early { background: #ffedd5; color: #9a3412; }
     .btn-minus {
       position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
       width: 24px; height: 24px; border-radius: 50%; border: none;
       background: #fee2e2; color: var(--danger); font-size: 1rem; font-weight: 700;
       line-height: 1; padding: 0; cursor: pointer; z-index: 2;
+    }
+    .btn-arrival {
+      position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
+      width: 24px; height: 24px; border-radius: 50%; border: none;
+      background: #e0e7ff; color: #3730a3; font-size: .85rem;
+      line-height: 1; padding: 0; cursor: pointer; z-index: 2;
+    }
+    .list-item.has-arrival-btn { padding-left: 58px; }
+    .arrival-choice {
+      display: flex; gap: 8px; margin-bottom: 10px;
+    }
+    .arrival-choice label {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px; border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: .88rem; cursor: pointer; background: #fff;
+    }
+    .arrival-choice input { width: auto; accent-color: var(--primary); }
+    .arrival-choice label:has(input:checked) {
+      border-color: var(--primary); background: #eff6ff;
     }
     .empty { text-align: center; color: var(--muted); padding: 12px 8px; font-size: .82rem; }
     .free-spots { text-align: center; margin-top: 6px; font-size: .75rem; color: var(--muted); }
@@ -363,6 +387,26 @@
     </div>
   </div>
 
+  <div id="arrivalModal" class="modal-overlay hidden" onclick="backdrop(event,'arrivalModal')">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="arrivalModalTitle">סטטוס הגעה</h3>
+        <button class="modal-close" onclick="closeModal('arrivalModal')">סגור</button>
+      </div>
+      <p class="empty" id="arrivalPlayerName" style="padding:0 0 8px"></p>
+      <div class="arrival-choice">
+        <label><input type="radio" name="arrivalType" value="late" checked> מאחר</label>
+        <label><input type="radio" name="arrivalType" value="early"> הולך מוקדם</label>
+      </div>
+      <div class="form-group">
+        <label>שעה</label>
+        <input type="time" id="arrivalTime" value="19:45">
+      </div>
+      <button class="btn-primary" id="btnArrivalSave" onclick="saveArrival()" style="margin-bottom:8px">שמור</button>
+      <button class="btn-secondary" id="btnArrivalClear" onclick="clearArrival()">בטל סטטוס</button>
+    </div>
+  </div>
+
   <div id="debtModal" class="modal-overlay hidden" onclick="backdrop(event,'debtModal')">
     <div class="modal">
       <div class="modal-head">
@@ -571,6 +615,7 @@ let syncingBalances = false;
 let pendingConfirmReg = null;
 let regsChannel = null;
 let subscribedGameId = null;
+let arrivalEditId = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -1592,21 +1637,102 @@ function displayName(r) {
   return label;
 }
 
+function arrivalBadgeHtml(r) {
+  if (!r.arrival_status) return "";
+  const t = r.arrival_time ? " · " + r.arrival_time : "";
+  if (r.arrival_status === "late") {
+    return '<span class="badge-arrival">מאחר' + t + "</span>";
+  }
+  if (r.arrival_status === "early") {
+    return '<span class="badge-arrival early">עוזב מוקדם' + t + "</span>";
+  }
+  return "";
+}
+
 function rowHtml(r, locked) {
   const mine =
     r.registered_by === currentUser.id ||
     (r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase());
+  // סטטוס הגעה – גם ברשימה הראשית וגם בהמתנה (לא תלוי בנעילה)
+  const arrivalBtn = mine
+    ? '<button type="button" class="btn-arrival" data-arrival="' + r.id + '" title="מאחר / הולך מוקדם">⏰</button>'
+    : "";
   const cancelBtn = mine && !locked
     ? '<button type="button" class="btn-minus" data-cancel="' + r.id + '" title="ביטול">−</button>'
     : "";
-  const badge = r.status === "pending_confirm" ? '<span class="badge-pc">ממתין לאישור</span>' : "";
+  const badgePc = r.status === "pending_confirm" ? '<span class="badge-pc">ממתין לאישור</span>' : "";
+  const badgeArr = arrivalBadgeHtml(r);
+  const extraClass = arrivalBtn ? " has-arrival-btn" : "";
   return (
-    '<div class="list-item">' +
+    '<div class="list-item' + extraClass + '">' +
     '<span class="num">' + (r.position || "") + ".</span>" +
-    '<span class="name">' + badge + escapeHtml(displayName(r)) + "</span>" +
+    '<span class="name">' + badgePc + badgeArr + escapeHtml(displayName(r)) + "</span>" +
+    arrivalBtn +
     cancelBtn +
     "</div>"
   );
+}
+
+function openArrivalModal(regId) {
+  const r = lastRegs.find((x) => x.id === regId);
+  if (!r) return;
+  arrivalEditId = regId;
+  $("arrivalPlayerName").textContent = displayName(r);
+  const type = r.arrival_status === "early" ? "early" : "late";
+  document.querySelectorAll('input[name="arrivalType"]').forEach((el) => {
+    el.checked = el.value === type;
+  });
+  $("arrivalTime").value = r.arrival_time || "19:45";
+  $("btnArrivalClear").style.display = r.arrival_status ? "block" : "none";
+  $("arrivalModal").classList.remove("hidden");
+}
+
+async function saveArrival() {
+  if (!arrivalEditId) return;
+  const typeEl = document.querySelector('input[name="arrivalType"]:checked');
+  const status = typeEl ? typeEl.value : "late";
+  const time = ($("arrivalTime").value || "").trim();
+  if (!time) return showMsg("נא לבחור שעה", false);
+  const btn = $("btnArrivalSave");
+  setLoading(btn, true, "שומר");
+  try {
+    const { error } = await sb.from("registrations").update({
+      arrival_status: status,
+      arrival_time: time
+    }).eq("id", arrivalEditId);
+    if (error) {
+      showMsg(error.message, false);
+      return;
+    }
+    closeModal("arrivalModal");
+    showSuccessAnimation();
+    showMsg("הסטטוס נשמר", true);
+    await loadList(true);
+  } finally {
+    setLoading(btn, false, "שמור");
+  }
+}
+
+async function clearArrival() {
+  if (!arrivalEditId) return;
+  if (!confirm("לבטל את סטטוס ההגעה?")) return;
+  const btn = $("btnArrivalClear");
+  setLoading(btn, true, "מבטל");
+  try {
+    const { error } = await sb.from("registrations").update({
+      arrival_status: null,
+      arrival_time: null
+    }).eq("id", arrivalEditId);
+    if (error) {
+      showMsg(error.message, false);
+      return;
+    }
+    closeModal("arrivalModal");
+    showMsg("הסטטוס בוטל", true);
+    await loadList(true);
+  } finally {
+    setLoading(btn, false, "בטל סטטוס");
+  }
 }
 
 function updateButtons(locked) {
@@ -2176,6 +2302,8 @@ document.addEventListener("click", (e) => {
   }
   const c = e.target.closest("[data-cancel]");
   if (c) cancelReg(c.getAttribute("data-cancel"));
+  const arr = e.target.closest("[data-arrival]");
+  if (arr) openArrivalModal(arr.getAttribute("data-arrival"));
   const ap = e.target.closest("[data-approve]");
   if (ap) {
     approvePending(
