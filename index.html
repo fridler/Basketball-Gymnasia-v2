@@ -1475,59 +1475,59 @@ async function sendWeeklyReport() {
   }
 }
 
+function normalizePhoneForWa(phone) {
+  let p = String(phone || "").replace(/\D/g, "");
+  if (!p) return "";
+  if (p.startsWith("972")) return p;
+  if (p.startsWith("0")) return "972" + p.slice(1);
+  if (p.length === 9) return "972" + p;
+  return p;
+}
+
 async function promoteNextFromWaitlist(gameId, cancelAtIso) {
-  const { data: game } = await sb.from("games").select("*").eq("id", gameId).single();
-  if (!game || game.status !== "open") return null;
-
-  const { data: waits } = await sb
-    .from("registrations")
-    .select("*")
-    .eq("game_id", gameId)
-    .eq("status", "waitlist")
-    .order("created_at", { ascending: true });
-
-  if (!waits || !waits.length) return null;
-
-  const next = waits[0];
-  const cancelAt = cancelAtIso || new Date();
-  const deadline = computeConfirmDeadline(game.game_date, cancelAt);
-  console.log("[promote] game.game_date=", game.game_date, "deadline=", deadline);
-
-  const { data: updated, error } = await sb
-    .from("registrations")
-    .update({
-      status: "pending_confirm",
-      promoted_at: new Date().toISOString(),
-      confirm_deadline: deadline,
-      position: 1
-    })
-    .eq("id", next.id)
-    .select()
-    .maybeSingle();
+  // קידום דרך Edge Function (service role) – כדי שגם משתמש רגיל יוכל לקדם אחרי ביטול
+  const { data, error } = await sb.functions.invoke("promote", {
+    body: {
+      game_id: gameId,
+      cancel_at: cancelAtIso || new Date().toISOString()
+    }
+  });
 
   if (error) {
-    console.error("promote failed", error);
+    console.error("promote invoke", error);
     showMsg("שגיאה בקידום מהמתנה: " + error.message, false);
     return null;
   }
+  if (!data || data.ok === false) {
+    showMsg("שגיאה בקידום: " + ((data && data.error) || "לא ידוע"), false);
+    return null;
+  }
+  if (!data.promoted) {
+    lastPromote = null;
+    renderPromoteBox();
+    return null;
+  }
 
+  const promoted = data.promoted;
   const link = siteUrl();
-  const until = new Date(deadline).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" });
-  const isFriend = !(next.player_email || "").trim();
-  const registrar = profileMap[next.registered_by];
+  const until = promoted.confirm_deadline
+    ? new Date(promoted.confirm_deadline).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" })
+    : "";
+  const isFriend = !(promoted.player_email || "").trim();
+  const registrar = promoted.registered_by ? profileMap[promoted.registered_by] : null;
 
-  let notifyEmail = (next.player_email || "").trim();
-  let notifyName = next.player_name;
-  if (isFriend && registrar) {
+  let notifyEmail = (promoted.notify_email || promoted.player_email || "").trim();
+  let notifyName = promoted.notify_name || promoted.player_name || "";
+  if (isFriend && registrar && !notifyEmail) {
     notifyEmail = (registrar.email || "").trim();
     notifyName = registrar.name || notifyName;
   }
 
   const body = isFriend
     ? ("היי " + notifyName + ",\n\n" +
-       "החבר שרשמת (" + next.player_name + ") עלה לרשימת המשחק.\n" +
+       "החבר שרשמת (" + promoted.player_name + ") עלה לרשימת המשחק.\n" +
        "יש לאשר את הגעתו באתר עד:\n" + until + "\n\n" + link)
-    : ("היי " + next.player_name + ",\n\n" +
+    : ("היי " + (promoted.player_name || "") + ",\n\n" +
        "נפתח לך מקום ברשימת המשחק.\n" +
        "יש לאשר הגעה באתר עד:\n" + until + "\n\n" + link);
 
@@ -1540,18 +1540,22 @@ async function promoteNextFromWaitlist(gameId, cancelAtIso) {
   }
 
   notifyAdminAlways(
-    "ממתין לאישור: " + next.player_name +
-      (isFriend ? " (חבר של " + (registrar ? registrar.name : "?") + ")" : "") +
-      "\nמשחק: " + String(game.game_date).slice(0, 10) +
+    "ממתין לאישור: " + promoted.player_name +
+      (isFriend ? " (חבר)" : "") +
+      "\nמשחק: " + (currentGame ? String(currentGame.game_date).slice(0, 10) : "") +
       "\nעד " + until + "\n" + link,
     {}
   );
 
-  // חיווי במסך (עוזר לדיבוג)
-  showMsg("דדליין אישור: " + until, true);
+  // חיווי למבטל + קישור וואטסאפ למי שעלה
+  lastPromote = {
+    promoted: promoted,
+    phone: promoted.phone || (registrar && registrar.phone) || "",
+    waText: body
+  };
+  renderPromoteBox();
 
-  await recalculatePositions(gameId);
-  return updated || next;
+  return promoted;
 }
 
 async function checkPendingConfirm() {
@@ -1890,14 +1894,34 @@ async function cancelReg(id) {
 
 function renderPromoteBox() {
   const box = $("promoteBox");
-  if (!lastPromote) {
+  if (!lastPromote || !lastPromote.promoted) {
     box.classList.add("hidden");
     return;
   }
   const p = lastPromote.promoted;
+  const phone = normalizePhoneForWa(lastPromote.phone || "");
+  const waText = encodeURIComponent(
+    lastPromote.waText ||
+      ("היי, נפתח לך מקום ברשימת המשחק (" + (p.player_name || "") + "). כדאי לאשר באתר.")
+  );
+  let waHtml = "";
+  if (phone) {
+    waHtml =
+      '<a class="wa-link" target="_blank" rel="noopener" href="https://wa.me/' +
+      phone +
+      "?text=" +
+      waText +
+      '">שלח הודעת וואטסאפ למי שעלה</a>';
+  } else {
+    waHtml =
+      '<span class="empty" style="padding:4px 0;font-size:.78rem">אין טלפון בפרופיל – לא ניתן לפתוח וואטסאפ</span>';
+  }
   box.classList.remove("hidden");
   box.innerHTML =
-    "<strong>מישהו עלה / ממתין לאישור:</strong> " + escapeHtml(p.player_name) +
+    "<strong>עלה / ממתין לאישור:</strong> " +
+    escapeHtml(p.player_name || "") +
+    "<br>" +
+    waHtml +
     '<br><button class="btn-sm btn-secondary" style="margin-top:6px" onclick="lastPromote=null;renderPromoteBox()">סגור</button>';
 }
 
