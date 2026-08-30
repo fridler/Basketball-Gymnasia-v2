@@ -199,6 +199,21 @@
       border-radius: 8px; font-size: .85rem;
     }
     .rules-body, .announce-body { white-space: pre-wrap; font-size: .9rem; line-height: 1.5; }
+    .help-tabs {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+    }
+    .help-tab {
+      width: auto; padding: 6px 10px; border-radius: 999px; font-size: .78rem;
+      background: #f1f5f9; color: var(--text); border: 1px solid var(--border);
+    }
+    .help-tab.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+    }
+    .help-pane { display: none; }
+    .help-pane.active { display: block; }
+    .admin-help-block { margin-bottom: 14px; }
+    .admin-help-block label { font-weight: 600; margin-bottom: 4px; display: block; }
+    .admin-help-block textarea { min-height: 110px; }
     .admin-section { background: #fffbeb; border: 1.5px dashed #f59e0b; }
     .pay-row { display: flex; gap: 10px; }
     .pay-btn {
@@ -504,10 +519,23 @@
   <div id="rulesModal" class="modal-overlay hidden" onclick="backdrop(event,'rulesModal')">
     <div class="modal">
       <div class="modal-head">
-        <h3>חוקי הקבוצה</h3>
+        <h3>עזרה וכללים</h3>
         <button class="modal-close" onclick="closeModal('rulesModal')">סגור</button>
       </div>
-      <div class="rules-body" id="rulesBody"></div>
+      <div class="help-tabs">
+        <button type="button" class="help-tab active" data-help="reg" onclick="switchHelpTab('reg')">הרשמה ותשלום</button>
+        <button type="button" class="help-tab" data-help="game" onclick="switchHelpTab('game')">במשחק</button>
+        <button type="button" class="help-tab" data-help="howto" onclick="switchHelpTab('howto')">איך זה עובד</button>
+      </div>
+      <div id="help-pane-reg" class="help-pane active">
+        <div class="rules-body" id="rulesBodyReg"></div>
+      </div>
+      <div id="help-pane-game" class="help-pane">
+        <div class="rules-body" id="rulesBodyGame"></div>
+      </div>
+      <div id="help-pane-howto" class="help-pane">
+        <div class="rules-body" id="rulesBodyHowto"></div>
+      </div>
     </div>
   </div>
 
@@ -560,7 +588,7 @@
       </div>
       <div class="admin-more-row" id="adminMoreRow">
         <button type="button" class="admin-tab" data-tab="announce" onclick="switchAdminTab('announce')">מודעה</button>
-        <button type="button" class="admin-tab" data-tab="rules" onclick="switchAdminTab('rules')">חוקים</button>
+        <button type="button" class="admin-tab" data-tab="rules" onclick="switchAdminTab('rules')">עזרה ❓</button>
         <button type="button" class="admin-tab" data-tab="profiles" onclick="switchAdminTab('profiles')">פרופילים</button>
         <button type="button" class="admin-tab" data-tab="archive" onclick="switchAdminTab('archive')">ארכיון</button>
         <button type="button" class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">הגדרות</button>
@@ -590,8 +618,20 @@
       </div>
 
       <div id="pane-rules" class="admin-pane">
-        <div class="form-group"><textarea id="adminRulesText"></textarea></div>
-        <button class="btn-success" onclick="saveRules()">שמור חוקים</button>
+        <p class="empty" style="padding:0 0 10px;font-size:.78rem">התוכן מוצג לשחקנים בלחיצה על ❓</p>
+        <div class="admin-help-block">
+          <label>הרשמה ותשלום</label>
+          <textarea id="adminRulesText" placeholder="כללי הרשמה, ביטול, חוב, חבר..."></textarea>
+        </div>
+        <div class="admin-help-block">
+          <label>במשחק</label>
+          <textarea id="adminRulesGameText" placeholder="כללים תוך כדי משחק (עבירות, זריקות...)"></textarea>
+        </div>
+        <div class="admin-help-block">
+          <label>איך זה עובד</label>
+          <textarea id="adminRulesHowtoText" placeholder="מדריך קצר לשחקן חדש..."></textarea>
+        </div>
+        <button class="btn-success" onclick="saveRules()">שמור את כל הטאבים</button>
       </div>
 
       <div id="pane-balances" class="admin-pane">
@@ -1396,8 +1436,47 @@ function maybeShowAnnouncement() {
   $("announceModal").classList.remove("hidden");
   sessionStorage.setItem(ANNOUNCE_KEY, text);
 }
+const DEFAULT_RULES_REG =
+  "• 📝 פתיחת הרשמה - בכל יום חמישי, בשעה רנדומלית.\n\n" +
+  "• 👥 מספר שחקנים - עד 15 שחקנים ברשימה. לאחר מכן ההרשמה עוברת לרשימת המתנה.\n\n" +
+  "• ⏰ ביטול מאוחר - ביטול אחרי 17:00 בשבת נחשב ביטול מאוחר, ויש לשלם עבור המשחק גם אם לא הגעת.\n\n" +
+  "• 💰 עלות משחק - 35₪.\n\n" +
+  "• 🚫 חוב - חוב מצטבר של מעל 70₪ = חסימת הרשמה למשחקים עד להסדרת החוב.\n\n" +
+  "• 👤 רישום חבר - ניתן לרשום חבר החל מיום שישי בשעה 12:00.\n\n" +
+  "• 💳 אחריות על התשלום - מי שרשם חבר אחראי על התשלום שלו, כולל במקרה של ביטול מאוחר.\n\n" +
+  "• ⚠️ רשימת המתנה - אם התפנה מקום, הוא עובר לבא בתור ברשימת ההמתנה.";
+
+const DEFAULT_RULES_GAME =
+  "הוסיפו כאן כללים שחלים תוך כדי המשחק.\n\n" +
+  "לדוגמה:\n" +
+  "• עבירה 3 באותה התקפה → זריקות עונשין\n" +
+  "• …";
+
+const DEFAULT_RULES_HOWTO =
+  "1. נרשמים באתר כשההרשמה פתוחה.\n" +
+  "2. נכנסים לרשימת המשחק או לרשימת ההמתנה.\n" +
+  "3. אם עליתם מההמתנה – מאשרים הגעה באתר עד השעה שמוצגת.\n" +
+  "4. אחרי המשחק משלמים (Bit / PayBox). החוב מופיע ביתרה שלכם.\n" +
+  "5. חוב גבוה חוסם הרשמה עד להסדרה.\n\n" +
+  "לשאלות – פנו למנהל בקבוצה.";
+
+function switchHelpTab(name) {
+  document.querySelectorAll(".help-tab").forEach((t) => {
+    t.classList.toggle("active", t.getAttribute("data-help") === name);
+  });
+  document.querySelectorAll(".help-pane").forEach((p) => p.classList.remove("active"));
+  const pane = $("help-pane-" + name);
+  if (pane) pane.classList.add("active");
+}
+
 function openRules() {
-  $("rulesBody").textContent = getSetting("rules_text", "") || "אין חוקים מוגדרים.";
+  $("rulesBodyReg").textContent =
+    getSetting("rules_text", "") || DEFAULT_RULES_REG;
+  $("rulesBodyGame").textContent =
+    getSetting("rules_game_text", "") || DEFAULT_RULES_GAME;
+  $("rulesBodyHowto").textContent =
+    getSetting("rules_howto_text", "") || DEFAULT_RULES_HOWTO;
+  switchHelpTab("reg");
   $("rulesModal").classList.remove("hidden");
 }
 function startAutoRefresh() {
@@ -2091,7 +2170,9 @@ async function openAdmin() {
   $("adminAnnounceText").value = getSetting("announcement_text", "");
   $("adminAnnounceFrom").value = getSetting("announcement_from", "");
   $("adminAnnounceTo").value = getSetting("announcement_to", "");
-  $("adminRulesText").value = getSetting("rules_text", "");
+  $("adminRulesText").value = getSetting("rules_text", "") || DEFAULT_RULES_REG;
+  $("adminRulesGameText").value = getSetting("rules_game_text", "") || DEFAULT_RULES_GAME;
+  $("adminRulesHowtoText").value = getSetting("rules_howto_text", "") || DEFAULT_RULES_HOWTO;
   $("adminMsg").classList.add("hidden");
   await refreshPendingCount();
   switchAdminTab("general");
@@ -2114,10 +2195,12 @@ async function saveAnnouncement() {
 }
 
 async function saveRules() {
-  const err = await setSetting("rules_text", $("adminRulesText").value);
+  let err = await setSetting("rules_text", $("adminRulesText").value);
+  if (!err) err = await setSetting("rules_game_text", $("adminRulesGameText").value);
+  if (!err) err = await setSetting("rules_howto_text", $("adminRulesHowtoText").value);
   if (err) return showAdminMsg(err.message, false);
   await loadSettings();
-  showAdminMsg("החוקים נשמרו ✓", true);
+  showAdminMsg("התוכן נשמר ✓ (כל הטאבים)", true);
 }
 
 function fillSettingsForm() {
