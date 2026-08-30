@@ -179,6 +179,26 @@
       position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 100;
       display: flex; align-items: flex-end; justify-content: center; padding: 12px;
     }
+    /* פופאפ עזרה – ממורכז, לא צמוד לתחתית */
+    #rulesModal {
+      align-items: center;
+      padding: 16px;
+    }
+    #rulesModal .modal {
+      border-radius: 16px;
+      max-height: min(85vh, 640px);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+      display: flex;
+      flex-direction: column;
+    }
+    #rulesModal .help-tabs {
+      flex-shrink: 0;
+    }
+    #rulesModal .help-pane.active {
+      overflow: auto;
+      flex: 1;
+      min-height: 120px;
+    }
     /* מעל פאנל ניהול */
     #approveModal { z-index: 160; }
     .bulk-row {
@@ -198,12 +218,17 @@
       width: auto; padding: 4px 10px; background: #f1f5f9; color: var(--text);
       border-radius: 8px; font-size: .85rem;
     }
-    .rules-body, .announce-body { white-space: pre-wrap; font-size: .9rem; line-height: 1.5; }
+    .rules-body, .announce-body { white-space: pre-wrap; font-size: .9rem; line-height: 1.55; color: #334155; }
+    .rules-body:empty::before {
+      content: "אין תוכן עדיין.";
+      color: #94a3b8;
+      font-style: italic;
+    }
     .help-tabs {
       display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
     }
     .help-tab {
-      width: auto; padding: 6px 10px; border-radius: 999px; font-size: .78rem;
+      width: auto; padding: 7px 12px; border-radius: 999px; font-size: .8rem;
       background: #f1f5f9; color: var(--text); border: 1px solid var(--border);
     }
     .help-tab.active {
@@ -1436,30 +1461,6 @@ function maybeShowAnnouncement() {
   $("announceModal").classList.remove("hidden");
   sessionStorage.setItem(ANNOUNCE_KEY, text);
 }
-const DEFAULT_RULES_REG =
-  "• 📝 פתיחת הרשמה - בכל יום חמישי, בשעה רנדומלית.\n\n" +
-  "• 👥 מספר שחקנים - עד 15 שחקנים ברשימה. לאחר מכן ההרשמה עוברת לרשימת המתנה.\n\n" +
-  "• ⏰ ביטול מאוחר - ביטול אחרי 17:00 בשבת נחשב ביטול מאוחר, ויש לשלם עבור המשחק גם אם לא הגעת.\n\n" +
-  "• 💰 עלות משחק - 35₪.\n\n" +
-  "• 🚫 חוב - חוב מצטבר של מעל 70₪ = חסימת הרשמה למשחקים עד להסדרת החוב.\n\n" +
-  "• 👤 רישום חבר - ניתן לרשום חבר החל מיום שישי בשעה 12:00.\n\n" +
-  "• 💳 אחריות על התשלום - מי שרשם חבר אחראי על התשלום שלו, כולל במקרה של ביטול מאוחר.\n\n" +
-  "• ⚠️ רשימת המתנה - אם התפנה מקום, הוא עובר לבא בתור ברשימת ההמתנה.";
-
-const DEFAULT_RULES_GAME =
-  "הוסיפו כאן כללים שחלים תוך כדי המשחק.\n\n" +
-  "לדוגמה:\n" +
-  "• עבירה 3 באותה התקפה → זריקות עונשין\n" +
-  "• …";
-
-const DEFAULT_RULES_HOWTO =
-  "1. נרשמים באתר כשההרשמה פתוחה.\n" +
-  "2. נכנסים לרשימת המשחק או לרשימת ההמתנה.\n" +
-  "3. אם עליתם מההמתנה – מאשרים הגעה באתר עד השעה שמוצגת.\n" +
-  "4. אחרי המשחק משלמים (Bit / PayBox). החוב מופיע ביתרה שלכם.\n" +
-  "5. חוב גבוה חוסם הרשמה עד להסדרה.\n\n" +
-  "לשאלות – פנו למנהל בקבוצה.";
-
 function switchHelpTab(name) {
   document.querySelectorAll(".help-tab").forEach((t) => {
     t.classList.toggle("active", t.getAttribute("data-help") === name);
@@ -1470,12 +1471,10 @@ function switchHelpTab(name) {
 }
 
 function openRules() {
-  $("rulesBodyReg").textContent =
-    getSetting("rules_text", "") || DEFAULT_RULES_REG;
-  $("rulesBodyGame").textContent =
-    getSetting("rules_game_text", "") || DEFAULT_RULES_GAME;
-  $("rulesBodyHowto").textContent =
-    getSetting("rules_howto_text", "") || DEFAULT_RULES_HOWTO;
+  // רק מה שנשמר ב-settings – בלי טקסט ברירת מחדל
+  $("rulesBodyReg").textContent = getSetting("rules_text", "") || "";
+  $("rulesBodyGame").textContent = getSetting("rules_game_text", "") || "";
+  $("rulesBodyHowto").textContent = getSetting("rules_howto_text", "") || "";
   switchHelpTab("reg");
   $("rulesModal").classList.remove("hidden");
 }
@@ -2170,9 +2169,9 @@ async function openAdmin() {
   $("adminAnnounceText").value = getSetting("announcement_text", "");
   $("adminAnnounceFrom").value = getSetting("announcement_from", "");
   $("adminAnnounceTo").value = getSetting("announcement_to", "");
-  $("adminRulesText").value = getSetting("rules_text", "") || DEFAULT_RULES_REG;
-  $("adminRulesGameText").value = getSetting("rules_game_text", "") || DEFAULT_RULES_GAME;
-  $("adminRulesHowtoText").value = getSetting("rules_howto_text", "") || DEFAULT_RULES_HOWTO;
+  $("adminRulesText").value = getSetting("rules_text", "") || "";
+  $("adminRulesGameText").value = getSetting("rules_game_text", "") || "";
+  $("adminRulesHowtoText").value = getSetting("rules_howto_text", "") || "";
   $("adminMsg").classList.add("hidden");
   await refreshPendingCount();
   switchAdminTab("general");
