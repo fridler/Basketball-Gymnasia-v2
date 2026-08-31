@@ -627,6 +627,7 @@
         <button class="btn-secondary" id="btnSyncBal" onclick="syncBalancesFromSheet(false)" style="margin-bottom:8px">סנכרן יתרות מ-Sheets</button>
         <button class="btn-secondary" id="btnWeeklyReport" onclick="sendWeeklyReport()" style="margin-bottom:8px">שלח דוח שבועי</button>
         <button class="btn-secondary" id="btnTestNotify" onclick="testNotify()" style="margin-bottom:8px">בדיקת התראות</button>
+        <button class="btn-warning" id="btnDebtRemindAll" onclick="sendDebtRemindersAll()" style="margin-bottom:8px">שלח תזכורת לכל החייבים</button>
         <p class="empty" id="chargeStatus" style="padding:4px 0 0;font-size:.8rem"></p>
       </div>
 
@@ -1082,6 +1083,76 @@ async function testNotify() {
     showAdminMsg(String(e), false);
   } finally {
     setLoading(btn, false, "בדיקת התראות");
+  }
+}
+
+/** תזכורת מייל לכל מי ש-balance < 0 + סיכום למנהל (מייל/טלגרם) */
+async function sendDebtRemindersAll() {
+  if (!currentProfile || !currentProfile.is_admin) return;
+  const btn = $("btnDebtRemindAll");
+  setLoading(btn, true, "טוען");
+  try {
+    await loadProfiles();
+    const debtors = Object.values(profileMap).filter((p) => Number(p.balance) < 0);
+    if (!debtors.length) {
+      showAdminMsg("אין חייבים (כולם עם יתרה ≥ 0)", false);
+      return;
+    }
+    const withEmail = debtors.filter((p) => (p.email || "").trim());
+    const noEmail = debtors.filter((p) => !(p.email || "").trim());
+    let msg =
+      "לשלוח תזכורת חוב ל-" + withEmail.length + " שחקנים עם מייל?\n" +
+      "(סה״כ חייבים: " + debtors.length +
+      (noEmail.length ? ", בלי מייל: " + noEmail.length : "") + ")";
+    if (!confirm(msg)) return;
+
+    setLoading(btn, true, "שולח");
+    const siteUrl = getSetting("site_url", "") || location.origin + location.pathname;
+    const bit = getSetting("bit_link", "");
+    const paybox = getSetting("paybox_link", "");
+    const okList = [];
+    const failList = [];
+
+    for (const p of withEmail) {
+      const body =
+        "שלום " + (p.name || "") + ",\n\n" +
+        "תזכורת: יש לך חוב בקבוצת הכדורסל.\n" +
+        "יתרה נוכחית: " + p.balance + "₪\n\n" +
+        (bit ? "Bit: " + bit + "\n" : "") +
+        (paybox ? "PayBox: " + paybox + "\n" : "") +
+        (siteUrl ? "\nכניסה לאתר: " + siteUrl + "\n" : "") +
+        "\nאחרי התשלום היתרה מתעדכנת אחרי סנכרון / עדכון המנהל.";
+      const r = await notifyPlayerEmail(
+        p.email,
+        "כדורסל – תזכורת חוב (" + p.balance + "₪)",
+        body
+      );
+      if (r && r.ok) okList.push(p.name || p.email);
+      else failList.push((p.name || p.email) + (r && r.error ? " – " + r.error : ""));
+    }
+
+    const summary =
+      "תזכורות חוב (ידני)\n" +
+      "נשלח: " + okList.length + "\n" +
+      (okList.length ? okList.map((n) => "• " + n).join("\n") + "\n" : "") +
+      (failList.length ? "\nנכשל:\n" + failList.map((n) => "• " + n).join("\n") + "\n" : "") +
+      (noEmail.length
+        ? "\nבלי מייל:\n" + noEmail.map((p) => "• " + (p.name || "?") + " (" + p.balance + "₪)").join("\n")
+        : "");
+
+    await notifyAdminAlways(summary, { type: "debt_remind_all" });
+
+    showAdminMsg(
+      "מיילים: " + okList.length + " נשלחו" +
+      (failList.length ? ", " + failList.length + " נכשלו" : "") +
+      (noEmail.length ? ", " + noEmail.length + " בלי מייל" : "") +
+      " · סיכום למנהל נשלח",
+      failList.length === 0
+    );
+  } catch (e) {
+    showAdminMsg(String(e), false);
+  } finally {
+    setLoading(btn, false, "שלח תזכורת לכל החייבים");
   }
 }
 
