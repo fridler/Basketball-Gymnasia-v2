@@ -796,6 +796,7 @@ const ANNOUNCE_KEY = "v2_announce_seen";
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 let currentUser = null;
 let currentProfile = null;
 let currentGame = null;
@@ -1449,6 +1450,7 @@ async function afterLogin() {
   $("loginScreen").classList.add("hidden");
   $("pendingScreen").classList.add("hidden");
   $("appScreen").classList.remove("hidden");
+  window.scrollTo(0, 0);
   $("userLabel").textContent = profile.name + (profile.is_admin ? " · מנהל" : "");
   $("btnGear").classList.toggle("hidden", !profile.is_admin);
   updateBalanceUI();
