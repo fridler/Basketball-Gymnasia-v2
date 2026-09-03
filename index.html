@@ -30,6 +30,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏀</text></svg>">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <style>
     :root {
       --primary: #2563eb;
@@ -790,8 +791,6 @@
   <div id="successHost"></div>
 
 <script>
-const SUPABASE_URL = "https://kqygzdbbpenehefjtwvc.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_S-JnocNz9VjJqqnHSv0Mwg__fvGy9qs";
 const ANNOUNCE_KEY = "v2_announce_seen";
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
