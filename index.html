@@ -1842,10 +1842,15 @@ async function respondConfirm(yes) {
       notifyAdminAlways((currentProfile.name || "") + " אישר הגעה", {});
       showMsg("אושר – נתראה במשחק!", true);
     } else {
-      await sb.from("registrations").update({ status: "waitlist", confirm_deadline: null, position: 9999 }).eq("id", id);
+      // לא חוזר להמתנה – יוצא מהתור; צריך להירשם מחדש
+      await sb.from("registrations").update({
+        status: "expired_confirm",
+        confirm_deadline: null,
+        position: 0
+      }).eq("id", id);
       await promoteNextFromWaitlist(currentGame.id, new Date().toISOString());
-      notifyAdminAlways((currentProfile.name || "") + " לא אישר – עוברים לבא", {});
-      showMsg("לא אישרת – חזרת להמתנה", true);
+      notifyAdminAlways((currentProfile.name || "") + " לא אישר – יצא מהתור (צריך הרשמה מחדש)", {});
+      showMsg("לא אישרת – כדי לשחק יש להירשם מחדש", true);
     }
     pendingConfirmReg = null;
     $("confirmModal").classList.add("hidden");
