@@ -794,7 +794,6 @@ const ANNOUNCE_KEY = "v2_announce_seen";
 const LOGIN_GUARD_KEY = "v2_login_guard";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 let currentUser = null;
 let currentProfile = null;
 let currentGame = null;
@@ -1448,7 +1447,6 @@ async function afterLogin() {
   $("loginScreen").classList.add("hidden");
   $("pendingScreen").classList.add("hidden");
   $("appScreen").classList.remove("hidden");
-  window.scrollTo(0, 0);
   $("userLabel").textContent = profile.name + (profile.is_admin ? " · מנהל" : "");
   $("btnGear").classList.toggle("hidden", !profile.is_admin);
   updateBalanceUI();
@@ -1912,10 +1910,22 @@ async function loadList(silent) {
 }
 
 function displayName(r) {
-  let label = r.player_name;
-  if (!r.player_email) label = r.player_name + (r.registered_by === currentUser.id ? " (חבר)" : "");
-  if (r.player_email) {
-    const self = Object.values(profileMap).find((x) => x.email && x.email.toLowerCase() === String(r.player_email).toLowerCase());
+  let label = r.player_name || "";
+  // חבר (בלי מייל) – לכולם: שם החבר (ע״י מי שרשם)
+  if (!(r.player_email || "").trim()) {
+    const registrar =
+      (r.registered_by && profileMap[r.registered_by]) ||
+      null;
+    const byName =
+      (registrar && registrar.name) ||
+      (r.registered_by === (currentUser && currentUser.id) ? (currentProfile && currentProfile.name) : "") ||
+      "";
+    if (byName) label = (r.player_name || "") + " (ע״י " + byName + ")";
+    else label = (r.player_name || "") + " (חבר)";
+  } else {
+    const self = Object.values(profileMap).find(
+      (x) => x.email && x.email.toLowerCase() === String(r.player_email).toLowerCase()
+    );
     if (self && self.symbol) label += " " + self.symbol;
   }
   return label;
