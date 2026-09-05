@@ -1053,10 +1053,15 @@ async function logEvent(event_type, payload) {
   catch (e) {}
 }
 
-async function notifyExternal(text, emailBody, emailToOverride) {
+async function notifyExternal(text, emailBody, opts) {
+  opts = opts || {};
+  // email: true = גם מייל מנהל; אחרת רק טלגרם
+  const wantEmail = opts.email === true;
   const token = getSetting("telegram_bot_token", "");
   const chat = getSetting("telegram_chat_id", "");
-  const emailTo = emailToOverride || getSetting("notify_email", "");
+  const emailTo = wantEmail
+    ? (opts.emailTo || getSetting("notify_email", "") || "")
+    : "";
   if (!token && !chat && !emailTo) return { ok: false, error: "לא הוגדרו טלגרם/מייל" };
   try {
     const { data, error } = await sb.functions.invoke("notify", {
@@ -1065,7 +1070,7 @@ async function notifyExternal(text, emailBody, emailToOverride) {
         telegram_chat_id: chat,
         text,
         email_to: emailTo,
-        email_subject: "כדורסל – התראה",
+        email_subject: opts.emailSubject || "כדורסל – התראה",
         email_body: emailBody || text
       }
     });
@@ -1077,14 +1082,20 @@ async function notifyExternal(text, emailBody, emailToOverride) {
 }
 
 async function notifyAdminChange(text, payload) {
+  // שינויים שוטפים: טלגרם בשבת בלבד, בלי מייל
   await logEvent("change", Object.assign({ text }, payload || {}));
   if (!isSaturdayIsrael()) return { ok: true, skipped: true };
-  return notifyExternal(text, text);
+  return notifyExternal(text, text, { email: false });
 }
 
 async function notifyAdminAlways(text, payload) {
-  await logEvent("always", Object.assign({ text }, payload || {}));
-  return notifyExternal(text, text);
+  // payload.email === true → גם מייל מנהל; אחרת רק טלגרם
+  payload = payload || {};
+  await logEvent("always", Object.assign({ text }, payload));
+  return notifyExternal(text, text, {
+    email: payload.email === true,
+    emailSubject: payload.emailSubject
+  });
 }
 
 async function notifyPlayerEmail(email, subject, body) {
@@ -1111,7 +1122,7 @@ async function testNotify() {
   const btn = $("btnTestNotify");
   setLoading(btn, true, "בודק");
   try {
-    const r = await notifyAdminAlways("בדיקת התראות – " + new Date().toLocaleString("he-IL"), {});
+    const r = await notifyAdminAlways("בדיקת התראות – " + new Date().toLocaleString("he-IL"), { email: true });
     showAdminMsg(r && r.ok ? "נשלח ✓" : ("נכשל: " + (r && r.error ? r.error : "")), !!(r && r.ok));
   } catch (e) {
     showAdminMsg(String(e), false);
@@ -1174,7 +1185,7 @@ async function sendDebtRemindersAll() {
         ? "\nבלי מייל:\n" + noEmail.map((p) => "• " + (p.name || "?") + " (" + p.balance + "₪)").join("\n")
         : "");
 
-    await notifyAdminAlways(summary, { type: "debt_remind_all" });
+    await notifyAdminAlways(summary, { type: "debt_remind_all", email: true });
 
     showAdminMsg(
       "מיילים: " + okList.length + " נשלחו" +
@@ -1279,7 +1290,7 @@ async function chargeCurrentGame() {
     let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
     if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
     showAdminMsg(out, failed === 0);
-    await notifyAdminAlways("חיוב שבוע " + currentGame.game_date + " · נכתב " + written, {});
+    await notifyAdminAlways("חיוב שבוע " + currentGame.game_date + " · נכתב " + written, { email: true });
     await syncBalancesFromSheet(true);
   } finally {
     setLoading(btn, false, "חיוב שבוע זה");
@@ -1398,7 +1409,7 @@ async function signup() {
     await sb.from("pending_users").insert({
       user_id: data.user.id, email, name, source: "signup", status: "pending"
     });
-    notifyAdminAlways("בקשת הצטרפות: " + name + " (" + email + ")", {});
+    notifyAdminAlways("בקשת הצטרפות: " + name + " (" + email + ")", { email: true });
   }
   currentUser = data.user;
   $("loginScreen").classList.add("hidden");
@@ -1436,7 +1447,7 @@ async function afterLogin() {
         user_id: currentUser.id, email: currentUser.email, name,
         source: "google_or_login", status: "pending"
       });
-      notifyAdminAlways("בקשת הצטרפות: " + name + " (" + currentUser.email + ")", {});
+      notifyAdminAlways("בקשת הצטרפות: " + name + " (" + currentUser.email + ")", { email: true });
     }
     $("loginScreen").classList.add("hidden");
     $("appScreen").classList.add("hidden");
@@ -1670,7 +1681,7 @@ async function lockGameOnly() {
   text += "\nהמתנה:\n";
   if (!wait.length) text += "ריקה\n";
   wait.forEach((r) => { text += (r.position || "") + ". " + r.player_name + "\n"; });
-  await notifyAdminAlways(text, { game_id: currentGame.id });
+  await notifyAdminAlways(text, { game_id: currentGame.id, email: true });
   showAdminMsg("ננעל והרשימה נשלחה", true);
   updateGeneralButtons();
   await loadList();
@@ -1702,7 +1713,7 @@ async function sendWeeklyReport() {
     text += "\nהמתנה:\n";
     if (!wait.length) text += "ריקה\n";
     wait.forEach((r) => { text += (r.position || "") + ". " + r.player_name + "\n"; });
-    const r = await notifyAdminAlways(text, { game_id: currentGame.id });
+    const r = await notifyAdminAlways(text, { game_id: currentGame.id, email: true });
     showAdminMsg(r && r.ok ? "נשלח ✓" : ("נכשל: " + (r && r.error ? r.error : "")), !!(r && r.ok));
   } catch (e) {
     showAdminMsg(String(e), false);
@@ -2907,7 +2918,7 @@ async function startNewWeek() {
   setLoading(btn, false, "התחל שבוע חדש");
   if (e2) return showAdminMsg(e2.message, false);
   showAdminMsg("שבוע חדש: " + gameDate, true);
-  notifyAdminAlways("נפתח שבוע חדש: " + gameDate, { gameDate });
+  notifyAdminAlways("נפתח שבוע חדש: " + gameDate, { gameDate, email: true });
   closeModal("adminModal");
   await loadList();
 }
