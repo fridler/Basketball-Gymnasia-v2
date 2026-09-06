@@ -243,6 +243,45 @@
       max-height: min(92vh, 900px);
       box-shadow: 0 12px 40px rgba(15, 23, 42, 0.2);
     }
+
+    /* כל הפופאפים ממורכזים */
+    #paidModal, #confirmModal, #friendModal, #arrivalModal,
+    #approveModal, #announceModal, #teamsModal {
+      align-items: center;
+      padding: 16px;
+    }
+    #paidModal .modal, #confirmModal .modal, #friendModal .modal,
+    #arrivalModal .modal, #approveModal .modal, #announceModal .modal,
+    #teamsModal .modal {
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+    }
+    .acc-block {
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .acc-head {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #fffbeb;
+      border: none;
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 700;
+      color: #b45309;
+      text-align: right;
+    }
+    .acc-head .acc-ico { font-size: .75rem; color: #92400e; }
+    .acc-body { display: none; padding: 10px 12px 12px; }
+    .acc-block.open .acc-body { display: block; }
+    .acc-block.open .acc-ico::before { content: "▾ "; }
+    .acc-block:not(.open) .acc-ico::before { content: "▸ "; }
     #rulesModal .help-tabs {
       flex-shrink: 0;
     }
@@ -616,7 +655,7 @@
       <p class="empty" style="padding:0 0 8px;font-size:.8rem" id="paidSatHint"></p>
       <div class="form-group">
         <label>סכום ששולם (₪)</label>
-        <input type="number" id="paidAmount" min="1" step="1" placeholder="לדוגמה 35">
+        <input type="number" id="paidAmount" min="1" max="10000" step="1" placeholder="לדוגמה 35">
       </div>
       <button type="button" class="btn-secondary" id="btnFillDebt" onclick="fillPaidFromDebt()" style="margin-bottom:8px">סכום החוב</button>
       <div class="form-group">
@@ -731,53 +770,75 @@
       </div>
 
       <div id="pane-rules" class="admin-pane">
-        <p class="empty" style="padding:0 0 10px;font-size:.78rem">התוכן מוצג לשחקנים בלחיצה על ❓</p>
-        <div class="admin-help-block">
-          <label>הרשמה ותשלום</label>
-          <textarea id="adminRulesText" placeholder="כללי הרשמה, ביטול, חוב, חבר..."></textarea>
+        <p class="empty" style="padding:0 0 10px;font-size:.78rem">התוכן מוצג לשחקנים בלחיצה על ❓ · לחץ לפתיחה</p>
+        <div class="acc-block" id="acc-rules-reg">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-rules-reg')"><span class="acc-ico"></span>הרשמה ותשלום</button>
+          <div class="acc-body">
+            <div class="admin-help-block">
+              <textarea id="adminRulesText" placeholder="כללי הרשמה, ביטול, חוב, חבר..."></textarea>
+            </div>
+          </div>
         </div>
-        <div class="admin-help-block">
-          <label>במשחק</label>
-          <textarea id="adminRulesGameText" placeholder="כללים תוך כדי משחק (עבירות, זריקות...)"></textarea>
+        <div class="acc-block" id="acc-rules-game">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-rules-game')"><span class="acc-ico"></span>במשחק</button>
+          <div class="acc-body">
+            <div class="admin-help-block">
+              <textarea id="adminRulesGameText" placeholder="כללים תוך כדי משחק (עבירות, זריקות...)"></textarea>
+            </div>
+          </div>
         </div>
-        <div class="admin-help-block">
-          <label>איך זה עובד</label>
-          <textarea id="adminRulesHowtoText" placeholder="מדריך קצר לשחקן חדש..."></textarea>
+        <div class="acc-block" id="acc-rules-howto">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-rules-howto')"><span class="acc-ico"></span>איך זה עובד</button>
+          <div class="acc-body">
+            <div class="admin-help-block">
+              <textarea id="adminRulesHowtoText" placeholder="מדריך קצר לשחקן חדש..."></textarea>
+            </div>
+          </div>
         </div>
         <button class="btn-success" onclick="saveRules()">שמור את כל הטאבים</button>
       </div>
 
       <div id="pane-balances" class="admin-pane">
-        <p class="empty" style="padding:0 0 8px;font-size:.78rem">היתרה נקבעת מהשיטס. הכפתורים כותבים ל-Debt/Paid ואז מסנכרנים.</p>
+        <p class="empty" style="padding:0 0 8px;font-size:.78rem">היתרה נקבעת מהשיטס. לחץ על כותרת לפתיחה.</p>
 
-        <h4 class="section-title">זיכוי מרובה</h4>
-        <div class="form-group" style="margin-bottom:8px">
-          <label>סכום ברירת מחדל (ממחיר משחק)</label>
-          <input type="number" id="bulkDefaultAmount" step="1" min="0">
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-          <button type="button" class="btn-secondary" style="width:auto;padding:6px 10px;font-size:.8rem" onclick="bulkSelectAll(true)">סמן הכל</button>
-          <button type="button" class="btn-secondary" style="width:auto;padding:6px 10px;font-size:.8rem" onclick="bulkSelectAll(false)">נקה</button>
-          <button type="button" class="btn-success" style="width:auto;padding:6px 10px;font-size:.8rem" id="btnBulkCredit" onclick="runBulkCredit(false)">זכה את המסומנים</button>
-        </div>
-        <div id="bulkCreditList"></div>
-        <div id="bulkCreditSummary" class="empty" style="padding:8px 0;font-size:.8rem"></div>
-        <div id="bulkOverwriteBox" class="hidden" style="margin:8px 0;padding:10px;background:#fff7ed;border-radius:10px;border:1px solid #fed7aa">
-          <strong style="font-size:.85rem">תאים מלאים בשיטס – בחר מי לדרוס:</strong>
-          <div id="bulkOverwriteList" style="margin-top:8px"></div>
-          <button type="button" class="btn-warning" style="margin-top:8px" id="btnBulkOverwrite" onclick="runBulkCredit(true)">דרוס את המסומנים</button>
+        <div class="acc-block" id="acc-bulk">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-bulk')"><span class="acc-ico"></span>זיכוי מרובה</button>
+          <div class="acc-body">
+            <div class="form-group" style="margin-bottom:8px">
+              <label>סכום ברירת מחדל (ממחיר משחק)</label>
+              <input type="number" id="bulkDefaultAmount" step="1" min="0">
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+              <button type="button" class="btn-secondary" style="width:auto;padding:6px 10px;font-size:.8rem" onclick="bulkSelectAll(true)">סמן הכל</button>
+              <button type="button" class="btn-secondary" style="width:auto;padding:6px 10px;font-size:.8rem" onclick="bulkSelectAll(false)">נקה</button>
+              <button type="button" class="btn-success" style="width:auto;padding:6px 10px;font-size:.8rem" id="btnBulkCredit" onclick="runBulkCredit(false)">זכה את המסומנים</button>
+            </div>
+            <div id="bulkCreditList"></div>
+            <div id="bulkCreditSummary" class="empty" style="padding:8px 0;font-size:.8rem"></div>
+            <div id="bulkOverwriteBox" class="hidden" style="margin:8px 0;padding:10px;background:#fff7ed;border-radius:10px;border:1px solid #fed7aa">
+              <strong style="font-size:.85rem">תאים מלאים בשיטס – בחר מי לדרוס:</strong>
+              <div id="bulkOverwriteList" style="margin-top:8px"></div>
+              <button type="button" class="btn-warning" style="margin-top:8px" id="btnBulkOverwrite" onclick="runBulkCredit(true)">דרוס את המסומנים</button>
+            </div>
+          </div>
         </div>
 
-        <hr style="border:none;border-top:1px solid #fde68a;margin:12px 0">
-        <h4 class="section-title">זיכוי / חיוב בודד</h4>
-        <div id="balanceList"></div>
-        <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן יתרות</button>
+        <div class="acc-block" id="acc-single">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-single')"><span class="acc-ico"></span>זיכוי / חיוב בודד</button>
+          <div class="acc-body">
+            <div id="balanceList"></div>
+            <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן יתרות</button>
+          </div>
+        </div>
 
-        <hr style="border:none;border-top:1px solid #fde68a;margin:12px 0">
-        <h4 class="section-title">הוכחות תשלום</h4>
-        <p class="empty" style="padding:0 0 8px;font-size:.78rem">דיווחי שחקנים. רק מנהל רואה תמונות. מחק אחרי בדיקה.</p>
-        <div id="proofsList"><div class="empty">טוען...</div></div>
-        <button class="btn-secondary" onclick="loadPaymentProofs()" style="margin-top:8px">רענן הוכחות</button>
+        <div class="acc-block" id="acc-proofs">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-proofs')"><span class="acc-ico"></span>הוכחות תשלום</button>
+          <div class="acc-body">
+            <p class="empty" style="padding:0 0 8px;font-size:.78rem">דיווחי שחקנים. רק מנהל רואה תמונות. מחק אחרי בדיקה.</p>
+            <div id="proofsList"><div class="empty">טוען...</div></div>
+            <button class="btn-secondary" onclick="loadPaymentProofs()" style="margin-top:8px">רענן הוכחות</button>
+          </div>
+        </div>
       </div>
 
       <div id="pane-profiles" class="admin-pane">
@@ -804,8 +865,9 @@
       </div>
 
       <div id="pane-settings" class="admin-pane">
-        <div class="settings-section">
-          <h4>משחק והרשמה</h4>
+        <div class="acc-block" id="acc-set-game">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-set-game')"><span class="acc-ico"></span>משחק והרשמה</button>
+          <div class="acc-body">
           <div class="form-group"><label>מקס שחקנים</label><input id="set_max_players" type="number"></div>
           <div class="form-group"><label>מחיר משחק</label><input id="set_game_price" type="number"></div>
           <div class="form-group"><label>חוב מקס לחסימה</label><input id="set_max_debt" type="number"></div>
@@ -814,8 +876,10 @@
           <div class="form-group"><label>שעת פתיחת חברים</label><input id="set_friend_open_hour" type="number"></div>
           <div class="form-group"><label>רענון גיבוי (שניות, 0=כבוי) – Realtime מעדכן מיד</label><input id="set_auto_refresh_sec" type="number"></div>
         </div>
-        <div class="settings-section">
-          <h4>אישור הגעה (אחרי ביטול)</h4>
+        </div>
+<div class="acc-block" id="acc-set-confirm">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-set-confirm')"><span class="acc-ico"></span>אישור הגעה (אחרי ביטול)</button>
+          <div class="acc-body">
           <div class="form-group"><label>שעת ביטול מוקדם (לפניה → דדליין קבוע)</label><input id="set_confirm_early_hour" type="number"></div>
           <div class="form-group"><label>דדליין לאישור בביטול מוקדם (שעה ביום המשחק)</label><input id="set_confirm_early_deadline_hour" type="number"></div>
           <div class="form-group"><label>סוף חלון בוקר</label><input id="set_confirm_mid_hour" type="number"></div>
@@ -824,20 +888,27 @@
           <div class="form-group"><label>דקות לאישור בחלון צהריים</label><input id="set_confirm_late_minutes" type="number"></div>
           <div class="form-group"><label>דקות אחרי השעה המאוחרת</label><input id="set_confirm_final_minutes" type="number"></div>
         </div>
-        <div class="settings-section">
-          <h4>תשלומים</h4>
+        </div>
+<div class="acc-block" id="acc-set-pay">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-set-pay')"><span class="acc-ico"></span>תשלומים</button>
+          <div class="acc-body">
           <div class="form-group"><label>לינק Bit</label><input id="set_bit_link" type="text"></div>
           <div class="form-group"><label>לינק PayBox</label><input id="set_paybox_link" type="text"></div>
         </div>
-        <div class="settings-section">
-          <h4>התראות</h4>
+        </div>
+<div class="acc-block" id="acc-set-notify">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-set-notify')"><span class="acc-ico"></span>התראות</button>
+          <div class="acc-body">
           <div class="form-group"><label>מייל להתראות מנהל</label><input id="set_notify_email" type="email"></div>
           <div class="form-group"><label>Telegram bot token</label><input id="set_telegram_bot_token" type="text"></div>
           <div class="form-group"><label>Telegram chat id</label><input id="set_telegram_chat_id" type="text"></div>
         </div>
-        <div class="settings-section">
-          <h4>כללי</h4>
+        </div>
+<div class="acc-block" id="acc-set-general">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-set-general')"><span class="acc-ico"></span>כללי</button>
+          <div class="acc-body">
           <div class="form-group"><label>כתובת האתר (לקישורים במייל)</label><input id="set_site_url" type="text" placeholder="https://..."></div>
+          </div>
         </div>
         <button class="btn-success" id="btnSaveSettings" onclick="saveAllSettings()">שמור הגדרות</button>
       </div>
@@ -2331,7 +2402,7 @@ function openPaidModal() {
 function fillPaidFromDebt() {
   const n = Number(currentProfile && currentProfile.balance);
   if (isNaN(n) || n >= 0) return showPaidMsg("אין חוב פתוח", false);
-  $("paidAmount").value = String(Math.abs(n));
+  $("paidAmount").value = String(Math.min(10000, Math.abs(n)));
 }
 
 function showPaidMsg(text, ok) {
@@ -2345,6 +2416,7 @@ async function submitPaymentProof() {
   if (!currentUser || !currentProfile) return showPaidMsg("יש להתחבר", false);
   const amount = Number($("paidAmount").value);
   if (!amount || isNaN(amount) || amount <= 0) return showPaidMsg("נא להזין סכום חיובי", false);
+  if (amount > 10000) return showPaidMsg("סכום מקסימלי 10,000₪", false);
   const file = $("paidFile").files && $("paidFile").files[0];
   if (!file) return showPaidMsg("נא לצרף תמונה", false);
   const okTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -2474,8 +2546,8 @@ async function loadPaymentProofs() {
       " · " + escapeHtml(r.status || "") + "</div>" +
       '<div class="empty" style="padding:2px 0;font-size:.75rem">' + escapeHtml(when) + "</div>" +
       '<div class="row-actions">' +
-      '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '" onclick="viewPaymentProof(this.getAttribute(\'data-proof-view\'), this.getAttribute(\'data-path\'))">צפה</button>' +
-      '<button type="button" class="btn-sm btn-danger" data-proof-del="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '" onclick="deletePaymentProof(this.getAttribute(\'data-proof-del\'), this.getAttribute(\'data-path\'))">מחק</button>' +
+      '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">צפה</button>' +
+      '<button type="button" class="btn-sm btn-danger" data-proof-del="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">מחק</button>' +
       "</div>" +
       '<div id="proof_img_' + r.id + '"></div>' +
       "</div>"
@@ -2508,6 +2580,12 @@ async function deletePaymentProof(id, path) {
   loadPaymentProofs();
 }
 
+
+function toggleAcc(id) {
+  const el = $(id);
+  if (!el) return;
+  el.classList.toggle("open");
+}
 
 function openBit() {
   const l = getSetting("bit_link", "");
