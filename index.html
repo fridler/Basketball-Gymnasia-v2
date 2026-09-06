@@ -410,8 +410,8 @@
 <body>
   <div id="loginScreen">
     <div class="login-card">
-      <h2>כדורסל v2</h2>
-      <p class="login-sub">מערכת הרשמה למשחק</p>
+      <h2>כדורסל גימנסיה</h2>
+      <p class="login-sub">הרשמה למשחק</p>
       <div id="loginFields">
         <button type="button" class="btn-google" id="btnGoogle" onclick="loginGoogle()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
@@ -2317,7 +2317,12 @@ function openPaidModal() {
   $("paidFile").value = "";
   $("paidMsg").classList.add("hidden");
   const sat = paymentSaturdayDate();
-  $("paidSatHint").textContent = "ייכתב ל-Paid של שבת " + sat + " (לפי יומן ישראל)";
+  // תצוגה ידידותית: 2026-09-05 → 5.9
+  const parts = String(sat).split("-");
+  const satLabel = parts.length === 3
+    ? (parseInt(parts[2], 10) + "." + parseInt(parts[1], 10))
+    : sat;
+  $("paidSatHint").textContent = "התשלום יירשם לשבת " + satLabel;
   const n = Number(currentProfile.balance);
   $("btnFillDebt").disabled = !(n < 0);
   $("paidModal").classList.remove("hidden");
@@ -2354,7 +2359,7 @@ async function submitPaymentProof() {
   setLoading(btn, true, "שולח");
 
   try {
-    // דיווח אחד לשבת (מהיר)
+    // דיווח אחד לשבת (מהיר) – לפני כל העלאה
     const { data: existing, error: exErr } = await sb
       .from("payment_proofs")
       .select("id,status")
@@ -2368,15 +2373,7 @@ async function submitPaymentProof() {
       return;
     }
 
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-    const path = currentUser.id + "/" + sat + "_" + Date.now() + "." + ext;
-
-    const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, file, {
-      contentType: file.type,
-      upsert: false
-    });
-    if (upErr) throw new Error("העלאת תמונה נכשלה: " + upErr.message);
-
+    // קודם שיטס – רק אם הצליח מעלים תמונה
     const { data: sheetRes, error: sheetErr } = await sb.functions.invoke("collection", {
       body: {
         action: "paid",
@@ -2389,32 +2386,24 @@ async function submitPaymentProof() {
     if (sheetErr) throw new Error(sheetErr.message);
     const res = sheetRes || {};
     if (res.ok === false) {
-      // נשאיר תמונה למנהל גם אם נכשל
-      await sb.from("payment_proofs").insert({
-        user_id: currentUser.id,
-        player_name: currentProfile.name || "",
-        collection_name: cname,
-        amount: amount,
-        saturday_date: sat,
-        image_path: path,
-        status: "error"
-      });
       throw new Error(res.error || "שגיאה בכתיבה לשיטס");
     }
-
     if (res.status === "skipped_exists") {
-      await sb.from("payment_proofs").insert({
-        user_id: currentUser.id,
-        player_name: currentProfile.name || "",
-        collection_name: cname,
-        amount: amount,
-        saturday_date: sat,
-        image_path: path,
-        status: "skipped_exists"
-      });
       showPaidMsg("בשיטס כבר רשום תשלום לשבת זו. לא עודכן. לבירור – פנה למנהל.", false);
       return;
     }
+    if (res.status && res.status !== "written") {
+      throw new Error("תשובה לא צפויה מהשיטס: " + res.status);
+    }
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = currentUser.id + "/" + sat + "_" + Date.now() + "." + ext;
+
+    const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, file, {
+      contentType: file.type,
+      upsert: false
+    });
+    if (upErr) throw new Error("התשלום נרשם בשיטס, אך העלאת התמונה נכשלה: " + upErr.message);
 
     await sb.from("payment_proofs").insert({
       user_id: currentUser.id,
