@@ -272,7 +272,15 @@
     .admin-help-block label { font-weight: 600; margin-bottom: 4px; display: block; }
     .admin-help-block textarea { min-height: 110px; }
     .admin-section { background: #fffbeb; border: 1.5px dashed #f59e0b; }
-    .pay-row { display: flex; gap: 10px; }
+    .pay-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pay-btn-report {
+      flex: 1; min-width: 100%; margin-top: 4px;
+      background: var(--success); color: #fff; border: none;
+      border-radius: 12px; padding: 10px; font-weight: 700; font-size: .9rem; cursor: pointer;
+    }
+    .proof-thumb { max-width: 100%; max-height: 220px; border-radius: 10px; margin-top: 8px; }
+    .proof-item { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: .85rem; }
+    .proof-item .row-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
     .pay-btn {
       flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px;
@@ -469,6 +477,7 @@
             <img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/12/06/b0/1206b081-574f-ac46-551d-ba5c4378cecd/Placeholder.mill/200x200bb-75.webp" alt="PayBox" width="28" height="28">
             PayBox
           </button>
+          <button type="button" class="pay-btn-report" onclick="openPaidModal()">שילמתי</button>
         </div>
       </div>
     </div>
@@ -573,7 +582,29 @@
           <img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/12/06/b0/1206b081-574f-ac46-551d-ba5c4378cecd/Placeholder.mill/200x200bb-75.webp" alt="PayBox" width="28" height="28">
           PayBox
         </button>
+        <button type="button" class="pay-btn-report" onclick="openPaidModal()">שילמתי</button>
       </div>
+    </div>
+  </div>
+
+  <div id="paidModal" class="modal-overlay hidden" onclick="backdrop(event,'paidModal')">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>דיווח תשלום</h3>
+        <button class="modal-close" onclick="closeModal('paidModal')">סגור</button>
+      </div>
+      <p class="empty" style="padding:0 0 8px;font-size:.8rem" id="paidSatHint"></p>
+      <div class="form-group">
+        <label>סכום ששולם (₪)</label>
+        <input type="number" id="paidAmount" min="1" step="1" placeholder="לדוגמה 35">
+      </div>
+      <button type="button" class="btn-secondary" id="btnFillDebt" onclick="fillPaidFromDebt()" style="margin-bottom:8px">סכום החוב</button>
+      <div class="form-group">
+        <label>צילום מסך / הוכחה (חובה, עד 3MB)</label>
+        <input type="file" id="paidFile" accept="image/jpeg,image/png,image/webp">
+      </div>
+      <div id="paidMsg" class="message hidden"></div>
+      <button class="btn-success" id="btnPaidSubmit" onclick="submitPaymentProof()">שלח דיווח</button>
     </div>
   </div>
 
@@ -645,6 +676,7 @@
         <button type="button" class="admin-tab" data-tab="pending" onclick="switchAdminTab('pending')">בקשות<span class="tab-badge hidden" id="pendingBadge">0</span></button>
         <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>
         <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
+        <button type="button" class="admin-tab" data-tab="proofs" onclick="switchAdminTab('proofs')">הוכחות תשלום</button>
         <button type="button" class="admin-tab" id="btnAdminMore" onclick="toggleAdminMore(event)">עוד ▾</button>
       </div>
       <div class="admin-more-row" id="adminMoreRow">
@@ -721,6 +753,12 @@
         <h4 class="section-title">זיכוי / חיוב בודד</h4>
         <div id="balanceList"></div>
         <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן</button>
+      </div>
+
+      <div id="pane-proofs" class="admin-pane">
+        <p class="empty" style="padding:0 0 8px;font-size:.78rem">דיווחי תשלום מהשחקנים. רק מנהל רואה תמונות. מחק אחרי בדיקה.</p>
+        <div id="proofsList"><div class="empty">טוען...</div></div>
+        <button class="btn-secondary" onclick="loadPaymentProofs()" style="margin-top:8px">רענן</button>
       </div>
 
       <div id="pane-profiles" class="admin-pane">
@@ -1336,7 +1374,7 @@ async function adjustBalance(uid, delta) {
   await loadBalanceList();
 }
 
-const MAIN_ADMIN_TABS = ["general", "pending", "roster", "balances"];
+const MAIN_ADMIN_TABS = ["general", "pending", "roster", "balances", "proofs"];
 
 function toggleAdminMore(e) {
   if (e) e.stopPropagation();
@@ -1367,6 +1405,7 @@ function switchAdminTab(name) {
   if (name === "general") updateGeneralButtons();
   if (name === "pending") loadPending();
   if (name === "balances") loadBalanceList();
+  if (name === "proofs") loadPaymentProofs();
   if (name === "profiles") loadProfilesEditor();
   if (name === "roster") { loadAddPlayerSelect(); loadRemovePlayerSelect(); }
   if (name === "archive") loadArchive();
@@ -2218,6 +2257,249 @@ function copyList() {
   else text += "ריקה\n";
   navigator.clipboard.writeText(text).then(() => showMsg("הועתק!", true)).catch(() => showMsg("העתקה נכשלה", false));
 }
+
+
+/** שבת אחרונה (כולל היום אם שבת) לפי שעון ישראל YYYY-MM-DD */
+function paymentSaturdayDate() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short"
+  });
+  const parts = {};
+  for (const p of fmt.formatToParts(new Date())) {
+    if (p.type !== "literal") parts[p.type] = p.value;
+  }
+  // en-CA weekday: Sun Mon ... Sat
+  const map = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  let y = parseInt(parts.year, 10);
+  let m = parseInt(parts.month, 10);
+  let d = parseInt(parts.day, 10);
+  let wd = map[parts.weekday] != null ? map[parts.weekday] : 0;
+  // go back to Saturday
+  const back = (wd + 1) % 7; // Sun=1 ... Sat=0
+  // actually: Sat=0 back, Sun=1, Mon=2, ... Fri=6
+  const daysBack = wd === 6 ? 0 : wd + 1;
+  // Wait: JS Sunday=0. If Sat=6 daysBack=0. If Sun=0 daysBack=1. If Mon=1 daysBack=2. Formula: (wd + 1) % 7 works for Sun=0 -> 1, Mon=1 -> 2, ..., Fri=5 -> 6, Sat=6 -> 0. Good.
+  const daysBack2 = (wd + 1) % 7;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() - daysBack2);
+  const yy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getUTCDate()).padStart(2, "0");
+  return yy + "-" + mm + "-" + dd;
+}
+
+function openPaidModal() {
+  if (!currentProfile) return;
+  closeModal("debtModal");
+  $("paidAmount").value = "";
+  $("paidFile").value = "";
+  $("paidMsg").classList.add("hidden");
+  const sat = paymentSaturdayDate();
+  $("paidSatHint").textContent = "ייכתב ל-Paid של שבת " + sat + " (לפי יומן ישראל)";
+  const n = Number(currentProfile.balance);
+  $("btnFillDebt").disabled = !(n < 0);
+  $("paidModal").classList.remove("hidden");
+}
+
+function fillPaidFromDebt() {
+  const n = Number(currentProfile && currentProfile.balance);
+  if (isNaN(n) || n >= 0) return showPaidMsg("אין חוב פתוח", false);
+  $("paidAmount").value = String(Math.abs(n));
+}
+
+function showPaidMsg(text, ok) {
+  const el = $("paidMsg");
+  el.textContent = text;
+  el.className = "message " + (ok ? "success" : "error");
+  el.classList.remove("hidden");
+}
+
+async function submitPaymentProof() {
+  if (!currentUser || !currentProfile) return showPaidMsg("יש להתחבר", false);
+  const amount = Number($("paidAmount").value);
+  if (!amount || isNaN(amount) || amount <= 0) return showPaidMsg("נא להזין סכום חיובי", false);
+  const file = $("paidFile").files && $("paidFile").files[0];
+  if (!file) return showPaidMsg("נא לצרף תמונה", false);
+  const okTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (okTypes.indexOf(file.type) === -1) return showPaidMsg("רק JPG / PNG / WEBP", false);
+  if (file.size > 3 * 1024 * 1024) return showPaidMsg("הקובץ גדול מ-3MB", false);
+
+  const cname = (currentProfile.collection_name || "").trim();
+  if (!cname) return showPaidMsg("חסר שיוך לשיטס (collection_name). פנה למנהל.", false);
+
+  const sat = paymentSaturdayDate();
+  const btn = $("btnPaidSubmit");
+  setLoading(btn, true, "שולח");
+
+  try {
+    // דיווח אחד לשבת (מהיר)
+    const { data: existing, error: exErr } = await sb
+      .from("payment_proofs")
+      .select("id,status")
+      .eq("user_id", currentUser.id)
+      .eq("saturday_date", sat)
+      .eq("status", "written")
+      .limit(1);
+    if (exErr) throw new Error(exErr.message);
+    if (existing && existing.length) {
+      showPaidMsg("כבר קיים דיווח תשלום לשבת זו. לבירור – פנה למנהל.", false);
+      return;
+    }
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = currentUser.id + "/" + sat + "_" + Date.now() + "." + ext;
+
+    const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, file, {
+      contentType: file.type,
+      upsert: false
+    });
+    if (upErr) throw new Error("העלאת תמונה נכשלה: " + upErr.message);
+
+    const { data: sheetRes, error: sheetErr } = await sb.functions.invoke("collection", {
+      body: {
+        action: "paid",
+        name: cname,
+        gameDate: sat,
+        amount: amount,
+        force: false
+      }
+    });
+    if (sheetErr) throw new Error(sheetErr.message);
+    const res = sheetRes || {};
+    if (res.ok === false) {
+      // נשאיר תמונה למנהל גם אם נכשל
+      await sb.from("payment_proofs").insert({
+        user_id: currentUser.id,
+        player_name: currentProfile.name || "",
+        collection_name: cname,
+        amount: amount,
+        saturday_date: sat,
+        image_path: path,
+        status: "error"
+      });
+      throw new Error(res.error || "שגיאה בכתיבה לשיטס");
+    }
+
+    if (res.status === "skipped_exists") {
+      await sb.from("payment_proofs").insert({
+        user_id: currentUser.id,
+        player_name: currentProfile.name || "",
+        collection_name: cname,
+        amount: amount,
+        saturday_date: sat,
+        image_path: path,
+        status: "skipped_exists"
+      });
+      showPaidMsg("בשיטס כבר רשום תשלום לשבת זו. לא עודכן. לבירור – פנה למנהל.", false);
+      return;
+    }
+
+    await sb.from("payment_proofs").insert({
+      user_id: currentUser.id,
+      player_name: currentProfile.name || "",
+      collection_name: cname,
+      amount: amount,
+      saturday_date: sat,
+      image_path: path,
+      status: "written"
+    });
+
+    try {
+      await sb.from("payment_log").insert({
+        game_id: currentGame ? currentGame.id : null,
+        email: currentProfile.email || "",
+        collection_name: cname,
+        amount: amount,
+        status: "written",
+        note: "player proof Paid " + sat
+      });
+    } catch (e) {}
+
+    showPaidMsg("נרשם! היתרה מתעדכנת תוך כמה רגעים...", true);
+    await syncBalancesFromSheet(true);
+    if (currentProfile) {
+      const { data: fresh } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
+      if (fresh) {
+        currentProfile = fresh;
+        profileMap[fresh.id] = fresh;
+        updateBalanceUI();
+      }
+    }
+    setTimeout(() => closeModal("paidModal"), 1200);
+  } catch (e) {
+    showPaidMsg(String(e.message || e), false);
+  } finally {
+    setLoading(btn, false, "שלח דיווח");
+  }
+}
+
+async function loadPaymentProofs() {
+  const box = $("proofsList");
+  if (!box) return;
+  if (!currentProfile || !currentProfile.is_admin) {
+    box.innerHTML = '<div class="empty">אין הרשאה</div>';
+    return;
+  }
+  box.innerHTML = '<div class="empty">טוען...</div>';
+  const { data, error } = await sb
+    .from("payment_proofs")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) {
+    box.innerHTML = '<div class="empty">' + escapeHtml(error.message) + "</div>";
+    return;
+  }
+  if (!data || !data.length) {
+    box.innerHTML = '<div class="empty">אין דיווחים</div>';
+    return;
+  }
+  box.innerHTML = data.map((r) => {
+    const when = r.created_at ? new Date(r.created_at).toLocaleString("he-IL") : "";
+    return (
+      '<div class="proof-item" id="proof_' + r.id + '">' +
+      "<div><strong>" + escapeHtml(r.player_name || "") + "</strong> · " +
+      escapeHtml(String(r.amount)) + "₪ · שבת " + escapeHtml(String(r.saturday_date || "")) +
+      " · " + escapeHtml(r.status || "") + "</div>" +
+      '<div class="empty" style="padding:2px 0;font-size:.75rem">' + escapeHtml(when) + "</div>" +
+      '<div class="row-actions">' +
+      '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">צפה</button>' +
+      '<button type="button" class="btn-sm btn-danger" data-proof-del="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">מחק</button>' +
+      "</div>" +
+      '<div id="proof_img_' + r.id + '"></div>' +
+      "</div>"
+    );
+  }).join("");
+}
+
+async function viewPaymentProof(id, path) {
+  if (!path) return showAdminMsg("אין תמונה", false);
+  const host = $("proof_img_" + id);
+  if (!host) return;
+  host.innerHTML = '<div class="empty">טוען תמונה...</div>';
+  const { data, error } = await sb.storage.from("payment-proofs").createSignedUrl(path, 120);
+  if (error || !data || !data.signedUrl) {
+    host.innerHTML = '<div class="empty">שגיאה בטעינת תמונה</div>';
+    return;
+  }
+  host.innerHTML = '<img class="proof-thumb" src="' + data.signedUrl + '" alt="proof">';
+}
+
+async function deletePaymentProof(id, path) {
+  if (!confirm("למחוק את הדיווח והתמונה?")) return;
+  if (path) {
+    try { await sb.storage.from("payment-proofs").remove([path]); } catch (e) {}
+  }
+  const { error } = await sb.from("payment_proofs").delete().eq("id", id);
+  if (error) return showAdminMsg(error.message, false);
+  showAdminMsg("נמחק", true);
+  loadPaymentProofs();
+}
+
 
 function openBit() {
   const l = getSetting("bit_link", "");
