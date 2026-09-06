@@ -978,6 +978,28 @@ function getSetting(k, f) {
 function maxDebt() { return parseInt(getSetting("max_debt", "70"), 10); }
 function gamePrice() { return parseFloat(getSetting("game_price", "35")); }
 function siteUrl() { return getSetting("site_url", window.location.origin); }
+function paidReportUrl(base) {
+  let u = String(base || siteUrl() || "").trim().replace(/\/$/, "");
+  if (!u) {
+    u = (location.origin + location.pathname).replace(/\/$/, "");
+  }
+  if (!u) return "";
+  return u + (u.indexOf("?") >= 0 ? "&" : "?") + "paid=1";
+}
+/** אם הגיעו עם ?paid=1 – מנקים את הפרמטר ומחזירים true */
+function consumePaidDeepLink() {
+  try {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("paid") !== "1") return false;
+    sp.delete("paid");
+    const qs = sp.toString();
+    const next = window.location.pathname + (qs ? "?" + qs : "") + window.location.hash;
+    history.replaceState(null, "", next);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 function isBlocked() {
   if (!currentProfile || currentProfile.balance == null) return false;
   return Number(currentProfile.balance) <= -maxDebt();
@@ -1287,14 +1309,16 @@ async function sendDebtRemindersAll() {
     const failList = [];
 
     for (const p of withEmail) {
+      const paidLink = paidReportUrl(siteUrl);
       const body =
         "שלום " + (p.name || "") + ",\n\n" +
         "תזכורת: יש לך חוב בקבוצת הכדורסל.\n" +
         "יתרה נוכחית: " + p.balance + "₪\n\n" +
         (bit ? "Bit: " + bit + "\n" : "") +
         (paybox ? "PayBox: " + paybox + "\n" : "") +
-        (siteUrl ? "\nכניסה לאתר: " + siteUrl + "\n" : "") +
-        "\nאחרי התשלום היתרה מתעדכנת אחרי סנכרון / עדכון המנהל.";
+        "\nלאחר התשלום – דיווח במערכת (סכום + צילום מסך):\n" +
+        (paidLink ? paidLink + "\n" : "") +
+        "\nהקישור פותח ישירות את מסך «שילמתי» (אחרי התחברות אם צריך).\n";
       const r = await notifyPlayerEmail(
         p.email,
         "כדורסל – תזכורת חוב (" + p.balance + "₪)",
@@ -1598,6 +1622,9 @@ async function afterLogin() {
   startAutoRefresh();
   maybeShowAnnouncement();
   showDebtPopupIfNeeded();
+  if (consumePaidDeepLink()) {
+    setTimeout(function () { openPaidModal(); }, 350);
+  }
   syncBalancesFromSheet(true);
   await checkPendingConfirm();
 }
