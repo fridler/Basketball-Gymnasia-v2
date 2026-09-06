@@ -223,6 +223,26 @@
       display: flex;
       flex-direction: column;
     }
+    /* חוב + פאנל ניהול – לא צמודים לתחתית */
+    #debtModal {
+      align-items: center;
+      padding: 16px;
+    }
+    #debtModal .modal {
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+    }
+    #adminModal {
+      align-items: flex-start;
+      padding: 12px 12px 24px;
+      overflow: auto;
+    }
+    #adminModal .modal {
+      border-radius: 16px;
+      margin-top: 8px;
+      max-height: min(92vh, 900px);
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.2);
+    }
     #rulesModal .help-tabs {
       flex-shrink: 0;
     }
@@ -676,7 +696,6 @@
         <button type="button" class="admin-tab" data-tab="pending" onclick="switchAdminTab('pending')">בקשות<span class="tab-badge hidden" id="pendingBadge">0</span></button>
         <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>
         <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
-        <button type="button" class="admin-tab" data-tab="proofs" onclick="switchAdminTab('proofs')">הוכחות תשלום</button>
         <button type="button" class="admin-tab" id="btnAdminMore" onclick="toggleAdminMore(event)">עוד ▾</button>
       </div>
       <div class="admin-more-row" id="adminMoreRow">
@@ -752,13 +771,13 @@
         <hr style="border:none;border-top:1px solid #fde68a;margin:12px 0">
         <h4 class="section-title">זיכוי / חיוב בודד</h4>
         <div id="balanceList"></div>
-        <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן</button>
-      </div>
+        <button class="btn-secondary" onclick="loadBalanceList()" style="margin-top:8px">רענן יתרות</button>
 
-      <div id="pane-proofs" class="admin-pane">
-        <p class="empty" style="padding:0 0 8px;font-size:.78rem">דיווחי תשלום מהשחקנים. רק מנהל רואה תמונות. מחק אחרי בדיקה.</p>
+        <hr style="border:none;border-top:1px solid #fde68a;margin:12px 0">
+        <h4 class="section-title">הוכחות תשלום</h4>
+        <p class="empty" style="padding:0 0 8px;font-size:.78rem">דיווחי שחקנים. רק מנהל רואה תמונות. מחק אחרי בדיקה.</p>
         <div id="proofsList"><div class="empty">טוען...</div></div>
-        <button class="btn-secondary" onclick="loadPaymentProofs()" style="margin-top:8px">רענן</button>
+        <button class="btn-secondary" onclick="loadPaymentProofs()" style="margin-top:8px">רענן הוכחות</button>
       </div>
 
       <div id="pane-profiles" class="admin-pane">
@@ -1374,7 +1393,7 @@ async function adjustBalance(uid, delta) {
   await loadBalanceList();
 }
 
-const MAIN_ADMIN_TABS = ["general", "pending", "roster", "balances", "proofs"];
+const MAIN_ADMIN_TABS = ["general", "pending", "roster", "balances"];
 
 function toggleAdminMore(e) {
   if (e) e.stopPropagation();
@@ -1404,8 +1423,7 @@ function switchAdminTab(name) {
   });
   if (name === "general") updateGeneralButtons();
   if (name === "pending") loadPending();
-  if (name === "balances") loadBalanceList();
-  if (name === "proofs") loadPaymentProofs();
+  if (name === "balances") { loadBalanceList(); loadPaymentProofs(); }
   if (name === "profiles") loadProfilesEditor();
   if (name === "roster") { loadAddPlayerSelect(); loadRemovePlayerSelect(); }
   if (name === "archive") loadArchive();
@@ -2467,8 +2485,8 @@ async function loadPaymentProofs() {
       " · " + escapeHtml(r.status || "") + "</div>" +
       '<div class="empty" style="padding:2px 0;font-size:.75rem">' + escapeHtml(when) + "</div>" +
       '<div class="row-actions">' +
-      '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">צפה</button>' +
-      '<button type="button" class="btn-sm btn-danger" data-proof-del="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">מחק</button>' +
+      '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '" onclick="viewPaymentProof(this.getAttribute(\'data-proof-view\'), this.getAttribute(\'data-path\'))">צפה</button>' +
+      '<button type="button" class="btn-sm btn-danger" data-proof-del="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '" onclick="deletePaymentProof(this.getAttribute(\'data-proof-del\'), this.getAttribute(\'data-path\'))">מחק</button>' +
       "</div>" +
       '<div id="proof_img_' + r.id + '"></div>' +
       "</div>"
@@ -2483,7 +2501,8 @@ async function viewPaymentProof(id, path) {
   host.innerHTML = '<div class="empty">טוען תמונה...</div>';
   const { data, error } = await sb.storage.from("payment-proofs").createSignedUrl(path, 120);
   if (error || !data || !data.signedUrl) {
-    host.innerHTML = '<div class="empty">שגיאה בטעינת תמונה</div>';
+    host.innerHTML = '<div class="empty">שגיאה בטעינת תמונה' +
+      (error && error.message ? ": " + escapeHtml(error.message) : "") + "</div>";
     return;
   }
   host.innerHTML = '<img class="proof-thumb" src="' + data.signedUrl + '" alt="proof">';
@@ -3224,6 +3243,16 @@ document.addEventListener("click", (e) => {
   }
   const rj = e.target.closest("[data-reject]");
   if (rj) rejectPending(rj.getAttribute("data-reject"));
+  const pv = e.target.closest("[data-proof-view]");
+  if (pv) {
+    viewPaymentProof(pv.getAttribute("data-proof-view"), pv.getAttribute("data-path"));
+    return;
+  }
+  const pd = e.target.closest("[data-proof-del]");
+  if (pd) {
+    deletePaymentProof(pd.getAttribute("data-proof-del"), pd.getAttribute("data-path"));
+    return;
+  }
   const bal = e.target.closest("[data-bal]");
   if (bal) adjustBalance(bal.getAttribute("data-bal"), bal.getAttribute("data-delta"));
   const balCustom = e.target.closest("[data-bal-custom]");
