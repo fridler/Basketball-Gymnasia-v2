@@ -2482,7 +2482,13 @@ async function submitPaymentProof() {
         force: false
       }
     });
-    if (sheetErr) throw new Error(sheetErr.message);
+    if (sheetErr) {
+      const m = String(sheetErr.message || sheetErr);
+      if (/Failed to send a request to the Edge Function/i.test(m)) {
+        throw new Error("לא ניתן להתחבר לשרת (Edge). בדקו רשת / פריסת פונקציית collection.");
+      }
+      throw new Error(m);
+    }
     const res = sheetRes || {};
     if (res.ok === false) {
       throw new Error(res.error || "שגיאה בכתיבה לשיטס");
@@ -2521,35 +2527,21 @@ async function submitPaymentProof() {
     const satBg = sat;
     const cnameBg = cname;
     (async function () {
+      let proofId = null;
       try {
-        const ext = (fileBg.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-        const path = uid + "/" + satBg + "_" + Date.now() + "." + ext;
-        const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, fileBg, {
-          contentType: fileBg.type,
-          upsert: false
-        });
-        if (upErr) {
-          console.warn("proof upload", upErr);
-          await sb.from("payment_proofs").insert({
-            user_id: uid,
-            player_name: playerName,
-            collection_name: cnameBg,
-            amount: amountBg,
-            saturday_date: satBg,
-            image_path: null,
-            status: "written_no_image"
-          });
-        } else {
-          await sb.from("payment_proofs").insert({
-            user_id: uid,
-            player_name: playerName,
-            collection_name: cnameBg,
-            amount: amountBg,
-            saturday_date: satBg,
-            image_path: path,
-            status: "written"
-          });
-        }
+        // קודם רשומה בהוכחות – גם אם התמונה תיכשל
+        const { data: ins, error: insErr } = await sb.from("payment_proofs").insert({
+          user_id: uid,
+          player_name: playerName,
+          collection_name: cnameBg,
+          amount: amountBg,
+          saturday_date: satBg,
+          image_path: null,
+          status: "written_no_image"
+        }).select("id").maybeSingle();
+        if (insErr) console.warn("proof insert", insErr);
+        else if (ins) proofId = ins.id;
+
         try {
           await sb.from("payment_log").insert({
             game_id: gameId,
@@ -2560,6 +2552,23 @@ async function submitPaymentProof() {
             note: "player proof Paid " + satBg
           });
         } catch (e2) {}
+
+        const ext = (fileBg.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const path = uid + "/" + satBg + "_" + Date.now() + "." + ext;
+        const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, fileBg, {
+          contentType: fileBg.type,
+          upsert: false
+        });
+        if (upErr) {
+          console.warn("proof upload", upErr);
+          return;
+        }
+        if (proofId) {
+          await sb.from("payment_proofs").update({
+            image_path: path,
+            status: "written"
+          }).eq("id", proofId);
+        }
       } catch (bgErr) {
         console.warn("proof background", bgErr);
       }
@@ -2595,14 +2604,21 @@ async function loadPaymentProofs() {
   }
   box.innerHTML = data.map((r) => {
     const when = r.created_at ? new Date(r.created_at).toLocaleString("he-IL") : "";
+    let st = r.status || "";
+    if (st === "written_no_image") st = "נרשם · בלי תמונה";
+    else if (st === "written") st = r.image_path ? "נרשם · עם תמונה" : "נרשם";
+    else if (st === "skipped_exists") st = "לא עודכן (כבר היה בשיטס)";
+    const canView = !!(r.image_path);
     return (
       '<div class="proof-item" id="proof_' + r.id + '">' +
       "<div><strong>" + escapeHtml(r.player_name || "") + "</strong> · " +
       escapeHtml(String(r.amount)) + "₪ · שבת " + escapeHtml(String(r.saturday_date || "")) +
-      " · " + escapeHtml(r.status || "") + "</div>" +
+      " · " + escapeHtml(st) + "</div>" +
       '<div class="empty" style="padding:2px 0;font-size:.75rem">' + escapeHtml(when) + "</div>" +
       '<div class="row-actions">' +
-      '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">צפה</button>' +
+      (canView
+        ? '<button type="button" class="btn-sm btn-secondary" data-proof-view="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">צפה</button>'
+        : '<span class="empty" style="padding:0;font-size:.78rem">אין תמונה</span>') +
       '<button type="button" class="btn-sm btn-danger" data-proof-del="' + r.id + '" data-path="' + escapeHtml(r.image_path || "") + '">מחק</button>' +
       "</div>" +
       '<div id="proof_img_' + r.id + '"></div>' +
