@@ -2464,7 +2464,7 @@ async function submitPaymentProof() {
       .select("id,status")
       .eq("user_id", currentUser.id)
       .eq("saturday_date", sat)
-      .eq("status", "written")
+      .in("status", ["written", "written_no_image"])
       .limit(1);
     if (exErr) throw new Error(exErr.message);
     if (existing && existing.length) {
@@ -2495,47 +2495,76 @@ async function submitPaymentProof() {
       throw new Error("תשובה לא צפויה מהשיטס: " + res.status);
     }
 
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-    const path = currentUser.id + "/" + sat + "_" + Date.now() + "." + ext;
-
-    const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, file, {
-      contentType: file.type,
-      upsert: false
-    });
-    if (upErr) throw new Error("התשלום נרשם בשיטס, אך העלאת התמונה נכשלה: " + upErr.message);
-
-    await sb.from("payment_proofs").insert({
-      user_id: currentUser.id,
-      player_name: currentProfile.name || "",
-      collection_name: cname,
-      amount: amount,
-      saturday_date: sat,
-      image_path: path,
-      status: "written"
-    });
-
+    // ב: עדכון יתרה מקומי בלבד (בלי סנכרון מלא) – Balance ≈ ישן + תשלום
+    const prevBal = Number(currentProfile.balance);
+    const newBal = (isNaN(prevBal) ? 0 : prevBal) + amount;
+    currentProfile.balance = newBal;
+    if (profileMap[currentUser.id]) profileMap[currentUser.id].balance = newBal;
+    updateBalanceUI();
     try {
-      await sb.from("payment_log").insert({
-        game_id: currentGame ? currentGame.id : null,
-        email: currentProfile.email || "",
-        collection_name: cname,
-        amount: amount,
-        status: "written",
-        note: "player proof Paid " + sat
-      });
-    } catch (e) {}
-
-    showPaidMsg("נרשם! היתרה מתעדכנת תוך כמה רגעים...", true);
-    await syncBalancesFromSheet(true);
-    if (currentProfile) {
-      const { data: fresh } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
-      if (fresh) {
-        currentProfile = fresh;
-        profileMap[fresh.id] = fresh;
-        updateBalanceUI();
-      }
+      await sb.from("profiles").update({ balance: newBal }).eq("id", currentUser.id);
+    } catch (e) {
+      console.warn("local balance update", e);
     }
-    setTimeout(() => closeModal("paidModal"), 1200);
+
+    showPaidMsg("נרשם! היתרה עודכנה.", true);
+    setLoading(btn, false, "שלח דיווח");
+    setTimeout(function () { closeModal("paidModal"); }, 900);
+
+    // ד: תמונה + רשומת הוכחה ברקע (המשתמש כבר לא מחכה)
+    const uid = currentUser.id;
+    const playerName = currentProfile.name || "";
+    const email = currentProfile.email || "";
+    const gameId = currentGame ? currentGame.id : null;
+    const fileBg = file;
+    const amountBg = amount;
+    const satBg = sat;
+    const cnameBg = cname;
+    (async function () {
+      try {
+        const ext = (fileBg.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const path = uid + "/" + satBg + "_" + Date.now() + "." + ext;
+        const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, fileBg, {
+          contentType: fileBg.type,
+          upsert: false
+        });
+        if (upErr) {
+          console.warn("proof upload", upErr);
+          await sb.from("payment_proofs").insert({
+            user_id: uid,
+            player_name: playerName,
+            collection_name: cnameBg,
+            amount: amountBg,
+            saturday_date: satBg,
+            image_path: null,
+            status: "written_no_image"
+          });
+        } else {
+          await sb.from("payment_proofs").insert({
+            user_id: uid,
+            player_name: playerName,
+            collection_name: cnameBg,
+            amount: amountBg,
+            saturday_date: satBg,
+            image_path: path,
+            status: "written"
+          });
+        }
+        try {
+          await sb.from("payment_log").insert({
+            game_id: gameId,
+            email: email,
+            collection_name: cnameBg,
+            amount: amountBg,
+            status: "written",
+            note: "player proof Paid " + satBg
+          });
+        } catch (e2) {}
+      } catch (bgErr) {
+        console.warn("proof background", bgErr);
+      }
+    })();
+    return;
   } catch (e) {
     showPaidMsg(String(e.message || e), false);
   } finally {
