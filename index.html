@@ -1608,12 +1608,27 @@ function showResetPasswordUi() {
   if ($("resetFields")) $("resetFields").classList.remove("hidden");
   $("loginMsg").classList.add("hidden");
 }
+function passwordResetRedirectUrl() {
+  // תמיד מעדיפים את הנתיב הנוכחי של האפליקציה (חשוב ב-GitHub Pages)
+  let path = String(location.pathname || "/");
+  if (path.endsWith("index.html")) path = path.slice(0, -10);
+  if (!path.endsWith("/")) path += "/";
+  const fromPage = location.origin + path;
+  const fromSettings = String(getSetting("site_url", "") || "").trim();
+  // אם ב-settings רק שורש github.io בלי שם ריפו – מתעלמים
+  const settingsIsRootOnly = /^https?:\/\/[^/]+\.github\.io\/?$/i.test(fromSettings);
+  let u = (!settingsIsRootOnly && fromSettings) ? fromSettings : fromPage;
+  if (!u) u = fromPage;
+  u = u.replace(/\/$/, "") + "/";
+  return u;
+}
 async function sendForgotPassword() {
   const email = ($("forgotEmail").value || $("email").value || "").trim().toLowerCase();
   if (!email) return showLoginMsg("נא להזין מייל", false);
   const btn = $("btnForgot");
   setLoading(btn, true, "שולח");
-  const redirectTo = (siteUrl() || (location.origin + location.pathname)).replace(/\/$/, "") + "/";
+  const redirectTo = passwordResetRedirectUrl();
+  console.log("password reset redirectTo", redirectTo);
   const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
   setLoading(btn, false, "שליחת קישור");
   if (error) return showLoginMsg(error.message, false);
