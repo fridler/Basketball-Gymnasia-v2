@@ -95,7 +95,7 @@
         max-width: 520px; border-radius: 16px;
         box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
       }
-      #loginScreen, #pendingScreen { max-width: 440px; margin: 48px auto; }
+      #loginScreen, #pendingScreen, #completePhoneScreen { max-width: 440px; margin: 48px auto; }
     }
     @media (min-width: 1100px) {
       .container { max-width: 640px; }
@@ -195,7 +195,7 @@
       border: 1.5px solid var(--border); border-radius: 10px; background: #fff; font-family: inherit;
     }
     textarea { min-height: 90px; resize: vertical; }
-    #loginScreen, #pendingScreen { max-width: 400px; margin: 32px auto; padding: 0 14px; }
+    #loginScreen, #pendingScreen, #completePhoneScreen { max-width: 400px; margin: 32px auto; padding: 0 14px; }
     .login-card {
       background: #fff; border-radius: 16px; padding: 22px 18px;
       box-shadow: 0 4px 16px rgba(0,0,0,.07);
@@ -465,17 +465,43 @@
         <div class="form-group"><input type="email" id="email" placeholder="מייל" autocomplete="username"></div>
         <div class="form-group"><input type="password" id="password" placeholder="סיסמה" autocomplete="current-password"></div>
         <button class="btn-primary" id="btnLogin" onclick="login()">התחברות</button>
+        <button type="button" class="btn-secondary" style="margin-top:8px" onclick="showForgot(true)">שכחתי סיסמה</button>
         <div class="divider">חדש במערכת?</div>
         <button class="btn-secondary" onclick="showSignup(true)">בקשת הצטרפות / הרשמה</button>
       </div>
       <div id="signupFields" class="hidden">
         <div class="form-group"><input type="text" id="signupName" placeholder="שם מלא"></div>
         <div class="form-group"><input type="email" id="signupEmail" placeholder="מייל"></div>
+        <div class="form-group"><input type="tel" id="signupPhone" placeholder="טלפון (חובה)" inputmode="tel"></div>
         <div class="form-group"><input type="password" id="signupPassword" placeholder="סיסמה (לפחות 6 תווים)"></div>
         <button class="btn-primary" id="btnSignup" onclick="signup()">שליחת בקשה</button>
         <button class="btn-secondary" style="margin-top:8px" onclick="showSignup(false)">חזרה להתחברות</button>
       </div>
+      <div id="forgotFields" class="hidden">
+        <p class="login-sub" style="margin-bottom:12px">נשלח קישור לאיפוס סיסמה למייל</p>
+        <div class="form-group"><input type="email" id="forgotEmail" placeholder="מייל"></div>
+        <button class="btn-primary" id="btnForgot" onclick="sendForgotPassword()">שליחת קישור</button>
+        <button class="btn-secondary" style="margin-top:8px" onclick="showForgot(false)">חזרה להתחברות</button>
+      </div>
+      <div id="resetFields" class="hidden">
+        <p class="login-sub" style="margin-bottom:12px">בחרו סיסמה חדשה</p>
+        <div class="form-group"><input type="password" id="resetPassword1" placeholder="סיסמה חדשה (6+)"></div>
+        <div class="form-group"><input type="password" id="resetPassword2" placeholder="אימות סיסמה"></div>
+        <button class="btn-primary" id="btnResetPw" onclick="submitNewPassword()">שמירת סיסמה</button>
+      </div>
       <div id="loginMsg" class="message hidden" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div id="completePhoneScreen" class="hidden">
+    <div class="login-card">
+      <h2>השלמת פרטים</h2>
+      <p class="login-sub">נרשמת דרך Google – נדרש מספר טלפון לאישור</p>
+      <div class="form-group"><input type="tel" id="completePhone" placeholder="טלפון (חובה)" inputmode="tel"></div>
+      <div class="form-group"><input type="text" id="completeName" placeholder="שם לתצוגה (אופציונלי)"></div>
+      <button class="btn-primary" id="btnCompletePhone" onclick="submitCompletePhone()">המשך</button>
+      <div id="completePhoneMsg" class="message hidden" style="margin-top:12px"></div>
+      <button class="btn-secondary" style="margin-top:8px" onclick="logout()">יציאה</button>
     </div>
   </div>
 
@@ -604,7 +630,7 @@
       </div>
       <div class="form-group">
         <label>סמל (אופציונלי)</label>
-        <input type="text" id="approveSymbol" placeholder="🔑">
+        <input type="text" id="approveSymbol" placeholder="אופציונלי">
       </div>
       <div class="form-group">
         <label>collection_name מהשיטס (חובה)</label>
@@ -734,7 +760,7 @@
         <button type="button" class="admin-tab active" data-tab="general" onclick="switchAdminTab('general')">כללי</button>
         <button type="button" class="admin-tab" data-tab="pending" onclick="switchAdminTab('pending')">בקשות<span class="tab-badge hidden" id="pendingBadge">0</span></button>
         <button type="button" class="admin-tab" data-tab="roster" onclick="switchAdminTab('roster')">רשימה</button>
-        <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות</button>
+        <button type="button" class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">יתרות<span class="tab-badge hidden" id="balancesBadge">0</span></button>
         <button type="button" class="admin-tab" id="btnAdminMore" onclick="toggleAdminMore(event)">עוד ▾</button>
       </div>
       <div class="admin-more-row" id="adminMoreRow">
@@ -832,7 +858,7 @@
         </div>
 
         <div class="acc-block" id="acc-proofs">
-          <button type="button" class="acc-head" onclick="toggleAcc('acc-proofs')"><span class="acc-ico"></span>הוכחות תשלום</button>
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-proofs')"><span class="acc-ico"></span>הוכחות תשלום <span class="tab-badge hidden" id="proofsBadge">0</span></button>
           <div class="acc-body">
             <p class="empty" style="padding:0 0 8px;font-size:.78rem">דיווחי שחקנים. רק מנהל רואה תמונות. מחק אחרי בדיקה.</p>
             <div id="proofsList"><div class="empty">טוען...</div></div>
@@ -1527,16 +1553,91 @@ function switchAdminTab(name) {
 
 function updatePendingBadge() {
   const badge = $("pendingBadge");
-  if (pendingCount > 0) {
-    badge.textContent = String(pendingCount);
-    badge.classList.remove("hidden");
-  } else badge.classList.add("hidden");
+  if (badge) {
+    if (pendingCount > 0) {
+      badge.textContent = String(pendingCount);
+      badge.classList.remove("hidden");
+    } else badge.classList.add("hidden");
+  }
+}
+let proofsCount = 0;
+function updateProofsBadge() {
+  const b1 = $("balancesBadge");
+  const b2 = $("proofsBadge");
+  [b1, b2].forEach(function (badge) {
+    if (!badge) return;
+    if (proofsCount > 0) {
+      badge.textContent = String(proofsCount);
+      badge.classList.remove("hidden");
+    } else badge.classList.add("hidden");
+  });
+}
+async function refreshProofsCount() {
+  if (!currentProfile || !currentProfile.is_admin) {
+    proofsCount = 0;
+    updateProofsBadge();
+    return;
+  }
+  const { count, error } = await sb.from("payment_proofs").select("*", { count: "exact", head: true });
+  proofsCount = (!error && count) ? count : 0;
+  updateProofsBadge();
 }
 
 function showSignup(on) {
   $("loginFields").classList.toggle("hidden", on);
   $("signupFields").classList.toggle("hidden", !on);
+  if ($("forgotFields")) $("forgotFields").classList.add("hidden");
+  if ($("resetFields")) $("resetFields").classList.add("hidden");
   $("loginMsg").classList.add("hidden");
+}
+function showForgot(on) {
+  $("loginFields").classList.toggle("hidden", on);
+  $("signupFields").classList.add("hidden");
+  if ($("forgotFields")) $("forgotFields").classList.toggle("hidden", !on);
+  if ($("resetFields")) $("resetFields").classList.add("hidden");
+  $("loginMsg").classList.add("hidden");
+}
+function showResetPasswordUi() {
+  $("loginScreen").classList.remove("hidden");
+  $("pendingScreen").classList.add("hidden");
+  if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
+  $("appScreen").classList.add("hidden");
+  $("loginFields").classList.add("hidden");
+  $("signupFields").classList.add("hidden");
+  if ($("forgotFields")) $("forgotFields").classList.add("hidden");
+  if ($("resetFields")) $("resetFields").classList.remove("hidden");
+  $("loginMsg").classList.add("hidden");
+}
+async function sendForgotPassword() {
+  const email = ($("forgotEmail").value || $("email").value || "").trim().toLowerCase();
+  if (!email) return showLoginMsg("נא להזין מייל", false);
+  const btn = $("btnForgot");
+  setLoading(btn, true, "שולח");
+  const redirectTo = (siteUrl() || (location.origin + location.pathname)).replace(/\/$/, "") + "/";
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+  setLoading(btn, false, "שליחת קישור");
+  if (error) return showLoginMsg(error.message, false);
+  showLoginMsg("נשלח מייל לאיפוס סיסמה (אם המייל קיים במערכת)", true);
+}
+async function submitNewPassword() {
+  const p1 = $("resetPassword1").value || "";
+  const p2 = $("resetPassword2").value || "";
+  if (p1.length < 6) return showLoginMsg("סיסמה לפחות 6 תווים", false);
+  if (p1 !== p2) return showLoginMsg("הסיסמאות לא תואמות", false);
+  const btn = $("btnResetPw");
+  setLoading(btn, true, "שומר");
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  setLoading(btn, false, "שמירת סיסמה");
+  if (error) return showLoginMsg(error.message, false);
+  showLoginMsg("הסיסמה עודכנה. מתחבר…", true);
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await afterLogin();
+  } else {
+    showForgot(false);
+    showSignup(false);
+  }
 }
 
 async function loginGoogle() {
@@ -1550,21 +1651,42 @@ async function loginGoogle() {
 async function signup() {
   const name = $("signupName").value.trim();
   const email = $("signupEmail").value.trim().toLowerCase();
+  const phone = ($("signupPhone").value || "").trim();
   const password = $("signupPassword").value;
   if (!name || !email || password.length < 6) return showLoginMsg("שם, מייל וסיסמה (6+) נדרשים", false);
+  if (!phone) return showLoginMsg("טלפון חובה", false);
   const btn = $("btnSignup");
   setLoading(btn, true, "שולח");
-  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: { data: { name, phone } }
+  });
   setLoading(btn, false, "שליחת בקשה");
   if (error) return showLoginMsg(error.message, false);
   if (data.user && data.user.id) {
-    await sb.from("pending_users").insert({
-      user_id: data.user.id, email, name, source: "signup", status: "pending"
-    });
-    notifyAdminAlways("בקשת הצטרפות: " + name + " (" + email + ")", { email: true });
+    // מניעת כפילות: אם כבר יש בקשה פתוחה – לא יוצרים שוב
+    const { data: existing } = await sb.from("pending_users")
+      .select("id")
+      .eq("user_id", data.user.id)
+      .eq("status", "pending")
+      .limit(1);
+    if (!existing || !existing.length) {
+      const { error: insErr } = await sb.from("pending_users").insert({
+        user_id: data.user.id,
+        email,
+        name,
+        phone,
+        source: "signup",
+        status: "pending"
+      });
+      if (insErr) console.warn("pending insert", insErr);
+      else notifyAdminAlways("בקשת הצטרפות: " + name + " (" + email + ") · " + phone, { email: true });
+    }
   }
   currentUser = data.user;
   $("loginScreen").classList.add("hidden");
+  if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
   $("pendingScreen").classList.remove("hidden");
 }
 
@@ -1590,19 +1712,47 @@ async function login() {
 async function afterLogin() {
   const { data: profile } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
   if (!profile) {
-    const { data: existing } = await sb.from("pending_users").select("id").eq("user_id", currentUser.id).eq("status", "pending").maybeSingle();
+    const { data: existingList } = await sb.from("pending_users")
+      .select("id,phone,name,email")
+      .eq("user_id", currentUser.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const existing = existingList && existingList[0] ? existingList[0] : null;
+
     if (!existing) {
-      const name =
-        (currentUser.user_metadata && (currentUser.user_metadata.full_name || currentUser.user_metadata.name)) ||
-        (currentUser.email && currentUser.email.split("@")[0]) || "משתמש";
-      await sb.from("pending_users").insert({
-        user_id: currentUser.id, email: currentUser.email, name,
-        source: "google_or_login", status: "pending"
-      });
-      notifyAdminAlways("בקשת הצטרפות: " + name + " (" + currentUser.email + ")", { email: true });
+      // אין בקשה – דורשים טלפון (גוגל / התחברות בלי פרופיל)
+      $("loginScreen").classList.add("hidden");
+      $("appScreen").classList.add("hidden");
+      $("pendingScreen").classList.add("hidden");
+      if ($("completePhoneScreen")) {
+        const metaName =
+          (currentUser.user_metadata && (currentUser.user_metadata.full_name || currentUser.user_metadata.name)) || "";
+        $("completeName").value = metaName;
+        $("completePhone").value = (currentUser.user_metadata && currentUser.user_metadata.phone) || "";
+        $("completePhoneMsg").classList.add("hidden");
+        $("completePhoneScreen").classList.remove("hidden");
+      }
+      return;
     }
+
+    // יש בקשה – אם חסר טלפון, להשלים
+    if (!(existing.phone || "").trim()) {
+      $("loginScreen").classList.add("hidden");
+      $("appScreen").classList.add("hidden");
+      $("pendingScreen").classList.add("hidden");
+      if ($("completePhoneScreen")) {
+        $("completeName").value = existing.name || "";
+        $("completePhone").value = "";
+        $("completePhoneMsg").classList.add("hidden");
+        $("completePhoneScreen").classList.remove("hidden");
+      }
+      return;
+    }
+
     $("loginScreen").classList.add("hidden");
     $("appScreen").classList.add("hidden");
+    if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
     $("pendingScreen").classList.remove("hidden");
     return;
   }
@@ -1615,7 +1765,7 @@ async function afterLogin() {
   updateBalanceUI();
   await loadSettings();
   await loadProfiles();
-  if (profile.is_admin) await refreshPendingCount();
+  if (profile.is_admin) { await refreshPendingCount(); await refreshProofsCount(); }
   $("mainList").innerHTML = skeleton(8);
   $("waitList").innerHTML = skeleton(3);
   await loadList();
@@ -1629,6 +1779,57 @@ async function afterLogin() {
   await checkPendingConfirm();
 }
 
+async function submitCompletePhone() {
+  if (!currentUser) return;
+  const phone = ($("completePhone").value || "").trim();
+  const name =
+    ($("completeName").value || "").trim() ||
+    (currentUser.user_metadata && (currentUser.user_metadata.full_name || currentUser.user_metadata.name)) ||
+    (currentUser.email && currentUser.email.split("@")[0]) ||
+    "משתמש";
+  if (!phone) {
+    const el = $("completePhoneMsg");
+    el.textContent = "טלפון חובה";
+    el.className = "message error";
+    el.classList.remove("hidden");
+    return;
+  }
+  const btn = $("btnCompletePhone");
+  setLoading(btn, true, "שומר");
+  try {
+    const { data: existingList } = await sb.from("pending_users")
+      .select("id")
+      .eq("user_id", currentUser.id)
+      .eq("status", "pending")
+      .limit(1);
+    const existing = existingList && existingList[0];
+    if (existing) {
+      const { error } = await sb.from("pending_users").update({ phone, name }).eq("id", existing.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await sb.from("pending_users").insert({
+        user_id: currentUser.id,
+        email: currentUser.email,
+        name,
+        phone,
+        source: "google_or_login",
+        status: "pending"
+      });
+      if (error) throw new Error(error.message);
+      notifyAdminAlways("בקשת הצטרפות: " + name + " (" + currentUser.email + ") · " + phone, { email: true });
+    }
+    if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
+    $("pendingScreen").classList.remove("hidden");
+  } catch (e) {
+    const el = $("completePhoneMsg");
+    el.textContent = String(e.message || e);
+    el.className = "message error";
+    el.classList.remove("hidden");
+  } finally {
+    setLoading(btn, false, "המשך");
+  }
+}
+
 async function logout() {
   stopAutoRefresh();
   unsubscribeRegsRealtime();
@@ -1639,8 +1840,12 @@ async function logout() {
   pendingConfirmReg = null;
   $("appScreen").classList.add("hidden");
   $("pendingScreen").classList.add("hidden");
+  if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
   $("loginScreen").classList.remove("hidden");
   showSignup(false);
+  showForgot(false);
+  if ($("resetFields")) $("resetFields").classList.add("hidden");
+  if ($("loginFields")) $("loginFields").classList.remove("hidden");
 }
 
 function updateBalanceUI() {
@@ -2584,6 +2789,8 @@ async function loadPaymentProofs() {
     box.innerHTML = '<div class="empty">אין דיווחים</div>';
     return;
   }
+  proofsCount = data.length;
+  updateProofsBadge();
   box.innerHTML = data.map((r) => {
     const when = r.created_at ? new Date(r.created_at).toLocaleString("he-IL") : "";
     let st = r.status || "";
@@ -2733,6 +2940,7 @@ async function openAdmin() {
   $("adminRulesHowtoText").value = getSetting("rules_howto_text", "") || "";
   $("adminMsg").classList.add("hidden");
   await refreshPendingCount();
+  await refreshProofsCount();
   switchAdminTab("general");
   $("adminModal").classList.remove("hidden");
 }
@@ -2885,21 +3093,24 @@ async function loadPending() {
   }
   box.innerHTML = data.map((p) =>
     '<div class="pending-item"><div><strong>' + escapeHtml(p.name) + "</strong></div>" +
-    '<div style="color:#64748b;font-size:.8rem">' + escapeHtml(p.email) + " · " + escapeHtml(p.source || "") + "</div>" +
+    '<div style="color:#64748b;font-size:.8rem">' + escapeHtml(p.email) +
+    (p.phone ? " · " + escapeHtml(p.phone) : "") +
+    " · " + escapeHtml(p.source || "") + "</div>" +
     '<div class="row-actions">' +
     '<button class="btn-success" data-approve="' + p.id + '" data-uid="' + (p.user_id || "") +
-    '" data-email="' + escapeHtml(p.email) + '" data-name="' + escapeHtml(p.name) + '">המשך לאישור</button>' +
+    '" data-email="' + escapeHtml(p.email) + '" data-name="' + escapeHtml(p.name) +
+    '" data-phone="' + escapeHtml(p.phone || "") + '">המשך לאישור</button>' +
     '<button class="btn-danger" data-reject="' + p.id + '">דחה</button></div></div>'
   ).join("");
 }
 
-async function openApproveModal(id, uid, email, name) {
+async function openApproveModal(id, uid, email, name, phone) {
   if (!uid) return showAdminMsg("חסר user_id", false);
   pendingApprove = { id, uid, email, name };
   $("approveMsg").classList.add("hidden");
   $("approveEmail").value = email || "";
   $("approveName").value = name || "";
-  $("approvePhone").value = "";
+  $("approvePhone").value = phone || "";
   $("approveSymbol").value = "";
   $("approveIsAdmin").value = "false";
   $("approveCollectionName").innerHTML = '<option value="">— טוען מהשיטס —</option>';
@@ -3363,7 +3574,8 @@ document.addEventListener("click", (e) => {
       ap.getAttribute("data-approve"),
       ap.getAttribute("data-uid"),
       ap.getAttribute("data-email"),
-      ap.getAttribute("data-name")
+      ap.getAttribute("data-name"),
+      ap.getAttribute("data-phone") || ""
     );
   }
   const rj = e.target.closest("[data-reject]");
@@ -3410,10 +3622,25 @@ function changeFontScale(delta) {
   } catch (e) {}
 })();
 
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    currentUser = session && session.user ? session.user : currentUser;
+    showResetPasswordUi();
+  }
+});
+
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
+    // לינק איפוס סיסמה
+    try {
+      const hash = String(location.hash || "");
+      if (hash.indexOf("type=recovery") >= 0) {
+        showResetPasswordUi();
+        return;
+      }
+    } catch (e) {}
     await afterLogin();
   }
 })();
