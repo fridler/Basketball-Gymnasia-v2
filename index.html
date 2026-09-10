@@ -2457,6 +2457,10 @@ async function submitPaymentProof() {
   const btn = $("btnPaidSubmit");
   setLoading(btn, true, "שולח");
 
+  const prevBal = Number(currentProfile.balance);
+  const baseBal = isNaN(prevBal) ? 0 : prevBal;
+  let proofId = null;
+
   try {
     const { data: existing, error: exErr } = await sb
       .from("payment_proofs")
@@ -2471,16 +2475,11 @@ async function submitPaymentProof() {
       return;
     }
 
-    const prevBal = Number(currentProfile.balance);
-    const baseBal = isNaN(prevBal) ? 0 : prevBal;
     const optimisticBal = baseBal + amount;
-
-    // מיד: יתרה אופטימית במסך
     currentProfile.balance = optimisticBal;
     if (profileMap[currentUser.id]) profileMap[currentUser.id].balance = optimisticBal;
     updateBalanceUI();
 
-    // מיד: שורה בהוכחות
     const { data: proofRow, error: proofErr } = await sb.from("payment_proofs").insert({
       user_id: currentUser.id,
       player_name: currentProfile.name || "",
@@ -2491,171 +2490,72 @@ async function submitPaymentProof() {
       status: "pending"
     }).select("id").maybeSingle();
     if (proofErr) throw new Error(proofErr.message);
-    const proofId = proofRow && proofRow.id;
+    proofId = proofRow && proofRow.id;
 
-    // עדכון DB אופטימי (best-effort)
     try {
       await sb.from("profiles").update({ balance: optimisticBal }).eq("id", currentUser.id);
     } catch (e) {}
 
+    // העלאת תמונה לפני הקריאה לשרת (אם נכשל – ממשיכים בלי תמונה)
+    let imagePath = "";
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = currentUser.id + "/" + sat + "_" + Date.now() + "." + ext;
+      const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, file, {
+        contentType: file.type,
+        upsert: false
+      });
+      if (!upErr) imagePath = path;
+    } catch (upE) {
+      console.warn("proof upload", upE);
+    }
+
+    // השרת משלים: שיטס + סטטוס הוכחה + יתרה (גם אם סוגרים את הדף אחרי שהבקשה יצאה)
+    const { data: rep, error: repErr } = await sb.functions.invoke("collection", {
+      body: {
+        action: "report_paid",
+        name: cname,
+        gameDate: sat,
+        amount: amount,
+        force: false,
+        proof_id: proofId,
+        user_id: currentUser.id,
+        image_path: imagePath || null,
+        base_balance: baseBal,
+        email: currentProfile.email || "",
+        game_id: currentGame ? currentGame.id : null
+      }
+    });
+
+    if (repErr) {
+      // הבקשה לא הגיעה / נקטעה – היתרה האופטימית עלולה להיות שגויה
+      currentProfile.balance = baseBal;
+      if (profileMap[currentUser.id]) profileMap[currentUser.id].balance = baseBal;
+      updateBalanceUI();
+      throw new Error(repErr.message || "שגיאת שרת");
+    }
+
+    const res = rep || {};
+    if (res.ok === false) {
+      const bal = res.balance != null ? Number(res.balance) : baseBal;
+      currentProfile.balance = bal;
+      if (profileMap[currentUser.id]) profileMap[currentUser.id].balance = bal;
+      updateBalanceUI();
+      if (res.status === "skipped_exists" || res.error === "skipped_exists") {
+        showPaidMsg("בשיטס כבר רשום תשלום לשבת זו. לא עודכן. לבירור – פנה למנהל.", false);
+        return;
+      }
+      throw new Error(res.error || "הכתיבה לשיטס נכשלה");
+    }
+
+    if (res.balance != null && !isNaN(Number(res.balance))) {
+      currentProfile.balance = Number(res.balance);
+      if (profileMap[currentUser.id]) profileMap[currentUser.id].balance = Number(res.balance);
+      updateBalanceUI();
+    }
+
     showPaidMsg("נרשם! היתרה עודכנה.", true);
-    setLoading(btn, false, "שלח דיווח");
-    setTimeout(function () { closeModal("paidModal"); }, 700);
-
-    // רקע: שיטס → תמונה → תיקון יתרה אם נכשל
-    const uid = currentUser.id;
-    const playerName = currentProfile.name || "";
-    const email = currentProfile.email || "";
-    const gameId = currentGame ? currentGame.id : null;
-    const fileBg = file;
-    const amountBg = amount;
-    const satBg = sat;
-    const cnameBg = cname;
-    const baseBalBg = baseBal;
-    const proofIdBg = proofId;
-
-    (async function () {
-      async function setProof(status, extra) {
-        if (!proofIdBg) return;
-        const patch = Object.assign({ status: status }, extra || {});
-        try {
-          await sb.from("payment_proofs").update(patch).eq("id", proofIdBg);
-        } catch (e) {
-          console.warn("proof update", e);
-        }
-      }
-      async function applyBalance(val) {
-        const n = Number(val);
-        if (isNaN(n)) return;
-        if (currentUser && currentUser.id === uid && currentProfile) {
-          currentProfile.balance = n;
-          if (profileMap[uid]) profileMap[uid].balance = n;
-          updateBalanceUI();
-        }
-        try {
-          await sb.from("profiles").update({ balance: n }).eq("id", uid);
-        } catch (e) {}
-      }
-      async function revertBalance(reason) {
-        await applyBalance(baseBalBg);
-        await setProof("failed", { image_path: null });
-        // שומרים סיבה בשדה note אם קיים – אחרת ב-status מספיק; נוסיף ל-player_name? לא.
-        // נשתמש ב-status failed ונשמור סיבה ב-image_path? לא.
-        try {
-          await sb.from("payment_proofs").update({
-            status: "failed",
-            player_name: playerName,
-            // collection_name נשאר; נכתוב סיבה בלוג
-          }).eq("id", proofIdBg);
-        } catch (e) {}
-        try {
-          await sb.from("payment_log").insert({
-            game_id: gameId,
-            email: email,
-            collection_name: cnameBg,
-            amount: amountBg,
-            status: "failed",
-            note: "player proof fail: " + String(reason || "").slice(0, 180)
-          });
-        } catch (e2) {}
-      }
-
-      try {
-        const { data: sheetRes, error: sheetErr } = await sb.functions.invoke("collection", {
-          body: {
-            action: "paid",
-            name: cnameBg,
-            gameDate: satBg,
-            amount: amountBg,
-            force: false
-          }
-        });
-
-        if (sheetErr) {
-          await revertBalance(sheetErr.message || "edge_error");
-          // עדכון סטטוס מפורש עם סיבה – נשמור ב-note דרך payment_log; בשורה נציג failed
-          try {
-            await sb.from("payment_proofs").update({
-              status: "failed:" + String(sheetErr.message || "edge").slice(0, 80)
-            }).eq("id", proofIdBg);
-          } catch (e) {}
-          return;
-        }
-
-        const res = sheetRes || {};
-        if (res.ok === false) {
-          await revertBalance(res.error || "sheets_error");
-          try {
-            await sb.from("payment_proofs").update({
-              status: "failed:" + String(res.error || "sheets").slice(0, 80)
-            }).eq("id", proofIdBg);
-          } catch (e) {}
-          return;
-        }
-        if (res.status === "skipped_exists") {
-          await revertBalance("skipped_exists");
-          try {
-            await sb.from("payment_proofs").update({
-              status: "skipped_exists"
-            }).eq("id", proofIdBg);
-          } catch (e) {}
-          return;
-        }
-        if (res.status && res.status !== "written") {
-          await revertBalance(res.status);
-          try {
-            await sb.from("payment_proofs").update({
-              status: "failed:" + String(res.status).slice(0, 80)
-            }).eq("id", proofIdBg);
-          } catch (e) {}
-          return;
-        }
-
-        // הצלחה בשיטס – יתרה מהשיטס אם חזרה, אחרת משאירים אופטימי
-        if (res.balance != null && !isNaN(Number(res.balance))) {
-          await applyBalance(res.balance);
-        }
-
-        await setProof("written_no_image");
-        try {
-          await sb.from("payment_log").insert({
-            game_id: gameId,
-            email: email,
-            collection_name: cnameBg,
-            amount: amountBg,
-            status: "written",
-            note: "player proof Paid " + satBg
-          });
-        } catch (e2) {}
-
-        // תמונה
-        try {
-          const ext = (fileBg.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-          const path = uid + "/" + satBg + "_" + Date.now() + "." + ext;
-          const { error: upErr } = await sb.storage.from("payment-proofs").upload(path, fileBg, {
-            contentType: fileBg.type,
-            upsert: false
-          });
-          if (!upErr && proofIdBg) {
-            await sb.from("payment_proofs").update({
-              image_path: path,
-              status: "written"
-            }).eq("id", proofIdBg);
-          }
-        } catch (upE) {
-          console.warn("proof upload", upE);
-        }
-      } catch (bgErr) {
-        console.warn("proof background", bgErr);
-        await revertBalance(bgErr && bgErr.message ? bgErr.message : "background_error");
-        try {
-          await sb.from("payment_proofs").update({
-            status: "failed:" + String(bgErr && bgErr.message ? bgErr.message : "bg").slice(0, 80)
-          }).eq("id", proofIdBg);
-        } catch (e) {}
-      }
-    })();
-    return;
+    setTimeout(function () { closeModal("paidModal"); }, 800);
   } catch (e) {
     showPaidMsg(String(e.message || e), false);
   } finally {
