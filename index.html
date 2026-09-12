@@ -1406,6 +1406,11 @@ async function syncBalancesFromSheet(silent) {
 
 async function chargeCurrentGame() {
   if (!currentGame) return showAdminMsg("אין משחק", false);
+  if (currentGame.charged_at) {
+    if (!confirm("השבוע כבר מסומן כמחויב (" +
+      new Date(currentGame.charged_at).toLocaleString("he-IL") +
+      ").\nלהריץ חיוב שוב? (תאים מלאים בשיטס ידולגו)")) return;
+  }
   await loadProfiles();
   const { data: regs } = await sb.from("registrations").select("registered_by").eq("game_id", currentGame.id).eq("status", "main");
   if (!regs || !regs.length) return showAdminMsg("אין שחקנים ב-main (רק מי שאישר)", false);
@@ -1462,16 +1467,41 @@ async function chargeCurrentGame() {
     const skipped = results.filter((r) => r.status === "skipped_exists").length;
     const failed = results.filter((r) => r.error || r.ok === false).length;
     const nowIso = new Date().toISOString();
-    await sb.from("games").update({ charged_at: nowIso }).eq("id", currentGame.id);
-    currentGame.charged_at = nowIso;
-    updateGeneralButtons();
-    let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
-    if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
-    showAdminMsg(out, failed === 0);
+    const { data: chRow, error: chErr } = await sb.from("games")
+      .update({ charged_at: nowIso })
+      .eq("id", currentGame.id)
+      .select("id,charged_at")
+      .maybeSingle();
+    if (chErr || !chRow || !chRow.charged_at) {
+      console.warn("charged_at update", chErr);
+      currentGame.charged_at = nowIso;
+      updateGeneralButtons();
+      let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
+      if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
+      out += " | ⚠ סימון charged_at לא נשמר ב-DB: " +
+        ((chErr && chErr.message) || "אין עמודה או RLS") +
+        " — הרץ sql-games-charged-at.sql ובדוק הרשאת מנהל על games";
+      showAdminMsg(out, false);
+    } else {
+      currentGame.charged_at = chRow.charged_at;
+      updateGeneralButtons();
+      let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
+      if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
+      out += " | סומן כמחויב ✓";
+      showAdminMsg(out, failed === 0);
+    }
     await notifyAdminAlways("חיוב שבוע " + currentGame.game_date + " · נכתב " + written, { email: true });
     await syncBalancesFromSheet(true);
+    // רענון מה-DB כדי שהסטטוס יישאר אחרי סגירת הפאנל
+    try {
+      const { data: g2 } = await sb.from("games").select("*").eq("id", currentGame.id).maybeSingle();
+      if (g2) {
+        currentGame = g2;
+        updateGeneralButtons();
+      }
+    } catch (e) {}
   } finally {
-    setLoading(btn, false, "חיוב שבוע זה");
+    setLoading(btn, false, currentGame && currentGame.charged_at ? "חויב ✓" : "חיוב שבוע זה");
   }
 }
 
@@ -2031,7 +2061,7 @@ function updateGeneralButtons() {
   btnLock.classList.toggle("hidden", dbLocked);
   btnOpen.classList.toggle("hidden", !dbLocked);
   if (currentGame.charged_at) {
-    btnCharge.textContent = "חויב ✓";
+    btnCharge.textContent = "חויב ✓ (לחיצה = שוב)";
     st.textContent = "חויב ב: " + new Date(currentGame.charged_at).toLocaleString("he-IL");
   } else {
     btnCharge.textContent = "חיוב שבוע זה";
@@ -2288,8 +2318,8 @@ async function loadList(silent) {
   lastRegs = regs || [];
   const main = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm");
   const wait = lastRegs.filter((r) => r.status === "waitlist");
-  $("mainList").innerHTML = main.length ? main.map((r) => rowHtml(r, locked)).join("") : '<div class="empty">ריקה</div>';
-  $("waitList").innerHTML = wait.length ? wait.map((r) => rowHtml(r, locked)).join("") : '<div class="empty">ריקה</div>';
+  $("mainList").innerHTML = main.length ? main.map((r, i) => rowHtml(r, locked, i + 1)).join("") : '<div class="empty">ריקה</div>';
+  $("waitList").innerHTML = wait.length ? wait.map((r, i) => rowHtml(r, locked, i + 1)).join("") : '<div class="empty">ריקה</div>';
   $("freeSpots").textContent = "פנויים: " + Math.max(0, currentGame.max_players - main.length) + " / " + currentGame.max_players;
   updateButtons(locked);
   updateGeneralButtons();
@@ -2334,7 +2364,7 @@ function arrivalBadgeHtml(r) {
   return "";
 }
 
-function rowHtml(r, locked) {
+function rowHtml(r, locked, displayNum) {
   const mine =
     r.registered_by === currentUser.id ||
     (r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase());
@@ -2348,9 +2378,10 @@ function rowHtml(r, locked) {
   const badgePc = r.status === "pending_confirm" ? '<span class="badge-pc">ממתין לאישור</span>' : "";
   const badgeArr = arrivalBadgeHtml(r);
   const extraClass = arrivalBtn ? " has-arrival-btn" : "";
+  const num = displayNum != null ? displayNum : (r.position || "");
   return (
     '<div class="list-item' + extraClass + '">' +
-    '<span class="num">' + (r.position || "") + ".</span>" +
+    '<span class="num">' + num + ".</span>" +
     '<span class="name">' + badgePc + badgeArr + escapeHtml(displayName(r)) + "</span>" +
     arrivalBtn +
     cancelBtn +
@@ -2565,6 +2596,29 @@ function renderPromoteBox() {
 }
 
 async function recalculatePositions(gameId) {
+  if (!gameId) return;
+  // שרת (service role) – לא תלוי ב-RLS של השחקן
+  try {
+    const { data, error } = await sb.functions.invoke("promote", {
+      body: { action: "recalculate_positions", game_id: gameId }
+    });
+    if (error) {
+      console.warn("recalculate_positions edge", error);
+      // נפילה לניסיון מקומי (מנהל / אם RLS מאפשר)
+      await recalculatePositionsLocal(gameId);
+      return;
+    }
+    if (data && data.ok === false) {
+      console.warn("recalculate_positions", data.error);
+      await recalculatePositionsLocal(gameId);
+    }
+  } catch (e) {
+    console.warn("recalculate_positions", e);
+    await recalculatePositionsLocal(gameId);
+  }
+}
+
+async function recalculatePositionsLocal(gameId) {
   const { data: regs } = await sb.from("registrations").select("*").eq("game_id", gameId)
     .in("status", ["main", "pending_confirm", "waitlist"]).order("created_at", { ascending: true });
   if (!regs) return;
@@ -2584,12 +2638,12 @@ function copyList() {
   const wait = lastRegs.filter((r) => r.status === "waitlist");
   let text = "🏀 רשימת משחק – " + currentGame.game_date + "\n\n📋 רשימת המשחק:\n";
   if (main.length) {
-    main.forEach((r) => {
-      text += (r.position || "") + ". " + displayName(r) + (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
+    main.forEach((r, i) => {
+      text += (i + 1) + ". " + displayName(r) + (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
     });
   } else text += "אין נרשמים\n";
   text += "\n⏳ רשימת המתנה:\n";
-  if (wait.length) wait.forEach((r) => { text += (r.position || "") + ". " + displayName(r) + "\n"; });
+  if (wait.length) wait.forEach((r, i) => { text += (i + 1) + ". " + displayName(r) + "\n"; });
   else text += "ריקה\n";
   navigator.clipboard.writeText(text).then(() => showMsg("הועתק!", true)).catch(() => showMsg("העתקה נכשלה", false));
 }
