@@ -1406,93 +1406,52 @@ async function syncBalancesFromSheet(silent) {
 
 async function chargeCurrentGame() {
   if (!currentGame) return showAdminMsg("אין משחק", false);
+  let force = false;
   if (currentGame.charged_at) {
     if (!confirm("השבוע כבר מסומן כמחויב (" +
       new Date(currentGame.charged_at).toLocaleString("he-IL") +
       ").\nלהריץ חיוב שוב? (תאים מלאים בשיטס ידולגו)")) return;
+    force = true;
+  } else {
+    if (!confirm("לחייב את רשימת main לשבוע " + currentGame.game_date + "?\n(שיטס + סימון באפליקציה בשרת)")) return;
   }
-  await loadProfiles();
-  const { data: regs } = await sb.from("registrations").select("registered_by").eq("game_id", currentGame.id).eq("status", "main");
-  if (!regs || !regs.length) return showAdminMsg("אין שחקנים ב-main (רק מי שאישר)", false);
-  const counts = {};
-  regs.forEach((r) => {
-    if (!r.registered_by) return;
-    counts[r.registered_by] = (counts[r.registered_by] || 0) + 1;
-  });
-  const items = [];
-  const noMatch = [];
-  for (const uid of Object.keys(counts)) {
-    const p = profileMap[uid];
-    const cname = ((p && p.collection_name) || "").trim();
-    if (!cname) {
-      noMatch.push((p && p.name) || uid);
-      continue;
-    }
-    items.push({ name: cname, amount: -Math.abs(gamePrice() * counts[uid]) });
-  }
-  let msg = "חיוב שבוע " + currentGame.game_date + "\n\nייכתבו (רק תאים ריקים): " + items.length + "\n";
-  if (noMatch.length) msg += "\n⚠ בלי התאמה:\n- " + noMatch.join("\n- ") + "\n";
-  msg += "\nלהמשיך?";
-  if (!confirm(msg)) return;
   const btn = $("btnChargeGame");
   setLoading(btn, true, "מחייב");
   try {
-    let results = [];
-    if (items.length) {
-      const { data, error } = await sb.functions.invoke("collection", {
-        body: { action: "charge_bulk", gameDate: currentGame.game_date, items }
-      });
-      if (error || !data || data.ok === false) {
-        showAdminMsg("שיטס: " + ((error && error.message) || (data && data.error) || "שגיאה"), false);
-        return;
+    const { data, error } = await sb.functions.invoke("collection", {
+      body: {
+        action: "charge_week",
+        game_id: currentGame.id,
+        force: force
       }
-      results = data.results || [];
-      for (const r of results) {
-        await sb.from("payment_log").insert({
-          game_id: currentGame.id,
-          collection_name: r.name || "",
-          amount: r.amount != null ? r.amount : 0,
-          status: r.status || (r.ok ? "written" : "error"),
-          note: "sheets Debt weekly " + (r.error || r.status || "")
-        });
-      }
+    });
+    if (error) {
+      showAdminMsg("שרת: " + (error.message || "Failed Edge"), false);
+      return;
     }
-    for (const name of noMatch) {
-      await sb.from("payment_log").insert({
-        game_id: currentGame.id, collection_name: "", amount: 0,
-        status: "skipped_no_match", note: "אין collection_name – " + name
-      });
-    }
-    const written = results.filter((r) => r.status === "written").length;
-    const skipped = results.filter((r) => r.status === "skipped_exists").length;
-    const failed = results.filter((r) => r.error || r.ok === false).length;
-    const nowIso = new Date().toISOString();
-    const { data: chRow, error: chErr } = await sb.from("games")
-      .update({ charged_at: nowIso })
-      .eq("id", currentGame.id)
-      .select("id,charged_at")
-      .maybeSingle();
-    if (chErr || !chRow || !chRow.charged_at) {
-      console.warn("charged_at update", chErr);
-      currentGame.charged_at = nowIso;
+    const res = data || {};
+    if (res.already_charged && res.charged_at) {
+      currentGame.charged_at = res.charged_at;
       updateGeneralButtons();
-      let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
-      if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
-      out += " | ⚠ סימון charged_at לא נשמר ב-DB: " +
-        ((chErr && chErr.message) || "אין עמודה או RLS") +
-        " — הרץ sql-games-charged-at.sql ובדוק הרשאת מנהל על games";
-      showAdminMsg(out, false);
-    } else {
-      currentGame.charged_at = chRow.charged_at;
-      updateGeneralButtons();
-      let out = "שיטס נכתב: " + written + ", דולג: " + skipped + ", שגיאה: " + failed;
-      if (noMatch.length) out += " | בלי התאמה: " + noMatch.join(", ");
-      out += " | סומן כמחויב ✓";
-      showAdminMsg(out, failed === 0);
+      showAdminMsg("כבר היה מסומן כמחויב: " + new Date(res.charged_at).toLocaleString("he-IL"), true);
+      return;
     }
-    await notifyAdminAlways("חיוב שבוע " + currentGame.game_date + " · נכתב " + written, { email: true });
-    await syncBalancesFromSheet(true);
-    // רענון מה-DB כדי שהסטטוס יישאר אחרי סגירת הפאנל
+    if (res.ok === false) {
+      showAdminMsg("חיוב: " + (res.error || "שגיאה") +
+        (res.written != null ? (" | נכתב: " + res.written) : ""), false);
+      // אם השיטס הצליח אבל charged_at נכשל – מציגים במפורש
+      return;
+    }
+    if (res.charged_at) {
+      currentGame.charged_at = res.charged_at;
+    }
+    updateGeneralButtons();
+    let out = "שיטס נכתב: " + (res.written || 0) +
+      ", דולג: " + (res.skipped || 0) +
+      ", שגיאה: " + (res.failed || 0);
+    if (res.noMatch && res.noMatch.length) out += " | בלי התאמה: " + res.noMatch.join(", ");
+    if (res.charged_at) out += " | סומן כמחויב ✓";
+    showAdminMsg(out, (res.failed || 0) === 0);
     try {
       const { data: g2 } = await sb.from("games").select("*").eq("id", currentGame.id).maybeSingle();
       if (g2) {
@@ -1500,8 +1459,9 @@ async function chargeCurrentGame() {
         updateGeneralButtons();
       }
     } catch (e) {}
+    await syncBalancesFromSheet(true);
   } finally {
-    setLoading(btn, false, currentGame && currentGame.charged_at ? "חויב ✓" : "חיוב שבוע זה");
+    setLoading(btn, false, currentGame && currentGame.charged_at ? "חויב ✓ (לחיצה = שוב)" : "חיוב שבוע זה");
   }
 }
 
