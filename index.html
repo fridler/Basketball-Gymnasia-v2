@@ -64,16 +64,6 @@
       padding: 1px 8px; border-radius: 20px; font-size: .7rem; width: auto; cursor: pointer;
     }
     .icon-btn { border: none !important; font-size: 1rem; padding: 0 4px !important; }
-    .font-ctrl {
-      display: inline-flex; align-items: center; gap: 2px;
-      border: 1px solid rgba(255,255,255,.45); border-radius: 20px; padding: 0 2px;
-    }
-    .font-ctrl button {
-      width: auto; min-width: 28px; padding: 2px 6px; border: none;
-      background: transparent; color: #fff; font-weight: 700; font-size: .75rem;
-      cursor: pointer; border-radius: 16px;
-    }
-    .font-ctrl button:hover { background: rgba(255,255,255,.15); }
     .balance-pill {
       background: rgba(255,255,255,.18); border-radius: 20px; padding: 1px 8px;
       font-weight: 600; direction: ltr; unicode-bidi: isolate; display: inline-block;
@@ -520,10 +510,6 @@
       <div class="user-bar">
         <span id="userLabel"></span>
         <span id="userBalance" class="balance-pill hidden"></span>
-        <span class="font-ctrl" title="גודל כתב">
-          <button type="button" onclick="changeFontScale(-0.1)" aria-label="הקטן כתב">A−</button>
-          <button type="button" onclick="changeFontScale(0.1)" aria-label="הגדל כתב">A+</button>
-        </span>
         <button class="icon-btn" onclick="openRules()" title="חוקים">❓</button>
         <button class="icon-btn hidden" id="btnGear" onclick="openAdmin()" title="ניהול">⚙️</button>
         <button onclick="logout()">יציאה</button>
@@ -777,8 +763,6 @@
         <button class="btn-primary hidden" id="btnOpenGame" onclick="openGameOnly()" style="margin-bottom:8px">פתח הרשמה</button>
         <button class="btn-danger" id="btnChargeGame" onclick="chargeCurrentGame()" style="margin-bottom:8px">חיוב שבוע זה</button>
         <button class="btn-secondary" id="btnSyncBal" onclick="syncBalancesFromSheet(false)" style="margin-bottom:8px">סנכרן יתרות מ-Sheets</button>
-        <button class="btn-secondary" id="btnWeeklyReport" onclick="sendWeeklyReport()" style="margin-bottom:8px">שלח דוח שבועי</button>
-        <button class="btn-secondary" id="btnTestNotify" onclick="testNotify()" style="margin-bottom:8px">בדיקת התראות</button>
         <button class="btn-warning" id="btnDebtRemindAll" onclick="sendDebtRemindersAll()" style="margin-bottom:8px">שלח תזכורת לכל החייבים</button>
         <p class="empty" id="chargeStatus" style="padding:4px 0 0;font-size:.8rem"></p>
       </div>
@@ -1294,18 +1278,6 @@ async function notifyPlayerEmail(email, subject, body) {
   }
 }
 
-async function testNotify() {
-  const btn = $("btnTestNotify");
-  setLoading(btn, true, "בודק");
-  try {
-    const r = await notifyAdminAlways("בדיקת התראות – " + new Date().toLocaleString("he-IL"), { email: true });
-    showAdminMsg(r && r.ok ? "נשלח ✓" : ("נכשל: " + (r && r.error ? r.error : "")), !!(r && r.ok));
-  } catch (e) {
-    showAdminMsg(String(e), false);
-  } finally {
-    setLoading(btn, false, "בדיקת התראות");
-  }
-}
 
 /** תזכורת מייל לכל מי ש-balance < 0 + סיכום למנהל (מייל/טלגרם) */
 async function sendDebtRemindersAll() {
@@ -2064,28 +2036,6 @@ async function openGameOnly() {
   await loadList();
 }
 
-async function sendWeeklyReport() {
-  if (!currentGame) return showAdminMsg("אין משחק", false);
-  const btn = $("btnWeeklyReport");
-  setLoading(btn, true, "שולח");
-  try {
-    const main = lastRegs.filter((r) => r.status === "main" || r.status === "pending_confirm");
-    const wait = lastRegs.filter((r) => r.status === "waitlist");
-    let text = "דוח " + currentGame.game_date + " · " + currentGame.status + "\n\nמשחק:\n";
-    main.forEach((r) => {
-      text += (r.position || "") + ". " + r.player_name + (r.status === "pending_confirm" ? " (ממתין)" : "") + "\n";
-    });
-    text += "\nהמתנה:\n";
-    if (!wait.length) text += "ריקה\n";
-    wait.forEach((r) => { text += (r.position || "") + ". " + r.player_name + "\n"; });
-    const r = await notifyAdminAlways(text, { game_id: currentGame.id, email: true });
-    showAdminMsg(r && r.ok ? "נשלח ✓" : ("נכשל: " + (r && r.error ? r.error : "")), !!(r && r.ok));
-  } catch (e) {
-    showAdminMsg(String(e), false);
-  } finally {
-    setLoading(btn, false, "שלח דוח שבועי");
-  }
-}
 
 function normalizePhoneForWa(phone) {
   let p = String(phone || "").replace(/\D/g, "");
@@ -3494,7 +3444,8 @@ async function loadRemovePlayerSelect() {
 }
 
 async function adminAddPlayer() {
-  if (!currentGame || isGameLocked(currentGame)) return showAdminMsg("אין משחק פתוח", false);
+  if (!currentGame) return showAdminMsg("אין משחק", false);
+  // מנהל יכול להוסיף גם כשהמשחק נעול
   const p = profileMap[$("addPlayerSelect").value];
   if (!p) return showAdminMsg("בחר שחקן", false);
   const btn = $("btnAdminAdd");
@@ -3517,7 +3468,7 @@ async function adminAddPlayer() {
 async function adminRemoveSelected() {
   const id = $("removePlayerSelect").value;
   if (!id) return showAdminMsg("בחר שחקן", false);
-  if (isGameLocked(currentGame)) return showAdminMsg("אחרי נעילה אי אפשר", false);
+  // מנהל יכול להסיר גם כשהמשחק נעול
   if (!confirm("להסיר שחקן מהרשימה?")) return;
   const btn = $("btnAdminRemove");
   setLoading(btn, true, "מסיר");
@@ -3634,16 +3585,6 @@ document.addEventListener("click", (e) => {
   if (sp) saveProfile(sp.getAttribute("data-save-profile"));
 });
 
-const FONT_SCALE_KEY = "bb_ui_scale";
-function applyFontScale(scale) {
-  const s = Math.min(1.4, Math.max(0.85, Number(scale) || 1));
-  document.documentElement.style.setProperty("--ui-scale", String(s));
-  try { localStorage.setItem(FONT_SCALE_KEY, String(s)); } catch (e) {}
-}
-function changeFontScale(delta) {
-  const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-scale")) || 1;
-  applyFontScale(cur + delta);
-}
 (function initFontScale() {
   try {
     const saved = parseFloat(localStorage.getItem(FONT_SCALE_KEY) || "1");
