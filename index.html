@@ -841,6 +841,15 @@
           </div>
         </div>
 
+        <div class="acc-block" id="acc-debtors">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-debtors')"><span class="acc-ico"></span>חייבים <span class="tab-badge hidden" id="debtorsBadge">0</span></button>
+          <div class="acc-body">
+            <p class="empty" style="padding:0 0 8px;font-size:.78rem">שחקנים עם יתרה שלילית (חוב). ממוין מהחוב הגבוה לנמוך.</p>
+            <div id="debtorsList"><div class="empty">טוען...</div></div>
+            <button class="btn-secondary" onclick="loadDebtorsList()" style="margin-top:8px">רענן חייבים</button>
+          </div>
+        </div>
+
         <div class="acc-block" id="acc-proofs">
           <button type="button" class="acc-head" onclick="toggleAcc('acc-proofs')"><span class="acc-ico"></span>הוכחות תשלום <span class="tab-badge hidden" id="proofsBadge">0</span></button>
           <div class="acc-body">
@@ -1506,7 +1515,7 @@ function switchAdminTab(name) {
   });
   if (name === "general") updateGeneralButtons();
   if (name === "pending") loadPending();
-  if (name === "balances") { loadBalanceList(); loadPaymentProofs(); }
+  if (name === "balances") { loadBalanceList(); loadDebtorsList(); loadPaymentProofs(); }
   if (name === "profiles") loadProfilesEditor();
   if (name === "roster") { loadAddPlayerSelect(); loadRemovePlayerSelect(); }
   if (name === "archive") loadArchive();
@@ -3162,6 +3171,46 @@ async function rejectPending(id) {
 }
 
 let bulkPendingOverwrite = [];
+
+
+async function loadDebtorsList() {
+  const box = $("debtorsList");
+  const badge = $("debtorsBadge");
+  if (!box) return;
+  if (!currentProfile || !currentProfile.is_admin) {
+    box.innerHTML = '<div class="empty">אין הרשאה</div>';
+    if (badge) badge.classList.add("hidden");
+    return;
+  }
+  await loadProfiles();
+  const debtors = Object.values(profileMap)
+    .filter((p) => Number(p.balance) < 0)
+    .sort((a, b) => Number(a.balance) - Number(b.balance)); // יותר שלילי קודם
+  if (badge) {
+    if (debtors.length) {
+      badge.textContent = String(debtors.length);
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+  if (!debtors.length) {
+    box.innerHTML = '<div class="empty">אין חייבים</div>';
+    return;
+  }
+  box.innerHTML = debtors.map((p) => {
+    const bal = Number(p.balance);
+    const debt = Math.abs(bal);
+    return (
+      '<div class="pending-item" style="display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+      '<div><strong>' + escapeHtml(p.name || p.email || "") + '</strong>' +
+      (p.collection_name ? '<div style="color:#64748b;font-size:.75rem">' + escapeHtml(p.collection_name) + '</div>' : '') +
+      '</div>' +
+      '<span style="color:var(--danger);font-weight:700;white-space:nowrap">−' + debt + '₪</span>' +
+      '</div>'
+    );
+  }).join("");
+}
 
 async function loadBalanceList() {
   await loadProfiles();
