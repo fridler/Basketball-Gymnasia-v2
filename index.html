@@ -140,11 +140,33 @@
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
     }
-    .list-item.mine {
-      background: #eff6ff;
-      border-radius: 8px;
-      box-shadow: inset 0 0 0 1px #bfdbfe;
+    .badge-you {
+      display: inline-block; margin-left: 6px; padding: 1px 6px;
+      border-radius: 6px; font-size: .68rem; font-weight: 700;
+      background: #dbeafe; color: #1d4ed8; vertical-align: middle;
     }
+    .badge-friend {
+      display: inline-block; margin-left: 6px; padding: 1px 6px;
+      border-radius: 6px; font-size: .68rem; font-weight: 700;
+      background: #ede9fe; color: #5b21b6; vertical-align: middle;
+    }
+    .header.locked-header {
+      background: #475569;
+    }
+    #userLabel {
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: rgba(255,255,255,.45);
+    }
+    #userLabel:active { opacity: .85; }
+    .profile-ro-row {
+      display: flex; justify-content: space-between; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: .88rem;
+    }
+    .profile-ro-row .k { color: var(--muted); }
+    .profile-ro-row .v { font-weight: 600; text-align: left; }
+
     .card-head {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 6px; gap: 8px; flex-wrap: wrap;
@@ -307,12 +329,12 @@
 
     /* כל הפופאפים ממורכזים */
     #paidModal, #confirmModal, #friendModal, #arrivalModal,
-    #approveModal, #announceModal, #teamsModal {
+    #approveModal, #announceModal, #teamsModal, #myProfileModal {
       align-items: center;
       padding: 16px;
     }
     #paidModal .modal, #confirmModal .modal, #friendModal .modal,
-    #arrivalModal .modal, #approveModal .modal, #announceModal .modal,
+    #arrivalModal .modal, #approveModal .modal, #announceModal .modal, #myProfileModal .modal,
     #teamsModal .modal {
       border-radius: 16px;
       box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
@@ -579,12 +601,12 @@
 
   <div id="appScreen" class="hidden">
     <div class="header">
-      <h1 id="headerTitle">הרשמה למשחק</h1>
+      <h1 id="headerTitle">הרשמה</h1>
       <div class="status-row" id="gameInfo">
         <span class="status-pill muted">טוען...</span>
       </div>
       <div class="user-bar">
-        <span id="userLabel"></span>
+        <span id="userLabel" onclick="openMyProfile()" title="הפרופיל שלי"></span>
         <span id="userBalance" class="balance-pill hidden"></span>
         <button class="icon-btn" onclick="openRules()" title="חוקים">❓</button>
         <span class="gear-wrap hidden" id="gearWrap">
@@ -759,6 +781,17 @@
       </div>
       <div id="paidMsg" class="message hidden"></div>
       <button class="btn-success" id="btnPaidSubmit" onclick="submitPaymentProof()">שלח דיווח</button>
+    </div>
+  </div>
+
+  <div id="myProfileModal" class="modal-overlay hidden" onclick="backdrop(event,'myProfileModal')">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>הפרופיל שלי</h3>
+        <button class="modal-close" onclick="closeModal('myProfileModal')">סגור</button>
+      </div>
+      <div id="myProfileBody"></div>
+      <button type="button" class="btn-success hidden" id="btnProfilePaid" onclick="closeModal('myProfileModal');openPaidModal()" style="margin-top:12px">שילמתי</button>
     </div>
   </div>
 
@@ -1947,15 +1980,18 @@ function formatGameDateLabel(iso) {
 function renderGameHeader() {
   const box = $("gameInfo");
   const title = $("headerTitle");
+  const headerEl = document.querySelector("#appScreen .header");
   if (!box) return;
   if (!currentGame) {
-    if (title) title.textContent = "הרשמה למשחק";
+    if (title) title.textContent = "הרשמה";
     box.innerHTML = '<span class="status-pill muted">אין משחק פתוח</span>';
+    if (headerEl) headerEl.classList.remove("locked-header");
     return;
   }
   const locked = isGameLocked(currentGame);
   const dateLabel = formatGameDateLabel(currentGame.game_date);
-  if (title) title.textContent = "הרשמה למשחק · " + dateLabel;
+  if (title) title.textContent = "הרשמה · " + dateLabel;
+  if (headerEl) headerEl.classList.toggle("locked-header", locked);
   const regOpen = !locked;
   const friendOpen = !locked && friendOpenNow();
   box.innerHTML =
@@ -1965,6 +2001,28 @@ function renderGameHeader() {
     '<span class="status-pill ' + (friendOpen ? "open" : "closed") + '">' +
       (friendOpen ? "🔓" : "🔒") + " חברים: " + (friendOpen ? "פתוחה" : "סגורה") +
     "</span>";
+}
+
+function openMyProfile() {
+  if (!currentProfile) return;
+  const p = currentProfile;
+  const n = Number(p.balance);
+  const bal = isNaN(n) ? "—" : ((n > 0 ? "+" : "") + n + "₪");
+  const body = $("myProfileBody");
+  if (!body) return;
+  body.innerHTML =
+    '<div class="profile-ro-row"><span class="k">שם</span><span class="v">' + escapeHtml(p.name || "—") + "</span></div>" +
+    '<div class="profile-ro-row"><span class="k">מייל</span><span class="v">' + escapeHtml(p.email || "—") + "</span></div>" +
+    '<div class="profile-ro-row"><span class="k">טלפון</span><span class="v">' + escapeHtml(p.phone || "—") + "</span></div>" +
+    '<div class="profile-ro-row"><span class="k">סמל</span><span class="v">' + escapeHtml(p.symbol || "—") + "</span></div>" +
+    '<div class="profile-ro-row"><span class="k">יתרה</span><span class="v" style="direction:ltr">' + escapeHtml(bal) + "</span></div>" +
+    '<p class="empty" style="padding:10px 0 0;font-size:.78rem">לעריכה – פנו למנהל</p>';
+  const btnPaid = $("btnProfilePaid");
+  if (btnPaid) {
+    if (!isNaN(n) && n < 0) btnPaid.classList.remove("hidden");
+    else btnPaid.classList.add("hidden");
+  }
+  $("myProfileModal").classList.remove("hidden");
 }
 
 function updateBalanceUI() {
@@ -1986,7 +2044,7 @@ function showDebtPopupIfNeeded() {
   if (isNaN(n) || n >= 0) return;
   $("debtAmountText").textContent = n + "₪";
   $("debtBlockHint").textContent = isBlocked()
-    ? "ההרשמה חסומה עד להסדרת חוב מעל " + maxDebt() + "₪."
+    ? "חסום – יש חוב"
     : "אפשר להירשם, אך מומלץ להסדיר את החוב.";
   $("debtModal").classList.remove("hidden");
 }
@@ -2335,7 +2393,7 @@ async function loadList(silent) {
   if (!silent) $("mainList").innerHTML = skeleton(6);
   const { data: games, error: gErr } = await sb.from("games").select("*").in("status", ["open", "locked"]).order("game_date", { ascending: false }).limit(1);
   if (gErr) {
-    if ($("headerTitle")) $("headerTitle").textContent = "הרשמה למשחק";
+    if ($("headerTitle")) $("headerTitle").textContent = "הרשמה";
     $("gameInfo").innerHTML = '<span class="status-pill muted">שגיאה</span>';
     $("mainList").innerHTML = '<div class="empty">' + escapeHtml(gErr.message) + "</div>";
     return;
@@ -2416,9 +2474,17 @@ function arrivalBadgeHtml(r) {
 }
 
 function rowHtml(r, locked, displayNum) {
-  const mine =
-    r.registered_by === currentUser.id ||
-    (r.player_email && r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase());
+  const isSelf = !!(
+    r.player_email &&
+    currentProfile &&
+    r.player_email.toLowerCase() === (currentProfile.email || "").toLowerCase()
+  );
+  const isMyFriend = !!(
+    currentUser &&
+    r.registered_by === currentUser.id &&
+    !(r.player_email || "").trim()
+  );
+  const mine = isSelf || isMyFriend || (r.registered_by === (currentUser && currentUser.id));
   // סטטוס הגעה – גם ברשימה הראשית וגם בהמתנה (לא תלוי בנעילה)
   const arrivalBtn = mine
     ? '<button type="button" class="btn-arrival" data-arrival="' + r.id + '" title="מאחר / הולך מוקדם">⏰</button>'
@@ -2428,12 +2494,14 @@ function rowHtml(r, locked, displayNum) {
     : "";
   const badgePc = r.status === "pending_confirm" ? '<span class="badge-pc">ממתין לאישור</span>' : "";
   const badgeArr = arrivalBadgeHtml(r);
-  const extraClass = (arrivalBtn ? " has-arrival-btn" : "") + (mine ? " mine" : "");
+  const badgeYou = isSelf ? '<span class="badge-you">אתה</span>' : "";
+  const badgeFriend = isMyFriend ? '<span class="badge-friend">חבר שלך</span>' : "";
+  const extraClass = arrivalBtn ? " has-arrival-btn" : "";
   const num = displayNum != null ? displayNum : (r.position || "");
   return (
     '<div class="list-item' + extraClass + '">' +
     '<span class="num">' + num + ".</span>" +
-    '<span class="name">' + badgePc + badgeArr + escapeHtml(displayName(r)) + "</span>" +
+    '<span class="name">' + badgePc + badgeArr + badgeYou + badgeFriend + escapeHtml(displayName(r)) + "</span>" +
     arrivalBtn +
     cancelBtn +
     "</div>"
@@ -2777,7 +2845,7 @@ async function submitPaymentProof() {
   if (!amount || isNaN(amount) || amount <= 0) return showPaidMsg("נא להזין סכום חיובי", false);
   if (amount > 10000) return showPaidMsg("סכום מקסימלי 10,000₪", false);
   const methodEl = document.querySelector('input[name="paidMethod"]:checked');
-  if (!methodEl) return showPaidMsg("נא לבחור איך שילמת (Bit / PayBox / אחר)", false);
+  if (!methodEl) return showPaidMsg("בחרו אמצעי תשלום", false);
   const paymentMethod = methodEl.value;
 
   const cname = (currentProfile.collection_name || "").trim();
@@ -2801,7 +2869,7 @@ async function submitPaymentProof() {
       .limit(1);
     if (exErr) throw new Error(exErr.message);
     if (existing && existing.length) {
-      showPaidMsg("כבר קיים דיווח תשלום לשבת זו. לבירור – פנה למנהל.", false);
+      showPaidMsg("כבר דיווחת לשבת זו", false);
       return;
     }
 
