@@ -224,21 +224,26 @@
       line-height: 1; padding: 0; cursor: pointer; z-index: 2;
     }
     .btn-arrival {
-      position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
-      width: 24px; height: 24px; border-radius: 50%; border: none;
-      background: #e0e7ff; color: #3730a3; font-size: .85rem;
-      line-height: 1; padding: 0; cursor: pointer; z-index: 2;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%; border: none;
+      background: #e0e7ff; color: #3730a3; font-size: .8rem;
+      line-height: 1; padding: 0; cursor: pointer;
+      margin-inline-start: 4px; vertical-align: middle;
+      flex-shrink: 0;
     }
-    .list-item.has-arrival-btn { padding-left: 58px; }
     .arrival-choice {
       display: flex; gap: 8px; margin-bottom: 10px;
     }
     .arrival-choice label {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      position: relative;
+      flex: 1; display: flex; align-items: center; justify-content: center;
       padding: 10px; border: 1.5px solid var(--border); border-radius: 10px;
       font-size: .88rem; cursor: pointer; background: #fff;
+      text-align: center;
     }
-    .arrival-choice input { width: auto; accent-color: var(--primary); }
+    .arrival-choice input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+    }
     #paidMethodBox label {
       position: relative;
       justify-content: center;
@@ -250,6 +255,15 @@
     .arrival-choice label:has(input:checked) {
       border-color: var(--primary); background: #eff6ff;
     }
+    #arrivalTime {
+      width: 140px;
+      max-width: 50%;
+      margin: 0 auto;
+      display: block;
+      text-align: center;
+    }
+    #arrivalModal .form-group { text-align: center; }
+
     .empty { text-align: center; color: var(--muted); padding: 12px 8px; font-size: .82rem; }
     .free-spots { text-align: center; margin-top: 6px; font-size: .75rem; color: var(--muted); }
     .message {
@@ -683,7 +697,7 @@
         <button class="modal-close" onclick="closeModal('arrivalModal')">סגור</button>
       </div>
       <p class="empty" id="arrivalPlayerName" style="padding:0 0 8px"></p>
-      <div class="arrival-choice">
+      <div class="arrival-choice" id="arrivalTypeBox">
         <label><input type="radio" name="arrivalType" value="late" checked> מאחר</label>
         <label><input type="radio" name="arrivalType" value="early"> הולך מוקדם</label>
       </div>
@@ -2535,13 +2549,12 @@ function rowHtml(r, locked, displayNum) {
   const badgeArr = arrivalBadgeHtml(r);
   const badgeYou = isSelf ? '<span class="badge-you">אתה</span>' : "";
   const badgeFriend = isMyFriend ? '<span class="badge-friend">חבר שלך</span>' : "";
-  const extraClass = arrivalBtn ? " has-arrival-btn" : "";
+  const extraClass = cancelBtn ? " has-cancel-btn" : "";
   const num = displayNum != null ? displayNum : (r.position || "");
   return (
     '<div class="list-item' + extraClass + '">' +
     '<span class="num">' + num + ".</span>" +
-    '<span class="name">' + escapeHtml(displayName(r)) + badgePc + badgeArr + badgeYou + badgeFriend + "</span>" +
-    arrivalBtn +
+    '<span class="name">' + escapeHtml(displayName(r)) + badgePc + badgeArr + badgeYou + badgeFriend + arrivalBtn + "</span>" +
     cancelBtn +
     "</div>"
   );
