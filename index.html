@@ -187,6 +187,10 @@
       font-size: .88rem; cursor: pointer; background: #fff;
     }
     .arrival-choice input { width: auto; accent-color: var(--primary); }
+    #paidMethodBox label { position: relative; }
+    #paidMethodBox input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+    }
     .arrival-choice label:has(input:checked) {
       border-color: var(--primary); background: #eff6ff;
     }
@@ -483,7 +487,7 @@
       <div id="signupFields" class="hidden">
         <div class="form-group"><input type="text" id="signupName" placeholder="שם מלא"></div>
         <div class="form-group"><input type="email" id="signupEmail" placeholder="מייל"></div>
-        <div class="form-group"><input type="tel" id="signupPhone" placeholder="טלפון (חובה)" inputmode="tel"></div>
+        <div class="form-group"><input type="tel" id="signupPhone" placeholder="טלפון" inputmode="tel"></div>
         <div class="form-group"><input type="password" id="signupPassword" placeholder="סיסמה (לפחות 6 תווים)"></div>
         <button class="btn-primary" id="btnSignup" onclick="signup()">שליחת בקשה</button>
         <button class="btn-secondary" style="margin-top:8px" onclick="showSignup(false)">חזרה להתחברות</button>
@@ -508,7 +512,7 @@
     <div class="login-card">
       <h2>השלמת פרטים</h2>
       <p class="login-sub">נרשמת דרך Google – נדרש מספר טלפון לאישור</p>
-      <div class="form-group"><input type="tel" id="completePhone" placeholder="טלפון (חובה)" inputmode="tel"></div>
+      <div class="form-group"><input type="tel" id="completePhone" placeholder="טלפון" inputmode="tel"></div>
       <div class="form-group"><input type="text" id="completeName" placeholder="שם לתצוגה (אופציונלי)"></div>
       <button class="btn-primary" id="btnCompletePhone" onclick="submitCompletePhone()">המשך</button>
       <div id="completePhoneMsg" class="message hidden" style="margin-top:12px"></div>
@@ -643,7 +647,7 @@
         <input type="text" id="approveSymbol" placeholder="אופציונלי">
       </div>
       <div class="form-group">
-        <label>collection_name מהשיטס (חובה)</label>
+        <label>collection_name מהשיטס</label>
         <select id="approveCollectionName">
           <option value="">— טוען מהשיטס —</option>
         </select>
@@ -695,7 +699,7 @@
       </div>
       <button type="button" class="btn-secondary" id="btnFillDebt" onclick="fillPaidFromDebt()" style="margin-bottom:8px">סכום החוב</button>
       <div class="form-group">
-        <label>איך שילמת? (חובה)</label>
+        <label>איך שילמת?</label>
         <div class="arrival-choice" id="paidMethodBox">
           <label><input type="radio" name="paidMethod" value="bit"> Bit</label>
           <label><input type="radio" name="paidMethod" value="paybox"> PayBox</label>
