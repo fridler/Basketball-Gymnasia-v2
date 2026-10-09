@@ -2214,7 +2214,10 @@ async function lockGameOnly() {
   const wait = lastRegs.filter((r) => r.status === "waitlist");
   let text = "נעילת הרשמה – " + currentGame.game_date + "\n\nרשימת משחק:\n";
   main.forEach((r) => {
-    text += (r.position || "") + ". " + r.player_name + (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
+    text += (r.position || "") + ". " + r.player_name + (r.status === "pending_confirm" ? (function () {
+        const u = formatConfirmDeadlineShort(r.confirm_deadline);
+        return u ? " (ממתין · עד " + u + ")" : " (ממתין)";
+      })() : "") + "\n";
   });
   text += "\nהמתנה:\n";
   if (!wait.length) text += "ריקה\n";
@@ -2473,6 +2476,42 @@ function arrivalBadgeHtml(r) {
   return "";
 }
 
+
+function formatConfirmDeadlineShort(iso) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const time = d.toLocaleTimeString("he-IL", {
+      timeZone: "Asia/Jerusalem",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+    const day = d.toLocaleDateString("he-IL", {
+      timeZone: "Asia/Jerusalem",
+      day: "numeric",
+      month: "numeric"
+    });
+    const today = new Date().toLocaleDateString("he-IL", {
+      timeZone: "Asia/Jerusalem",
+      day: "numeric",
+      month: "numeric"
+    });
+    if (day === today) return time;
+    return day + " " + time;
+  } catch (e) {
+    return "";
+  }
+}
+
+function pendingConfirmBadgeHtml(r) {
+  if (!r || r.status !== "pending_confirm") return "";
+  const until = formatConfirmDeadlineShort(r.confirm_deadline);
+  const label = until ? ("ממתין · עד " + until) : "ממתין";
+  return '<span class="badge-pc">' + escapeHtml(label) + "</span>";
+}
+
 function rowHtml(r, locked, displayNum) {
   const isSelf = !!(
     r.player_email &&
@@ -2492,7 +2531,7 @@ function rowHtml(r, locked, displayNum) {
   const cancelBtn = mine && !locked
     ? '<button type="button" class="btn-minus" data-cancel="' + r.id + '" title="ביטול">−</button>'
     : "";
-  const badgePc = r.status === "pending_confirm" ? '<span class="badge-pc">ממתין לאישור</span>' : "";
+  const badgePc = pendingConfirmBadgeHtml(r);
   const badgeArr = arrivalBadgeHtml(r);
   const badgeYou = isSelf ? '<span class="badge-you">אתה</span>' : "";
   const badgeFriend = isMyFriend ? '<span class="badge-friend">חבר שלך</span>' : "";
@@ -2501,7 +2540,7 @@ function rowHtml(r, locked, displayNum) {
   return (
     '<div class="list-item' + extraClass + '">' +
     '<span class="num">' + num + ".</span>" +
-    '<span class="name">' + badgePc + escapeHtml(displayName(r)) + badgeArr + badgeYou + badgeFriend + "</span>" +
+    '<span class="name">' + escapeHtml(displayName(r)) + badgePc + badgeArr + badgeYou + badgeFriend + "</span>" +
     arrivalBtn +
     cancelBtn +
     "</div>"
@@ -2758,7 +2797,10 @@ function copyList() {
   let text = "🏀 רשימת משחק – " + currentGame.game_date + "\n\n📋 רשימת המשחק:\n";
   if (main.length) {
     main.forEach((r, i) => {
-      text += (i + 1) + ". " + displayName(r) + (r.status === "pending_confirm" ? " (ממתין לאישור)" : "") + "\n";
+      text += (i + 1) + ". " + displayName(r) + (r.status === "pending_confirm" ? (function () {
+        const u = formatConfirmDeadlineShort(r.confirm_deadline);
+        return u ? " (ממתין · עד " + u + ")" : " (ממתין)";
+      })() : "") + "\n";
     });
   } else text += "אין נרשמים\n";
   text += "\n⏳ רשימת המתנה:\n";
