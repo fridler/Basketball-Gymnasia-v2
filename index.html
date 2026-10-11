@@ -3932,9 +3932,9 @@ function updateAutoOpenStatusUI() {
   } else if (doneDate === today) {
     msg = "פתיחה אוטומטית: כבר בוצעה היום";
   } else if (wd === Number(day) && schedDate === today && schedTime) {
-    msg = "פתיחה מתוכננת היום ב־" + schedTime + " (חלון " + startH + ":00–" + endH + ":00)";
+    msg = "פתיחה מתוכננת היום ב־" + schedTime;
   } else if (wd === Number(day)) {
-    msg = "היום יום " + weekdayNameHe(day) + " – השעה תיקבע ע״י השרת בחלון " + startH + ":00–" + endH + ":00";
+    msg = "ממתין לקביעת שעה (חלון " + startH + ":00–" + endH + ":00)";
   } else {
     msg = "פתיחה אוטומטית: כל יום " + weekdayNameHe(day) + " בין " + startH + ":00 ל־" + endH + ":00";
   }
