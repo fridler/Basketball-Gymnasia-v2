@@ -2223,18 +2223,22 @@ function updateGeneralButtons() {
   const btnLock = $("btnLockGame");
   const btnOpen = $("btnOpenGame");
   const btnCharge = $("btnChargeGame");
+  const btnComplete = $("btnCompleteGame");
   const st = $("chargeStatus");
   if (!btnLock) return;
   if (!currentGame) {
     btnLock.classList.add("hidden");
     btnOpen.classList.add("hidden");
+    if (btnComplete) btnComplete.classList.add("hidden");
     btnCharge.disabled = true;
     st.textContent = "אין משחק פעיל";
     return;
   }
   const dbLocked = currentGame.status === "locked";
+  const active = currentGame.status === "open" || currentGame.status === "locked";
   btnLock.classList.toggle("hidden", dbLocked);
   btnOpen.classList.toggle("hidden", !dbLocked);
+  if (btnComplete) btnComplete.classList.toggle("hidden", !active);
   if (currentGame.charged_at) {
     btnCharge.textContent = "חויב ✓ (לחיצה = שוב)";
     st.textContent = "חויב ב: " + new Date(currentGame.charged_at).toLocaleString("he-IL");
@@ -3982,6 +3986,26 @@ async function autoRegisterForNewWeek(gameId, maxPlayers) {
     names.push(p.name || "");
   }
   return { inserted: names.length, main: mainCount, waitlist: waitCount, names: names };
+}
+
+
+async function completeCurrentGame() {
+  if (!currentProfile || !currentProfile.is_admin) return;
+  if (!currentGame) return showAdminMsg("אין משחק פעיל", false);
+  if (currentGame.status !== "open" && currentGame.status !== "locked") {
+    return showAdminMsg("המשחק כבר לא פעיל", false);
+  }
+  if (!confirm("לסמן את המשחק הנוכחי כהושלם (completed) בלי לפתוח שבוע חדש?")) return;
+  const btn = $("btnCompleteGame");
+  setLoading(btn, true, "מסמן");
+  const { error } = await sb.from("games").update({ status: "completed" }).eq("id", currentGame.id);
+  setLoading(btn, false, "סמן משחק כהושלם");
+  if (error) return showAdminMsg(error.message, false);
+  showAdminMsg("המשחק סומן כהושלם", true);
+  currentGame = null;
+  lastRegs = [];
+  await loadList();
+  updateGeneralButtons();
 }
 
 async function startNewWeek() {
