@@ -273,6 +273,17 @@
     .success { background: #dcfce7; color: #166534; }
     .error { background: #fee2e2; color: #991b1b; }
     .hidden { display: none !important; }
+    #bootScreen {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      color: var(--muted); font-size: .9rem;
+    }
+    #bootScreen .boot-spin {
+      width: 28px; height: 28px; border: 3px solid #e2e8f0;
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
     .form-group { margin-bottom: 8px; }
     .form-group label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
     input, textarea, select {
@@ -547,7 +558,12 @@
   </style>
 </head>
 <body>
-  <div id="loginScreen">
+  <div id="bootScreen">
+    <div class="boot-spin"></div>
+    <div>טוען...</div>
+  </div>
+
+  <div id="loginScreen" class="hidden">
     <div class="login-card">
       <h2>כדורסל גימנסיה</h2>
       <p class="login-sub">הרשמה למשחק</p>
@@ -1742,7 +1758,33 @@ function showForgot(on) {
   if ($("resetFields")) $("resetFields").classList.add("hidden");
   $("loginMsg").classList.add("hidden");
 }
+
+function hideBoot() {
+  const b = $("bootScreen");
+  if (b) b.classList.add("hidden");
+}
+function showLoginScreenOnly() {
+  hideBoot();
+  $("loginScreen").classList.remove("hidden");
+  $("pendingScreen").classList.add("hidden");
+  if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
+  $("appScreen").classList.add("hidden");
+}
+function hasStoredSupabaseSession() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) || "";
+      if (k.indexOf("sb-") === 0 && k.indexOf("auth-token") >= 0) {
+        const v = localStorage.getItem(k);
+        if (v && v.length > 20) return true;
+      }
+    }
+  } catch (e) {}
+  return false;
+}
+
 function showResetPasswordUi() {
+  hideBoot();
   $("loginScreen").classList.remove("hidden");
   $("pendingScreen").classList.add("hidden");
   if ($("completePhoneScreen")) $("completePhoneScreen").classList.add("hidden");
@@ -1870,6 +1912,7 @@ async function login() {
 }
 
 async function afterLogin() {
+  hideBoot();
   const { data: profile } = await sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle();
   if (!profile) {
     const { data: existingList } = await sb.from("pending_users")
@@ -4113,19 +4156,26 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 (async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    // לינק איפוס סיסמה
-    try {
-      const hash = String(location.hash || "");
-      if (hash.indexOf("type=recovery") >= 0) {
-        showResetPasswordUi();
-        return;
-      }
-    } catch (e) {}
-    await afterLogin();
+  // אם אין סשן שמור – אפשר להראות login מהר (בלי לחכות ל-network ארוך)
+  // אם יש – נשארים על «טוען» עד afterLogin
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      try {
+        const hash = String(location.hash || "");
+        if (hash.indexOf("type=recovery") >= 0) {
+          showResetPasswordUi();
+          return;
+        }
+      } catch (e) {}
+      await afterLogin();
+      return;
+    }
+  } catch (e) {
+    console.warn(e);
   }
+  showLoginScreenOnly();
 })();
 </script>
 </body>
