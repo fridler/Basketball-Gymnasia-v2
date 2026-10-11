@@ -889,6 +889,7 @@
 
       <div id="pane-general" class="admin-pane active">
         <button class="btn-warning" id="btnNewWeek" onclick="startNewWeek()" style="margin-bottom:8px">התחל שבוע חדש</button>
+        <p class="empty" id="autoOpenHint" style="padding:0 0 8px;font-size:.78rem;text-align:right"></p>
         <button class="btn-secondary hidden" id="btnLockGame" onclick="lockGameOnly()" style="margin-bottom:8px">נעל הרשמה</button>
         <button class="btn-primary hidden" id="btnOpenGame" onclick="openGameOnly()" style="margin-bottom:8px">פתח הרשמה</button>
         <button class="btn-danger" id="btnChargeGame" onclick="chargeCurrentGame()" style="margin-bottom:8px">חיוב שבוע זה</button>
@@ -1051,6 +1052,32 @@
           <div class="form-group"><label>מייל להתראות מנהל</label><input id="set_notify_email" type="email"></div>
           <div class="form-group"><label>Telegram bot token</label><input id="set_telegram_bot_token" type="text"></div>
           <div class="form-group"><label>Telegram chat id</label><input id="set_telegram_chat_id" type="text"></div>
+        </div>
+        </div>
+
+<div class="acc-block" id="acc-set-autoopen">
+          <button type="button" class="acc-head" onclick="toggleAcc('acc-set-autoopen')"><span class="acc-ico"></span>פתיחת שבוע אוטומטית (רנדום)</button>
+          <div class="acc-body">
+          <div class="form-group"><label>פעיל</label>
+            <select id="set_auto_open_enabled">
+              <option value="0">לא</option>
+              <option value="1">כן</option>
+            </select>
+          </div>
+          <div class="form-group"><label>יום בשבוע</label>
+            <select id="set_auto_open_weekday">
+              <option value="0">ראשון</option>
+              <option value="1">שני</option>
+              <option value="2">שלישי</option>
+              <option value="3">רביעי</option>
+              <option value="4">חמישי</option>
+              <option value="5">שישי</option>
+              <option value="6">שבת</option>
+            </select>
+          </div>
+          <div class="form-group"><label>שעת התחלה (0-23)</label><input id="set_auto_open_hour_start" type="number" min="0" max="23"></div>
+          <div class="form-group"><label>שעת סיום (0-23)</label><input id="set_auto_open_hour_end" type="number" min="0" max="23"></div>
+          <p class="empty" id="autoOpenStatus" style="padding:6px 0 0;font-size:.8rem;text-align:right"></p>
         </div>
         </div>
 <div class="acc-block" id="acc-set-general">
@@ -2067,10 +2094,11 @@ async function loadSettings() {
   const { data } = await sb.from("settings").select("key,value");
   settings = {};
   (data || []).forEach((r) => { settings[r.key] = r.value; });
+  try { updateAutoOpenStatusUI(); } catch (e) {}
 }
 
 async function loadProfiles() {
-  const { data } = await sb.from("profiles").select("id,email,name,symbol,phone,collection_name,balance,is_admin");
+  const { data } = await sb.from("profiles").select("id,email,name,symbol,phone,collection_name,balance,is_admin,auto_register");
   profileMap = {};
   (data || []).forEach((p) => { profileMap[p.id] = p; });
 }
@@ -3227,7 +3255,13 @@ function fillSettingsForm() {
   $("set_notify_email").value = getSetting("notify_email", "");
   $("set_telegram_bot_token").value = getSetting("telegram_bot_token", "");
   $("set_telegram_chat_id").value = getSetting("telegram_chat_id", "");
+  if ($("set_auto_open_enabled")) $("set_auto_open_enabled").value = getSetting("auto_open_enabled", "0");
+  if ($("set_auto_open_weekday")) $("set_auto_open_weekday").value = getSetting("auto_open_weekday", "4");
+  if ($("set_auto_open_hour_start")) $("set_auto_open_hour_start").value = getSetting("auto_open_hour_start", "9");
+  if ($("set_auto_open_hour_end")) $("set_auto_open_hour_end").value = getSetting("auto_open_hour_end", "18");
+  updateAutoOpenStatusUI();
 }
+
 
 async function saveAllSettings() {
   const btn = $("btnSaveSettings");
@@ -3252,7 +3286,11 @@ async function saveAllSettings() {
     ["paybox_link", $("set_paybox_link").value],
     ["notify_email", $("set_notify_email").value],
     ["telegram_bot_token", $("set_telegram_bot_token").value],
-    ["telegram_chat_id", $("set_telegram_chat_id").value]
+    ["telegram_chat_id", $("set_telegram_chat_id").value],
+    ["auto_open_enabled", $("set_auto_open_enabled") ? $("set_auto_open_enabled").value : "0"],
+    ["auto_open_weekday", $("set_auto_open_weekday") ? $("set_auto_open_weekday").value : "4"],
+    ["auto_open_hour_start", $("set_auto_open_hour_start") ? $("set_auto_open_hour_start").value : "9"],
+    ["auto_open_hour_end", $("set_auto_open_hour_end") ? $("set_auto_open_hour_end").value : "18"]
   ];
   for (const [k, v] of pairs) {
     const err = await setSetting(k, v);
@@ -3697,7 +3735,10 @@ async function fillProfileEditor() {
     '<div><label style="font-size:.75rem;color:#64748b">טלפון</label><input data-f="phone" value="' + escapeHtml(p.phone || "") + '"></div>' +
     '<div class="full"><label style="font-size:.75rem;color:#64748b">מנהל?</label><select data-f="is_admin">' +
     '<option value="false"' + (!p.is_admin ? " selected" : "") + ">לא</option>" +
-    '<option value="true"' + (p.is_admin ? " selected" : "") + ">כן</option></select></div></div>" +
+    '<option value="true"' + (p.is_admin ? " selected" : "") + ">כן</option></select></div>" +
+    '<div class="full"><label style="font-size:.75rem;color:#64748b">הרשמה אוטומטית לשבוע חדש?</label><select data-f="auto_register">' +
+    '<option value="false"' + (!p.auto_register ? " selected" : "") + ">לא</option>" +
+    '<option value="true"' + (p.auto_register ? " selected" : "") + ">כן</option></select></div></div>" +
     '<button class="btn-success" style="margin-top:8px" data-save-profile="' + p.id + '">שמור פרופיל</button>' +
     '<button class="btn-secondary" style="margin-top:8px" type="button" onclick="adminResetPassword(\'' + p.id + '\')">שלח איפוס סיסמה</button>' +
     '<button class="btn-danger" style="margin-top:8px" type="button" onclick="adminDeleteUser(\'' + p.id + '\')">מחק משתמש לחלוטין</button></div>';
@@ -3711,12 +3752,13 @@ async function saveProfile(uid) {
   const symbol = card.querySelector('[data-f="symbol"]').value.trim();
   const phone = card.querySelector('[data-f="phone"]').value.trim();
   const is_admin = card.querySelector('[data-f="is_admin"]').value === "true";
+  const auto_register = card.querySelector('[data-f="auto_register"]').value === "true";
   if (!name) return showAdminMsg("שם חובה", false);
   if (!collection_name) return showAdminMsg("חובה לבחור collection_name מהשיטס", false);
-  const { error } = await sb.from("profiles").update({ name, collection_name, symbol, phone, is_admin }).eq("id", uid);
+  const { error } = await sb.from("profiles").update({ name, collection_name, symbol, phone, is_admin, auto_register }).eq("id", uid);
   if (error) return showAdminMsg(error.message, false);
   if (uid === currentUser.id) {
-    currentProfile = Object.assign({}, currentProfile, { name, collection_name, symbol, phone, is_admin });
+    currentProfile = Object.assign({}, currentProfile, { name, collection_name, symbol, phone, is_admin, auto_register });
     $("userLabel").textContent = name + (is_admin ? " · מנהל" : "");
   }
   showAdminMsg("הפרופיל נשמר ✓", true);
@@ -3849,6 +3891,99 @@ async function loadArchive() {
   ).join("");
 }
 
+
+function weekdayNameHe(n) {
+  return ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"][Number(n)] || "";
+}
+
+function updateAutoOpenStatusUI() {
+  const el = $("autoOpenStatus");
+  const hint = $("autoOpenHint");
+  const enabled = getSetting("auto_open_enabled", "0") === "1";
+  const day = getSetting("auto_open_weekday", "4");
+  const startH = getSetting("auto_open_hour_start", "9");
+  const endH = getSetting("auto_open_hour_end", "18");
+  const schedDate = getSetting("auto_open_scheduled_date", "");
+  const schedTime = getSetting("auto_open_scheduled_time", "");
+  const doneDate = getSetting("auto_open_done_date", "");
+
+  // תאריך היום בישראל
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric", month: "2-digit", day: "2-digit", weekday: "short"
+  });
+  const parts = {};
+  for (const p of fmt.formatToParts(new Date())) {
+    if (p.type !== "literal") parts[p.type] = p.value;
+  }
+  const today = parts.year + "-" + parts.month + "-" + parts.day;
+  const map = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+  let wd = -1;
+  const wdl = String(parts.weekday || "").toLowerCase();
+  Object.keys(map).forEach(function (k) { if (wdl.startsWith(k)) wd = map[k]; });
+
+  let msg = "";
+  if (!enabled) {
+    msg = "פתיחה אוטומטית: כבוי";
+  } else if (doneDate === today) {
+    msg = "פתיחה אוטומטית: כבר בוצעה היום";
+  } else if (wd === Number(day) && schedDate === today && schedTime) {
+    msg = "פתיחה מתוכננת היום ב־" + schedTime + " (חלון " + startH + ":00–" + endH + ":00)";
+  } else if (wd === Number(day)) {
+    msg = "היום יום " + weekdayNameHe(day) + " – השעה תיקבע ע״י השרת בחלון " + startH + ":00–" + endH + ":00";
+  } else {
+    msg = "פתיחה אוטומטית: כל יום " + weekdayNameHe(day) + " בין " + startH + ":00 ל־" + endH + ":00";
+  }
+  if (el) el.textContent = msg;
+  if (hint) hint.textContent = msg;
+}
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+async function autoRegisterForNewWeek(gameId, maxPlayers) {
+  await loadProfiles();
+  const md = maxDebt();
+  let list = Object.values(profileMap).filter(function (p) {
+    if (!p.auto_register) return false;
+    const bal = p.balance == null ? 0 : Number(p.balance);
+    if (!isNaN(bal) && bal <= -md) return false;
+    return true;
+  });
+  list = shuffleArray(list);
+  let mainCount = 0;
+  let waitCount = 0;
+  const names = [];
+  for (let i = 0; i < list.length; i++) {
+    const p = list[i];
+    const status = mainCount < maxPlayers ? "main" : "waitlist";
+    const position = status === "main" ? mainCount + 1 : waitCount + 1;
+    const { error } = await sb.from("registrations").insert({
+      game_id: gameId,
+      player_name: p.name || "",
+      player_email: p.email || "",
+      registered_by: p.id,
+      status: status,
+      position: position,
+      confirm_deadline: null
+    });
+    if (error) {
+      console.warn("autoRegister", p.name, error.message);
+      continue;
+    }
+    if (status === "main") mainCount++;
+    else waitCount++;
+    names.push(p.name || "");
+  }
+  return { inserted: names.length, main: mainCount, waitlist: waitCount, names: names };
+}
+
 async function startNewWeek() {
   if (!currentProfile || !currentProfile.is_admin) return;
   if (!confirm("לסגור משחקים ולפתוח שבוע חדש?")) return;
@@ -3861,20 +3996,35 @@ async function startNewWeek() {
   }
   const gameDate = nextSaturday();
   const friendHour = parseInt(getSetting("friend_open_hour", "12"), 10);
+  const maxPlayers = parseInt(getSetting("max_players", "15"), 10);
   const friend = new Date(gameDate + "T12:00:00");
   friend.setDate(friend.getDate() - 1);
   friend.setHours(friendHour, 0, 0, 0);
-  const { error: e2 } = await sb.from("games").insert({
+  const { data: newGame, error: e2 } = await sb.from("games").insert({
     game_date: gameDate,
     status: "open",
-    max_players: parseInt(getSetting("max_players", "15"), 10),
+    max_players: maxPlayers,
     friend_open_at: friend.toISOString(),
     charged_at: null
-  });
+  }).select("id,game_date").maybeSingle();
+  if (e2) {
+    setLoading(btn, false, "התחל שבוע חדש");
+    return showAdminMsg(e2.message, false);
+  }
+  let autoMsg = "";
+  try {
+    if (newGame && newGame.id) {
+      const auto = await autoRegisterForNewWeek(newGame.id, maxPlayers);
+      if (auto.inserted) {
+        autoMsg = " · אוטומטי: " + auto.inserted + " (main " + auto.main + ", המתנה " + auto.waitlist + ")";
+      }
+    }
+  } catch (err) {
+    console.warn(err);
+  }
   setLoading(btn, false, "התחל שבוע חדש");
-  if (e2) return showAdminMsg(e2.message, false);
-  showAdminMsg("שבוע חדש: " + gameDate, true);
-  notifyAdminAlways("נפתח שבוע חדש: " + gameDate, { gameDate, email: true });
+  showAdminMsg("שבוע חדש: " + gameDate + autoMsg, true);
+  notifyAdminAlways("נפתח שבוע חדש: " + gameDate + autoMsg, { gameDate, email: true });
   closeModal("adminModal");
   await loadList();
 }
