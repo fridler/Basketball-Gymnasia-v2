@@ -74,6 +74,10 @@
       border-color: rgba(226,232,240,.35);
     }
     .status-pill.muted { opacity: .85; font-weight: 500; }
+    .status-pill.auto-open {
+      background: rgba(59,130,246,.28);
+      border-color: rgba(147,197,253,.45);
+    }
     .game-info { text-align: center; font-size: .72rem; opacity: .9; margin-top: 1px; }
     .user-bar {
       display: flex; justify-content: center; align-items: center; gap: 8px;
@@ -1129,6 +1133,7 @@ let pendingConfirmReg = null;
 let regsChannel = null;
 let subscribedGameId = null;
 let arrivalEditId = null;
+let autoOpenCountdownTimer = null;
 let collectionNamesCache = null;
 let pendingApprove = null;
 
@@ -2061,30 +2066,141 @@ function formatGameDateLabel(iso) {
   return parseInt(p[2], 10) + "." + parseInt(p[1], 10) + "." + p[0];
 }
 
+function israelNowParts() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    weekday: "short", hour12: false
+  });
+  const parts = {};
+  for (const p of fmt.formatToParts(new Date())) {
+    if (p.type !== "literal") parts[p.type] = p.value;
+  }
+  const map = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+  let wd = -1;
+  const wdl = String(parts.weekday || "").toLowerCase();
+  Object.keys(map).forEach(function (k) { if (wdl.startsWith(k)) wd = map[k]; });
+  return {
+    date: parts.year + "-" + parts.month + "-" + parts.day,
+    hour: Number(parts.hour),
+    minute: Number(parts.minute),
+    second: Number(parts.second),
+    weekday: wd
+  };
+}
+
+function formatCountdownNoSeconds(totalMinutes) {
+  if (totalMinutes <= 0) return "בכל רגע";
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h <= 0) return "בעוד " + m + " דקות";
+  if (m === 0) return "בעוד " + h + " שעות";
+  return "בעוד " + h + " שעות ו־" + m + " דקות";
+}
+
+/** הודעה למשתמשים על פתיחה אוטומטית; null = לא להציג */
+function getAutoOpenUserStatus() {
+  if (getSetting("auto_open_enabled", "0") !== "1") return null;
+  // אם יש משחק פעיל – לא מציגים
+  if (currentGame && (currentGame.status === "open" || currentGame.status === "locked")) return null;
+
+  const day = Number(getSetting("auto_open_weekday", "4"));
+  const schedDate = getSetting("auto_open_scheduled_date", "");
+  const schedTime = getSetting("auto_open_scheduled_time", "");
+  const doneDate = getSetting("auto_open_done_date", "");
+  const now = israelNowParts();
+
+  if (doneDate === now.date) return null;
+
+  if (now.weekday !== day) {
+    return {
+      text: "⏰ פתיחת הרשמה: יום " + weekdayNameHe(day) + " · שעה אקראית",
+      needTick: false
+    };
+  }
+
+  // יום הפתיחה
+  if (schedDate === now.date && schedTime) {
+    const sp = String(schedTime).split(":");
+    const sh = parseInt(sp[0] || "0", 10);
+    const sm = parseInt(sp[1] || "0", 10);
+    const nowMins = now.hour * 60 + now.minute;
+    const schedMins = sh * 60 + sm;
+    const left = schedMins - nowMins;
+    if (left <= 0) {
+      return {
+        text: "⏰ אמור להיפתח בכל רגע…",
+        needTick: true
+      };
+    }
+    return {
+      text: "⏰ נפתח היום ב־" + schedTime + " · " + formatCountdownNoSeconds(left),
+      needTick: true
+    };
+  }
+
+  return {
+    text: "⏰ פתיחת הרשמה היום · השעה תיקבע בקרוב",
+    needTick: false
+  };
+}
+
+function stopAutoOpenCountdown() {
+  if (autoOpenCountdownTimer) {
+    clearInterval(autoOpenCountdownTimer);
+    autoOpenCountdownTimer = null;
+  }
+}
+
+function startAutoOpenCountdownIfNeeded(needTick) {
+  stopAutoOpenCountdown();
+  if (!needTick) return;
+  autoOpenCountdownTimer = setInterval(function () {
+    // רק מרענן את הכותרת – לא טוען מהשרת
+    try { renderGameHeader(); } catch (e) {}
+  }, 15000); // כל 15 שניות מספיק בלי שניות בתצוגה
+}
+
 function renderGameHeader() {
   const box = $("gameInfo");
   const title = $("headerTitle");
   const headerEl = document.querySelector("#appScreen .header");
   if (!box) return;
+
+  const autoSt = getAutoOpenUserStatus();
+
   if (!currentGame) {
     if (title) title.textContent = "הרשמה";
-    box.innerHTML = '<span class="status-pill muted">אין משחק פתוח</span>';
+    let html = '<span class="status-pill muted">אין משחק פתוח</span>';
+    if (autoSt) {
+      html += '<span class="status-pill auto-open">' + escapeHtml(autoSt.text) + "</span>";
+    }
+    box.innerHTML = html;
     if (headerEl) headerEl.classList.remove("locked-header");
+    startAutoOpenCountdownIfNeeded(autoSt && autoSt.needTick);
     return;
   }
+
   const locked = isGameLocked(currentGame);
   const dateLabel = formatGameDateLabel(currentGame.game_date);
   if (title) title.textContent = "הרשמה · " + dateLabel;
   if (headerEl) headerEl.classList.toggle("locked-header", locked);
   const regOpen = !locked;
   const friendOpen = !locked && friendOpenNow();
-  box.innerHTML =
+  let html =
     '<span class="status-pill ' + (regOpen ? "open" : "closed") + '">' +
       (regOpen ? "🔓" : "🔒") + " הרשמה: " + (regOpen ? "פתוחה" : "סגורה") +
     "</span>" +
     '<span class="status-pill ' + (friendOpen ? "open" : "closed") + '">' +
       (friendOpen ? "🔓" : "🔒") + " חברים: " + (friendOpen ? "פתוחה" : "סגורה") +
     "</span>";
+  // רק אם אין משחק פתוח/נעול לא מגיעים לכאן עם auto – אבל locked/open מחביאים
+  if (autoSt) {
+    html += '<span class="status-pill auto-open">' + escapeHtml(autoSt.text) + "</span>";
+  }
+  box.innerHTML = html;
+  startAutoOpenCountdownIfNeeded(autoSt && autoSt.needTick);
 }
 
 function openMyProfile() {
