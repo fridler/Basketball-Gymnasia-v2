@@ -2102,8 +2102,8 @@ function formatCountdownNoSeconds(totalMinutes) {
 /** הודעה למשתמשים על פתיחה אוטומטית; null = לא להציג */
 function getAutoOpenUserStatus() {
   if (getSetting("auto_open_enabled", "0") !== "1") return null;
-  // אם יש משחק פעיל – לא מציגים
-  if (currentGame && (currentGame.status === "open" || currentGame.status === "locked")) return null;
+  // רק כשהרשמה פתוחה (open) – לא מציגים; בנעול / בלי משחק – כן
+  if (currentGame && currentGame.status === "open") return null;
 
   const day = Number(getSetting("auto_open_weekday", "4"));
   const schedDate = getSetting("auto_open_scheduled_date", "");
@@ -2195,7 +2195,7 @@ function renderGameHeader() {
     '<span class="status-pill ' + (friendOpen ? "open" : "closed") + '">' +
       (friendOpen ? "🔓" : "🔒") + " חברים: " + (friendOpen ? "פתוחה" : "סגורה") +
     "</span>";
-  // רק אם אין משחק פתוח/נעול לא מגיעים לכאן עם auto – אבל locked/open מחביאים
+  // open מוסתר ב-getAutoOpenUserStatus; locked יכול להציג פתיחה הבאה
   if (autoSt) {
     html += '<span class="status-pill auto-open">' + escapeHtml(autoSt.text) + "</span>";
   }
