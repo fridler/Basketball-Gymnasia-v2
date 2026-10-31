@@ -1596,9 +1596,13 @@ async function chargeCurrentGame() {
       return;
     }
     if (res.ok === false) {
-      showAdminMsg("חיוב: " + (res.error || "שגיאה") +
-        (res.written != null ? (" | נכתב: " + res.written) : ""), false);
-      // אם השיטס הצליח אבל charged_at נכשל – מציגים במפורש
+      let msg = "חיוב: " + (res.error || "שגיאה");
+      if (res.written != null) msg += " | נכתב: " + res.written;
+      if (res.skipped != null) msg += " | דולג: " + res.skipped;
+      if (res.noMatch && res.noMatch.length) msg += " | בלי collection: " + res.noMatch.join(", ");
+      if (res.message) msg += " | " + res.message;
+      if (!res.charged_at) msg += " | לא סומן charged_at";
+      showAdminMsg(msg, false);
       return;
     }
     if (res.charged_at) {
