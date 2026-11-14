@@ -1577,11 +1577,35 @@ async function chargeCurrentGame() {
   const btn = $("btnChargeGame");
   setLoading(btn, true, "מחייב");
   try {
+    // בונים items בצד הלקוח – חוסך עבודה ב-Edge
+    const mainRegs = (lastRegs || []).filter(function (r) { return r.status === "main"; });
+    const counts = {};
+    mainRegs.forEach(function (r) {
+      const uid = r.registered_by;
+      if (!uid) return;
+      counts[uid] = (counts[uid] || 0) + 1;
+    });
+    const price = Number(getSetting("game_price", "35")) || 35;
+    const items = [];
+    const noMatch = [];
+    Object.keys(counts).forEach(function (uid) {
+      const p = profileMap[uid] || {};
+      const cname = String(p.collection_name || "").trim();
+      if (!cname) {
+        noMatch.push(p.name || uid);
+        return;
+      }
+      items.push({ name: cname, amount: -Math.abs(price * counts[uid]) });
+    });
+
     const { data, error } = await sb.functions.invoke("collection", {
       body: {
         action: "charge_week",
         game_id: currentGame.id,
-        force: force
+        force: force,
+        items: items,
+        noMatch: noMatch,
+        main_slots: mainRegs.length
       }
     });
     if (error) {
