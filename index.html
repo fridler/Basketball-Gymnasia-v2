@@ -1585,7 +1585,17 @@ async function chargeCurrentGame() {
       }
     });
     if (error) {
-      showAdminMsg("שרת: " + (error.message || "Failed Edge"), false);
+      let detail = error.message || "Failed Edge";
+      try {
+        // supabase-js לפעמים שם את הגוף ב-context
+        const ctx = error.context;
+        if (ctx && typeof ctx.json === "function") {
+          const body = await ctx.json();
+          if (body && body.error) detail = body.error;
+          else if (body) detail = JSON.stringify(body).slice(0, 200);
+        }
+      } catch (e) {}
+      showAdminMsg("שרת: " + detail, false);
       return;
     }
     const res = data || {};
